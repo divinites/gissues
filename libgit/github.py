@@ -3,10 +3,11 @@ import sublime
 import os
 import subprocess
 
+
 class GitHubAccount:
-    def __init__(self):
+    def __init__(self, settings):
         self.session = requests.Session()
-        self.settings = sublime.load_settings('github_issue.sublime-settings')
+        self.settings = settings
         api_token = self.settings.get('token', '')
         self.username = self.settings.get('username', '')
         password = self.settings.get('password', '')

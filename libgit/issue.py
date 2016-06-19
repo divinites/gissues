@@ -4,12 +4,15 @@ import threading
 
 
 class IssueList:
-    def __init__(self):
-        self.github_account = github.GitHubAccount()
-        # self.repo_name = github.get_github_repo_name()
-        self.repo_name = 'github-issues'
+    def __init__(self, settings):
+        self.github_account = github.GitHubAccount(settings)
+        self.repo_name = None
+        # self.repo_name = 'github-issues'
 
-    def get_issue_list(self, **params):
+    def find_repo(self):
+        self.repo_name = github.get_github_repo_name()
+
+    def get(self, **params):
         issue_list_url = self.github_account.join_issue_url(
             repo_name=self.repo_name)
         return self.github_account.session.get(issue_list_url, **params)
@@ -22,7 +25,7 @@ class IssueList:
             self.github_account.session.get(issue_url, **params),
             self.github_account.session.get(issue_url + '/comments', **params))
 
-    def print_issue_list(self, response):
+    def print_list(self, response):
         if response.status_code == 200:
             print_in_view = PrintListInView(response.json())
             print_in_view.start()
@@ -76,9 +79,7 @@ class PrintIssueInView(threading.Thread):
         view = sublime.active_window().new_file()
         view.set_syntax_file(
             'Packages/Markdown Extended/Syntaxes/Markdown Extended.sublime-syntax')
-        # view.settings.set(
-        #     'color_scheme',
-        #     "Packages/Markdown Extended/Syntaxes/Markdown Extended.tmLanguage")
+        view.settings.set('color_scheme', 'Packages/MarkdownEditing/Markdown.tmLanguage')
         view.run_command("insert_snippet", {"contents": snippet})
 
 
@@ -91,7 +92,7 @@ class ReadIssue(threading.Thread):
 
 
 class PostIssue(threading.Thread):
-    def __init(self, issue):
+    def __init__(self, issue):
         pass
 
     def run(self):

@@ -1,0 +1,7 @@
+[
+    {
+        "caption": "GitHub Issue: Show Issue List",
+        "args": {},
+        "command": "show_github_issue_list"
+    },
+]
