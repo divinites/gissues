@@ -4,4 +4,9 @@
         "args": {},
         "command": "show_github_issue_list"
     },
+    {
+        "caption": "GitHub Issue: Show Issue",
+        "args": {},
+        "command": "show_github_issue"
+    },
 ]

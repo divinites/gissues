@@ -36,16 +36,11 @@ def get_github_repo_name():
     - If the first attempt fails, it tries to run "git config --get remote.origin.url" in current directory
     '''
     current_window = sublime.active_window()
-    # open_folders = current_window.folders()
-    # repo_name = None
-    # if open_folders:
-    #     for folder_path in open_folders:
-    #         path, folder_name = os.path.split(folder_path)
-    #         if self.account['self.username'][folder_name].get()[0] == 200:
-    #             repo_name = folder_name
-    #             break
     file_name = current_window.active_view().file_name()
-    folder = os.path.abspath(os.path.dirname(file_name))
+    try:
+        folder = os.path.abspath(os.path.dirname(file_name))
+    except:
+        folder = current_window.folders()[0]
     cmd = ['git', '-C', folder, 'config', '--get', 'remote.origin.url']
     try:
         repo_url = subprocess.check_output(' '.join(cmd), shell=True)
