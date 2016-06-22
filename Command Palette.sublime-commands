@@ -9,4 +9,14 @@
         "args": {},
         "command": "show_github_issue"
     },
+    {
+        "caption": "GitHub Issue: Create Issue",
+        "args": {},
+        "command": "new_github_issue"
+    },
+    {
+        "caption": "GitHub Issue: Post Issue",
+        "args": {},
+        "command": "post_github_issue"
+    },
 ]

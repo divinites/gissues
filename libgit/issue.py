@@ -1,23 +1,46 @@
-from . import github
-from . import utils
-from .utils import LINE_ENDS
+from .github import GitHubAccount, get_github_repo_name
+from .utils import LINE_ENDS, filter_line_ends, ViewConverter
 import sublime
 import threading
+import json
+
+
+KEY_INFO = ['Title', 'ID', 'State', 'Locked', 'Assignee']
 
 
 class IssueList:
     def __init__(self, settings):
-        self.github_account = github.GitHubAccount(settings)
+        self.github_account = GitHubAccount(settings)
         self.repo_name = None
         # self.repo_name = 'github-issues'
 
     def find_repo(self):
-        self.repo_name = github.get_github_repo_name()
+        self.repo_name = get_github_repo_name()
 
     def get(self, **params):
         issue_list_url = self.github_account.join_issue_url(
             repo_name=self.repo_name)
         return self.github_account.session.get(issue_list_url, **params)
+
+    def post_issue(self, **params):
+        issue_list_url = self.github_account.join_issue_url(repo_name=self.repo_name)
+        return self.github_account.session.post(issue_list_url, **params)
+
+    def update_issue(self, issue_number, **params):
+        issue_url = self.github_account.join_issue_url(
+            repo_name=self.repo_name,
+            issue_number=str(issue_number))
+        return self.github_account.session.patch(issue_url, **params)
+
+    def post_comment(self, issue_number, **params):
+        issue_url = self.github_account.join_issue_url(
+            repo_name=self.repo_name,
+            issue_number=str(issue_number))
+        return self.github_account.session.post(issue_url + '/comments', **params)
+
+    def update_comment(self, comment_id, **params):
+        issue_url = self.github_account.join_issue_url(repo_name=self.repo_name)
+        return self.github_account.session.patch(issue_url + '/comments/' + str(comment_id), **params)
 
     def get_issue(self, issue_number, **params):
         issue_url = self.github_account.join_issue_url(
@@ -40,9 +63,9 @@ class PrintListInView(threading.Thread):
             snippet = ''
             snippet += 'Issue ID' + '     ' + 'Locked    ' + 'Issue Title' + LINE_ENDS
             for issue in json_list:
-                snippet += "{:<12}{:<10}{}".format(str(issue['number']),issue['locked'], issue['title']) + LINE_ENDS
+                snippet += "{:<12}{:<10}{}".format(str(issue['number']), issue['locked'], issue['title']) + LINE_ENDS
             view = sublime.active_window().new_file()
-            view.run_command("insert_snippet", {"contents": snippet})
+            view.run_command("insert_issue", {"issue": snippet})
             view.set_read_only(True)
             view.set_scratch(True)
         else:
@@ -62,19 +85,20 @@ class PrintIssueInView(threading.Thread):
             issue = issue_response.json()
             comments = comments_response.json()
             snippet = ''
-            snippet += "# Title:         " + issue["title"] + LINE_ENDS
-            snippet += "## ID:           " + str(issue['number']) + LINE_ENDS
-            snippet += "## State:        " + issue['state'] + LINE_ENDS
-            snippet += "## Locked:       " + str(issue['locked']) + LINE_ENDS
-            snippet += "## Assigned to:  " + str(issue['assignee']) + LINE_ENDS
+            snippet += "# Title         : " + issue["title"] + LINE_ENDS
+            snippet += "## ID           : " + str(issue['number']) + LINE_ENDS
+            snippet += "## State        : " + issue['state'] + LINE_ENDS
+            snippet += "## Locked       : " + str(issue['locked']) + LINE_ENDS
+            snippet += "## Assignee     : " + str(issue['assignee']) + LINE_ENDS
+            snippet += "## Content      : " + LINE_ENDS
             snippet += LINE_ENDS
-            snippet += utils.filter_line_ends(issue['body']) + LINE_ENDS
+            snippet += filter_line_ends(issue['body']) + LINE_ENDS
             snippet += LINE_ENDS
             for comment in comments:
                 snippet += "## Comment ID:  " + str(comment['id']) + LINE_ENDS
                 snippet += "*commented by " + comment['user'][
                     'login'] + "   UpdateTime: " + comment['updated_at'] + '*' + LINE_ENDS
-                snippet += utils.filter_line_ends(comment['body']) + LINE_ENDS
+                snippet += filter_line_ends(comment['body']) + LINE_ENDS
                 snippet += LINE_ENDS
             snippet += "## Add New Comment:" + LINE_ENDS
             view = sublime.active_window().new_file()
@@ -84,19 +108,48 @@ class PrintIssueInView(threading.Thread):
             # view.settings.set('color_scheme', 'Packages/MarkdownEditing/Markdown.tmLanguage')
             view.run_command("set_file_type", {"syntax": "Packages/MarkdownEditing/Markdown.tmLanguage"})
             view.run_command("insert_issue", {"issue": snippet})
+            view.set_scratch(True)
 
 
-class ReadIssue(threading.Thread):
-    def __init__(self, view):
-        self.view = view
+class IssueManipulate(threading.Thread):
+    def __init__(self, view=None, issue_dict=None, issue_list=None):
+        super(IssueManipulate, self).__init__(self)
+        if not view:
+            view = sublime.active_window().active_view()
+        view_converter = ViewConverter(view)
+        self.view_lines = view_converter.readlines()
+        self.crucial_lines = ViewConverter.split_issue(self.view_lines)
+        if not issue_dict:
+            issue_dict = {}
+        self.issue_dict = issue_dict
+        self.issue_list = issue_list
+
+
+class PostNewIssue(IssueManipulate):
 
     def run(self):
-        pass
+        header = self.view_lines[: self.crucial_lines["header_end"]]
+        issue_post = ViewConverter.generate_issue_header(header)
+        issue_post = ViewConverter.prepare_post(issue_post)
+        issue_post['body'] = ViewConverter.get_issue_body(self.view_lines, self.crucial_lines)
+        post_result = self.issue_list.post_issue(data=json.dumps(issue_post))
+        if post_result.status_code == 201:
+            sublime.status_message("Issue Posted")
+        else:
+            sublime.status_message("Issue not Posted, please try again.")
 
 
-class PostIssue(threading.Thread):
-    def __init__(self, issue):
-        pass
+class UpdateComment(IssueManipulate):
 
-    def run(self):
-        pass
+    def run(self, issue_list):
+        comment_ids, comment_content = ViewConverter.get_comment_list(self.view_lines, self.crucial_lines)
+
+
+class PostNewComment(IssueManipulate):
+
+    def run(self, issue_list):
+        comment_post = {}
+        comment_post['body'] = ViewConverter.get_new_comment(self.view_lines, self.crucial_lines)
+        issue_list.post_comment(json=json.dumps(comment_post))
+
+

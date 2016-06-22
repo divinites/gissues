@@ -1,6 +1,7 @@
 import sublime
 import sublime_plugin
 from gissues.libgit import issue
+from gissues.libgit import utils
 import re
 
 
@@ -9,6 +10,7 @@ def plugin_loaded():
     settings = sublime.load_settings("github_issue.sublime-settings")
     issue_list = issue.IssueList(settings)
     issue_dict = {}
+
 
 class ShowGithubIssueListCommand(sublime_plugin.WindowCommand):
     def run(self):
@@ -31,11 +33,24 @@ class ShowGithubIssueCommand(sublime_plugin.WindowCommand):
 
 
 class NewGithubIssueCommand(sublime_plugin.WindowCommand):
-    pass
+
+    def run(self):
+        utils.create_new_issue_view()
+
+
+class PostGithubIssueCommand(sublime_plugin.WindowCommand):
+
+    def run(self):
+        global issue_list
+        issue_list.find_repo()
+        post_issue = issue.PostNewIssue(issue_list=issue_list)
+        post_issue.start()
 
 
 class UpdateGithubIssueCommand(sublime_plugin.WindowCommand):
-    pass
+
+    def run(self):
+        pass
 
 
 class AutoSyncIssueListener(sublime_plugin.EventListener):
@@ -47,6 +62,6 @@ class AutoSelectIssueListListener(sublime_plugin.EventListener):
 
 
 class InsertIssueCommand(sublime_plugin.TextCommand):
-    def run(self, edit, issue=None):
+    def run(self, edit,  start_point=0, issue=None):
         if issue:
-            self.view.insert(edit, 0, issue)
+            self.view.insert(edit, start_point, issue)

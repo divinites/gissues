@@ -2,6 +2,7 @@ import requests
 import sublime
 import os
 import subprocess
+from .utils import find_git
 
 
 class GitHubAccount:
@@ -17,6 +18,7 @@ class GitHubAccount:
             self.session.auth = (self.username, password)
         else:
             raise Exception("Please check the authentication settings!")
+        self.session.headers['content-type'] = 'application/json'
 
     def join_issue_url(self, repo_name=None, issue_number=None):
         API_URL = 'https://api.github.com/repos'
@@ -41,7 +43,8 @@ def get_github_repo_name():
         folder = os.path.abspath(os.path.dirname(file_name))
     except:
         folder = current_window.folders()[0]
-    cmd = ['git', '-C', folder, 'config', '--get', 'remote.origin.url']
+    git = find_git()
+    cmd = [git, '-C', folder, 'config', '--get', 'remote.origin.url']
     try:
         repo_url = subprocess.check_output(' '.join(cmd), shell=True)
         _, raw_repo_name = os.path.split(repo_url)
