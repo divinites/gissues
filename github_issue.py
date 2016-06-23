@@ -3,13 +3,15 @@ import sublime_plugin
 from gissues.libgit import issue
 from gissues.libgit import utils
 import re
+from queue import Queue
 
 
 def plugin_loaded():
     global issue_list, issue_dict
     settings = sublime.load_settings("github_issue.sublime-settings")
+    issue_dict = Queue()
     issue_list = issue.IssueList(settings)
-    issue_dict = {}
+    issue_dict.put({})
 
 
 class ShowGithubIssueListCommand(sublime_plugin.WindowCommand):
@@ -50,6 +52,15 @@ class PostGithubIssueCommand(sublime_plugin.WindowCommand):
 class UpdateGithubIssueCommand(sublime_plugin.WindowCommand):
 
     def run(self):
+        global issue_list, issue_dict
+        issue_list.find_repo()
+        update_issue = issue.UpdateIssue(issue_list=issue_list, issue_dict=issue_dict)
+        update_issue.start()
+
+
+class UpdateIssueViewCommand(sublime_plugin.WindowCommand):
+
+    def run(self):
         pass
 
 
@@ -62,6 +73,11 @@ class AutoSelectIssueListListener(sublime_plugin.EventListener):
 
 
 class InsertIssueCommand(sublime_plugin.TextCommand):
-    def run(self, edit,  start_point=0, issue=None):
+    def run(self, edit, start_point=0, issue=None):
         if issue:
             self.view.insert(edit, start_point, issue)
+
+
+class ClearViewCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        self.view.erase(edit, sublime.Region(0, self.view.size()))

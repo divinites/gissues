@@ -19,4 +19,9 @@
         "args": {},
         "command": "post_github_issue"
     },
+    {
+        "caption": "GitHub Issue: Update Issue",
+        "args": {},
+        "command": "update_github_issue"
+    },
 ]
