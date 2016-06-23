@@ -64,14 +64,6 @@ class UpdateIssueViewCommand(sublime_plugin.WindowCommand):
         pass
 
 
-class AutoSyncIssueListener(sublime_plugin.EventListener):
-    pass
-
-
-class AutoSelectIssueListListener(sublime_plugin.EventListener):
-    pass
-
-
 class InsertIssueCommand(sublime_plugin.TextCommand):
     def run(self, edit, start_point=0, issue=None):
         if issue:

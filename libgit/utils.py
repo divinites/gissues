@@ -1,17 +1,22 @@
 import sublime
 import re
 
+
 LINE_ENDS = '\n' if sublime.platform() != 'windows' else '\r\n'
+DEBUG_FLAG = sublime.load_settings("github_issue.sublime-settings").get('debug', 0)
 
 
-def log():
-    pass
+def log(string, debug_flag=1):
+    if debug_flag == 1:
+        print("Github Issue>>>" + string)
 
 
 def find_git():
     if sublime.platform() != 'windows':
+        log('using git')
         return 'git'
     else:
+        log('using git.exe')
         return 'git.exe'
 
 
@@ -32,15 +37,20 @@ class ViewConverter:
         for key, value in info_dict.items():
             prepared_key = key.lower()
             if value == 'False':
+                log(str(key) + "value is " + value)
                 prepared_value = False
             elif value == 'True':
+                log(str(key) + "value is " + value)
                 prepared_value = True
             elif value == 'None':
+                log(str(key) + "value is " + value)
                 prepared_value = None
             elif value.isdigit():
+                log(str(key) + "value is " + value)
                 prepared_value = int(value)
             else:
                 prepared_value = value
+                log(str(key) + "value is " + value)
             prepared_dict[prepared_key] = prepared_value
         return prepared_dict
 
@@ -67,6 +77,7 @@ class ViewConverter:
                 break
             else:
                 pass
+        log("curcial line is " + str(crucial_line))
         return crucial_line
 
     @staticmethod
@@ -77,6 +88,7 @@ class ViewConverter:
             key = matched_item.group(1)
             value = matched_item.group(3)
             info_dict[key] = value
+        log("issue_header is " + str(info_dict))
         return info_dict
 
     @staticmethod
@@ -138,7 +150,7 @@ def create_new_issue_view():
     snippet = ''
     snippet += "# Title         : " + LINE_ENDS
     snippet += "## Assignee     : " + LINE_ENDS
-    snippet += '-' * 30 + "Content" + '-' * 30 + LINE_ENDS
+    snippet += '-' * 10 + "Content" + '-' * 10 + LINE_ENDS
     snippet += LINE_ENDS
     view = sublime.active_window().new_file()
     view.set_syntax_file(
@@ -155,6 +167,7 @@ def compare_issues(original_issue, modified_issue):
     modified_keys = set(modified_issue['issue'].keys())
     original_keys = set(original_issue['issue'].keys())
     intersection_keys = modified_keys.intersection(original_keys)
+    log("intersection_keys are" + str(intersection_keys))
     modified_part = {key: modified_issue['issue'][key]
                      for key in intersection_keys
                      if original_issue['issue'][key] != modified_issue[
@@ -164,10 +177,14 @@ def compare_issues(original_issue, modified_issue):
         additional_part = {key: modified_issue['issue'][key]
                            for key in additional_keys}
         modified_part.update(additional_part)
+    log('original_issue is' + str(original_issue['issue']))
+    log("modified_parts are " + str(modified_part))
     modified_comments = {}
     for comment_id in modified_issue['comments'].keys():
         if modified_issue['comments'][comment_id] != original_issue[
                 'comments'][comment_id]:
             modified_comments[comment_id] = modified_issue['comments'][
                 comment_id]
+    log("original_comments are " + str(original_issue["comments"]))
+    log("modified_comments are " + str(modified_comments))
     return (modified_part, modified_comments)
