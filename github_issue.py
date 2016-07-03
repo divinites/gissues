@@ -15,10 +15,10 @@ def plugin_loaded():
 
 
 class ShowGithubIssueListCommand(sublime_plugin.WindowCommand):
-    def run(self):
+    def run(self, **args):
         global issue_list
         issue_list.find_repo()
-        print_in_view = issue.PrintListInView(issue_list)
+        print_in_view = issue.PrintListInView(issue_list, **args)
         print_in_view.start()
 
 

@@ -62,12 +62,13 @@ class IssueList:
 
 
 class PrintListInView(threading.Thread):
-    def __init__(self, issue_list):
+    def __init__(self, issue_list, **args):
         super(PrintListInView, self).__init__(self)
         self.issue_list = issue_list
+        self.args = args
 
     def run(self):
-        issue_response = self.issue_list.get()
+        issue_response = self.issue_list.get(params=self.args)
         if issue_response.status_code in (200, 201):
             json_list = issue_response.json()
             snippet = ''
