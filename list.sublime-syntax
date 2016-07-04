@@ -1,0 +1,13 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: GitHub Issue List
+
+scope: text.issue.list
+contexts:
+  main:
+    - match: ^(.{12})(.{10})(.*)
+      captures:
+        1: number
+        2: lock
+        3: title

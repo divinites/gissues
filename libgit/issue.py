@@ -72,13 +72,19 @@ class PrintListInView(threading.Thread):
         if issue_response.status_code in (200, 201):
             json_list = issue_response.json()
             snippet = ''
-            snippet += 'Issue Number' + '   ' + 'Locked    ' + 'Issue Title' + LINE_ENDS
+            snippet += 'Issue No.' + '   ' + 'Locked    ' + 'Issue Title' + LINE_ENDS
             for issue in json_list:
                 snippet += "{:<12}{:<10}{}".format(
                     str(issue['number']), issue['locked'],
                     issue['title']) + LINE_ENDS
             view = sublime.active_window().new_file()
+            view.run_command("clear_view")
+            view.run_command(
+                "set_file_type",
+                {"syntax": "Packages/gissues/list.sublime-syntax"})
+            view.settings().set('color_scheme', "Packages/gissues/list.tmTheme")
             view.run_command("insert_issue", {"issue": snippet})
+
             view.set_read_only(True)
             view.set_scratch(True)
         else:
@@ -133,8 +139,9 @@ class PrintIssueInView(threading.Thread):
             self.view.run_command("clear_view")
             self.view.run_command(
                 "set_file_type",
-                {"syntax": "Packages/MarkdownEditing/Markdown.tmLanguage"})
+                {"syntax": "Packages/gissues/issue.tmLanguage"})
             self.view.run_command("insert_issue", {"issue": snippet})
+
             self.view.set_scratch(True)
 
 

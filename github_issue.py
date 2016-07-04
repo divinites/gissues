@@ -23,6 +23,8 @@ class ShowGithubIssueListCommand(sublime_plugin.WindowCommand):
 
 
 class ShowGithubIssueCommand(sublime_plugin.WindowCommand):
+    # def is_enabled(self):
+    #     if view.settings().get('syntax') ==
     def run(self):
         global issue_list, issue_dict
         view = sublime.active_window().active_view()
@@ -56,12 +58,6 @@ class UpdateGithubIssueCommand(sublime_plugin.WindowCommand):
         issue_list.find_repo()
         update_issue = issue.UpdateIssue(issue_list=issue_list, issue_dict=issue_dict)
         update_issue.start()
-
-
-class UpdateIssueViewCommand(sublime_plugin.WindowCommand):
-
-    def run(self):
-        pass
 
 
 class InsertIssueCommand(sublime_plugin.TextCommand):

@@ -1,0 +1,18 @@
+[
+        { "keys": [ "enter" ],
+          "command": "show_github_issue",
+          "context": [{
+            "key": "selector",
+            "operator": "equal",
+            "operand": "text.issue.list",
+          },]
+        },
+        { "keys": [ "right" ],
+          "command": "show_github_issue",
+          "context": [{
+            "key": "selector",
+            "operator": "equal",
+            "operand": "text.issue.list",
+          },]
+        },
+]
