@@ -6,9 +6,31 @@ LINE_ENDS = '\n' if sublime.platform() != 'windows' else '\r\n'
 DEBUG_FLAG = sublime.load_settings("github_issue.sublime-settings").get('debug', 0)
 
 
-def log(string, debug_flag=1):
+def log(string, debug_flag=DEBUG_FLAG):
     if debug_flag == 1:
         print("Github Issue>>>" + string)
+
+
+def format_issue(issue):
+    snippet = ''
+    snippet += "# Title         : " + issue["title"] + LINE_ENDS
+    snippet += "## Number       : " + str(issue['number']) + LINE_ENDS
+    snippet += "## State        : " + issue['state'] + LINE_ENDS
+    snippet += "## Locked       : " + str(issue['locked']) + LINE_ENDS
+    snippet += "## Assignee     : " + str(issue['assignee']) + LINE_ENDS
+    snippet +=  "*" + '-' * 10 + "Content" + '-' * 10 + "*" + LINE_ENDS
+    snippet += filter_line_ends(issue['body']) + LINE_ENDS
+    return snippet
+
+
+def format_comment(comment):
+    snippet = ''
+    snippet += "## Comment ID:  " + str(comment['id']) + LINE_ENDS
+    snippet += "*<commented by " + comment['user'][
+        'login'] + "   UpdateTime: " + comment[
+            'updated_at'] + '>*' + LINE_ENDS
+    snippet += filter_line_ends(comment['body']) + LINE_ENDS
+    return snippet
 
 
 def find_git():
@@ -54,12 +76,24 @@ class ViewConverter:
             prepared_dict[prepared_key] = prepared_value
         return prepared_dict
 
+    def find_region(self, region_start_string, region_end_string):
+        a, b = 0, 0
+        for line, line_region in zip(self.readlines(), self.get_line_regions()):
+            if line.strip().startswith(region_start_string):
+                a = line_region.a
+            if line.strip().startswith(region_end_string):
+                b = line_region.b
+        return (a, b)
+
     def readlines(self):
         lines = []
-        line_regions = self.view.lines(sublime.Region(0, self.view.size()))
+        line_regions = self.get_line_regions()
         for region in line_regions:
             lines.append(self.view.substr(region))
         return lines
+
+    def get_line_regions(self):
+        return self.view.lines(sublime.Region(0, self.view.size()))
 
     @staticmethod
     def split_issue(lines):
@@ -67,14 +101,16 @@ class ViewConverter:
         crucial_line['header_end'] = 0
         crucial_line['comment_start'] = []
         crucial_line['add_comment'] = 0
+        crucial_line['end'] = 0
         for idx, line in enumerate(lines):
-            if line.strip().startswith("-" * 10 + "Content"):
+            if line.strip().startswith("*" + "-" * 10 + "Content"):
                 crucial_line["header_end"] = idx
             elif line.strip().startswith("## Comment ID:"):
                 crucial_line["comment_start"].append(idx)
             elif line.strip().startswith("## Add New Comment:"):
                 crucial_line["add_comment"] = idx
-                break
+            elif line.strip().startswith("*" + "-" * 10 + "END"):
+                crucial_line["end"] = idx
             else:
                 pass
         log("curcial line is " + str(crucial_line))
@@ -98,10 +134,10 @@ class ViewConverter:
                                    crucial_lines['comment_start'][0]])
         else:
             if crucial_lines['add_comment']:
-                return '\n'.join(lines[crucial_lines['header_end'] + 2:
+                return '\n'.join(lines[crucial_lines['header_end'] + 1:
                                        crucial_lines['add_comment']])
             else:
-                return '\n'.join(lines[crucial_lines['header_end'] + 2:])
+                return '\n'.join(lines[crucial_lines['header_end'] + 1:crucial_lines['end']])
 
     @staticmethod
     def get_comment_list(lines, crucial_lines):
@@ -127,7 +163,7 @@ class ViewConverter:
 
     @staticmethod
     def get_new_comment(lines, crucial_lines):
-        return '\n'.join(lines[crucial_lines['add_comment'] + 1:]).strip()
+        return '\n'.join(lines[crucial_lines['add_comment'] + 1: crucial_lines['end']]).strip()
 
 
 def get_issue_post(view):
@@ -150,41 +186,45 @@ def create_new_issue_view():
     snippet = ''
     snippet += "# Title         : " + LINE_ENDS
     snippet += "## Assignee     : " + LINE_ENDS
-    snippet += '-' * 10 + "Content" + '-' * 10 + LINE_ENDS
+    snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + LINE_ENDS
     snippet += LINE_ENDS
+    snippet += "*" + '-' * 10 + "END" + '-' * 10 + "*" + LINE_ENDS
     view = sublime.active_window().new_file()
-    view.set_syntax_file(
-        'Packages/Markdown Extended/Syntaxes/Markdown Extended.sublime-syntax')
-    # view.settings.set('color_scheme', 'Packages/MarkdownEditing/Markdown.tmLanguage')
     view.run_command("set_file_type",
-                     {"syntax":
-                      "Packages/MarkdownEditing/Markdown.tmLanguage"})
+                      {"syntax":
+                       "Packages/gissues/issue.tmLanguage"})
     view.run_command("insert_issue", {"issue": snippet})
     view.set_scratch(True)
 
 
-def compare_issues(original_issue, modified_issue):
-    modified_keys = set(modified_issue['issue'].keys())
+def find_comment_region(view):
+    view_converter = ViewConverter(view)
+    return view_converter.find_region("## Add New Comment:", "*" + "-" * 10 + "END")
+
+
+def compare_issues(original_issue, issue_in_view):
+    modified_keys = set(issue_in_view['issue'].keys())
     original_keys = set(original_issue['issue'].keys())
     intersection_keys = modified_keys.intersection(original_keys)
     log("intersection_keys are" + str(intersection_keys))
-    modified_part = {key: modified_issue['issue'][key]
+    modified_part = {key: issue_in_view['issue'][key]
                      for key in intersection_keys
-                     if original_issue['issue'][key] != modified_issue[
+                     if original_issue['issue'][key] != issue_in_view[
                          'issue'][key]}
     additional_keys = modified_keys.difference(original_keys)
     if additional_keys:
-        additional_part = {key: modified_issue['issue'][key]
+        additional_part = {key: issue_in_view['issue'][key]
                            for key in additional_keys}
         modified_part.update(additional_part)
     log('original_issue is' + str(original_issue['issue']))
     log("modified_parts are " + str(modified_part))
     modified_comments = {}
-    for comment_id in modified_issue['comments'].keys():
-        if modified_issue['comments'][comment_id] != original_issue[
-                'comments'][comment_id]:
-            modified_comments[comment_id] = modified_issue['comments'][
-                comment_id]
+    comment_ids_in_view = set(issue_in_view['comments'].keys())
+    original_comment_ids = set(original_issue['comments'].keys())
+    deleted_comments = original_comment_ids.difference(comment_ids_in_view)
+    for comment_id in issue_in_view['comments'].keys():
+        if issue_in_view['comments'][comment_id] != original_issue['comments'][comment_id]['body']:
+            modified_comments[comment_id] = issue_in_view['comments'][comment_id]
     log("original_comments are " + str(original_issue["comments"]))
     log("modified_comments are " + str(modified_comments))
-    return (modified_part, modified_comments)
+    return (modified_part, modified_comments, deleted_comments)

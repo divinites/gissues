@@ -1,5 +1,6 @@
 from .github import GitHubAccount, get_github_repo_info
-from .utils import LINE_ENDS, filter_line_ends, get_issue_post, compare_issues, log
+from .utils import LINE_ENDS, get_issue_post, compare_issues, log
+from .utils import format_issue, format_comment, find_comment_region
 import sublime
 import threading
 import json
@@ -51,6 +52,13 @@ class IssueList:
         return self.github_account.session.patch(
             issue_url + '/comments/' + str(comment_id), **params)
 
+    def delete_comment(self, comment_id, **params):
+        issue_url = self.github_account.join_issue_url(
+            username=self.username,
+            repo_name=self.repo_name)
+        return self.github_account.session.delete(
+            issue_url + '/comments/' + str(comment_id), **params)
+
     def get_issue(self, issue_number, **params):
         issue_url = self.github_account.join_issue_url(
             username=self.username,
@@ -79,10 +87,11 @@ class PrintListInView(threading.Thread):
                     issue['title']) + LINE_ENDS
             view = sublime.active_window().new_file()
             view.run_command("clear_view")
-            view.run_command(
-                "set_file_type",
-                {"syntax": "Packages/gissues/list.sublime-syntax"})
-            view.settings().set('color_scheme', "Packages/gissues/list.tmTheme")
+            view.run_command("set_file_type",
+                             {"syntax":
+                              "Packages/gissues/list.sublime-syntax"})
+            view.settings().set('color_scheme',
+                                "Packages/gissues/list.tmTheme")
             view.run_command("insert_issue", {"issue": snippet})
 
             view.set_read_only(True)
@@ -108,25 +117,14 @@ class PrintIssueInView(threading.Thread):
             issue = issue_response.json()
             comments = comments_response.json()
             snippet = ''
-            snippet += "# Title         : " + issue["title"] + LINE_ENDS
-            snippet += "## Number       : " + str(issue['number']) + LINE_ENDS
-            snippet += "## State        : " + issue['state'] + LINE_ENDS
-            snippet += "## Locked       : " + str(issue['locked']) + LINE_ENDS
-            snippet += "## Assignee     : " + str(issue[
-                'assignee']) + LINE_ENDS
-            snippet += '-' * 10 + "Content" + '-' * 10 + LINE_ENDS
-            snippet += filter_line_ends(issue['body']) + LINE_ENDS
-            # snippet += LINE_ENDS
+            snippet += format_issue(issue)
             comment_dict = {}
             for comment in comments:
-                comment_dict[comment['id']] = comment['body']
-                snippet += "## Comment ID:  " + str(comment['id']) + LINE_ENDS
-                snippet += "*commented by " + comment['user'][
-                    'login'] + "   UpdateTime: " + comment[
-                        'updated_at'] + '*' + LINE_ENDS
-                snippet += filter_line_ends(comment['body']) + LINE_ENDS
-                # snippet += LINE_ENDS
+                comment_dict[comment['id']] = comment
+                snippet += format_comment(comment)
             snippet += "## Add New Comment:" + LINE_ENDS
+            snippet += LINE_ENDS
+            snippet += "*" + "-" * 10 + "END" + '-' * 10 + "*"
             if not self.view:
                 self.view = sublime.active_window().new_file()
             issue_dict = self.issue_dict.get()
@@ -137,9 +135,9 @@ class PrintIssueInView(threading.Thread):
             # view.settings.set('color_scheme', 'Packages/MarkdownEditing/Markdown.tmLanguage')
             self.issue_dict.put(issue_dict)
             self.view.run_command("clear_view")
-            self.view.run_command(
-                "set_file_type",
-                {"syntax": "Packages/gissues/issue.tmLanguage"})
+            self.view.run_command("set_file_type",
+                                  {"syntax":
+                                   "Packages/gissues/issue.tmLanguage"})
             self.view.run_command("insert_issue", {"issue": snippet})
 
             self.view.set_scratch(True)
@@ -150,6 +148,8 @@ class IssueManipulate(threading.Thread):
         super(IssueManipulate, self).__init__(self)
         if not view:
             self.view = sublime.active_window().active_view()
+        else:
+            self.view = view
         self.issue_dict = issue_dict
         self.issue_list = issue_list
 
@@ -160,8 +160,28 @@ class PostNewIssue(IssueManipulate):
         log("preparing updating issue " + str(issue_post['issue']))
         post_result = self.issue_list.post_issue(
             data=json.dumps(issue_post['issue']))
-        if post_result.status_code in(200, 201):
+        if post_result.status_code in (200, 201):
             sublime.status_message("Issue Posted")
+            if self.issue_dict:
+                issue_dict = self.issue_dict.get()
+            issue_dict[self.view.id()] = {'issue': post_result.json(), 'comments': {}}
+            self.issue_dict.put(issue_dict)
+            issue = post_result.json()
+            snippet = format_issue(issue)
+            snippet += "## Add New Comment:" + LINE_ENDS
+            snippet += LINE_ENDS
+            snippet += "*" + "-" * 10 + "END" + '-' * 10 + "*"
+            self.view.run_command("clear_view")
+            self.view.run_command("set_file_type",
+                                  {"syntax":
+                                   "Packages/gissues/issue.tmLanguage"})
+            self.view.run_command("insert_issue", {"issue": snippet})
+            self.view.run_command("insert_issue",
+                                  {"start_point": self.view.size(),
+                                   "issue":
+                                   "\n*<Issue number {} created at {}>*".format(
+                                       str(post_result.json()['id']),
+                                       post_result.json()['created_at'])})
         else:
             sublime.status_message("Issue not Posted, please try again.")
 
@@ -171,46 +191,83 @@ class UpdateIssue(IssueManipulate):
         view_id = self.view.id()
         issue_dict = self.issue_dict.get()
         original_issue = issue_dict[view_id]
+        last_updated_time = original_issue['issue']['updated_at']
         modified_issue = get_issue_post(self.view)
-        issue_change, comment_change = compare_issues(original_issue,
-                                                      modified_issue)
-        updating_issue = self.issue_list.update_issue(
-            original_issue['issue']['number'],
-            data=json.dumps(issue_change))
-        if updating_issue.status_code in (200, 201):
-            sublime.status_message("Issue updated")
-        else:
-            sublime.status_message("Issue update fails")
-            log("issue update fails, error code " + str(updating_issue.status_code))
-        for comment_id, content in comment_change.items():
-            updating_comment = self.issue_list.update_comment(
-                comment_id=comment_id,
-                data=json.dumps({'body': content}))
-            if updating_comment.status_code in (200, 201):
-                sublime.status_message("Comment updated")
+        issue_change, comment_change, deleted_comments = compare_issues(original_issue,
+                                                                        modified_issue)
+        if issue_change:
+            updating_issue = self.issue_list.update_issue(
+                original_issue['issue']['number'],
+                data=json.dumps(issue_change))
+            if updating_issue.status_code in (200, 201):
+                sublime.status_message("Issue updated")
+                issue_dict[view_id]['issue'] = updating_issue.json()
+                if updating_issue.json()['updated_at'] != last_updated_time:
+                    self.view.run_command("insert_issue",
+                                          {"start_point": self.view.size(),
+                                           "issue":
+                                           "\n*<Issue number {} updated at {}>*".format(
+                                               str(updating_issue.json()['id']),
+                                               updating_issue.json()['updated_at'])})
             else:
-                sublime.status_message("Comment update fails")
-                log("issue update fails, error code " + str(updating_comment.status_code))
+                sublime.status_message("Issue update fails")
+                log("issue update fails, error code " + str(
+                    updating_issue.status_code))
+        if comment_change:
+            for comment_id, content in comment_change.items():
+                updating_comment = self.issue_list.update_comment(
+                    comment_id=comment_id,
+                    data=json.dumps({'body': content}))
+                if updating_comment.status_code in (200, 201):
+                    sublime.status_message("Comment updated")
+                    issue_dict[view_id]["comments"][comment_id] = updating_comment.json()
+                    self.view.run_command("insert_issue",
+                                          {"start_point": self.view.size(),
+                                           "issue":
+                                           "\n*<Comment ID {} updated at {}>*".format(
+                                               str(comment_id),
+                                               updating_comment.json()['updated_at'])})
+                else:
+                    sublime.status_message("Comment update fails")
+                    log("issue update fails, error code " + str(
+                        updating_comment.status_code))
+        if deleted_comments:
+            for comment_id in deleted_comments:
+                deleted_comment = self.issue_list.delete_comment(comment_id=comment_id)
+                if deleted_comment.status_code == 204:
+                    del issue_dict[view_id]["comments"][comment_id]
+                    sublime.status_message("Comment deleted.")
+                    self.view.run_command("insert_issue",
+                                          {"start_point": self.view.size(),
+                                           "issue":
+                                           "\n*<Comment ID {} deleted.>*".format(
+                                               str(comment_id))})
+                else:
+                    sublime.status_message("Fail to delete comment!")
         if modified_issue['new_comment']:
             new_comment = self.issue_list.post_comment(
                 modified_issue['issue']['number'],
                 data=json.dumps({'body': modified_issue['new_comment']}))
             if new_comment.status_code in (200, 201):
                 sublime.status_message("Comment Posted")
+                issue_dict[view_id]["comments"][new_comment.json()['id']] = new_comment.json()
+                snippet = format_comment(new_comment.json())
+                snippet += "## Add New Comment:" + LINE_ENDS
+                snippet += LINE_ENDS
+                snippet += "*" + "-" * 10 + "END" + '-' * 10 + "*"
+                a, b = find_comment_region(self.view)
+                self.view.run_command("replace_issue", {"start": a, "end": b, "snippet": snippet})
+                self.view.run_command("insert_issue",
+                                      {"start_point": self.view.size(),
+                                       "issue":
+                                       "\n*<Comment ID {} created at {}>*".format(
+                                           str(new_comment.json()['id']),
+                                           new_comment.json()['created_at'])})
+                comment_id = new_comment.json()['id']
+                log("new comment id is " + str(comment_id))
+
             else:
                 sublime.status_message("Comment post fails")
-                log("comment post fails, error code " + str(new_comment.status_code))
+                log("comment post fails, error code " + str(
+                    new_comment.status_code))
         self.issue_dict.put(issue_dict)
-        # print_new_issue = PrintIssueInView(self.issue_list, original_issue['issue']['id'], self.issue_dict, view=self.view)
-        # print_new_issue.start()
-        # class UpdateComment(IssueManipulate):
-        #     def run(self, issue_list):
-        #         comment_ids, comment_content = ViewConverter.get_comment_list(
-        #             self.view_lines, self.crucial_lines)
-
-        # class PostNewComment(IssueManipulate):
-        #     def run(self, issue_list):
-        #         comment_post = {}
-        #         comment_post['body'] = ViewConverter.get_new_comment(
-        #             self.view_lines, self.crucial_lines)
-        #         issue_list.post_comment(json=json.dumps(comment_post))

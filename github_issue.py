@@ -3,6 +3,7 @@ import sublime_plugin
 from gissues.libgit import issue
 from gissues.libgit import utils
 import re
+import os
 from queue import Queue
 
 
@@ -23,8 +24,13 @@ class ShowGithubIssueListCommand(sublime_plugin.WindowCommand):
 
 
 class ShowGithubIssueCommand(sublime_plugin.WindowCommand):
-    # def is_enabled(self):
-    #     if view.settings().get('syntax') ==
+    def is_enabled(self):
+        current_view = sublime.active_window().active_view()
+        _, syntax_name = os.path.split(current_view.settings().get('syntax'))
+        if syntax_name == "list.sublime-syntax":
+            return True
+        return False
+
     def run(self):
         global issue_list, issue_dict
         view = sublime.active_window().active_view()
@@ -43,15 +49,27 @@ class NewGithubIssueCommand(sublime_plugin.WindowCommand):
 
 
 class PostGithubIssueCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        current_view = sublime.active_window().active_view()
+        _, syntax_name = os.path.split(current_view.settings().get('syntax'))
+        if syntax_name == "issue.tmLanguage":
+            return True
+        return False
 
     def run(self):
-        global issue_list
+        global issue_list, issue_dict
         issue_list.find_repo()
-        post_issue = issue.PostNewIssue(issue_list=issue_list)
+        post_issue = issue.PostNewIssue(issue_list=issue_list, issue_dict=issue_dict)
         post_issue.start()
 
 
 class UpdateGithubIssueCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        current_view = sublime.active_window().active_view()
+        _, syntax_name = os.path.split(current_view.settings().get('syntax'))
+        if syntax_name == "issue.tmLanguage":
+            return True
+        return False
 
     def run(self):
         global issue_list, issue_dict
@@ -64,6 +82,12 @@ class InsertIssueCommand(sublime_plugin.TextCommand):
     def run(self, edit, start_point=0, issue=None):
         if issue:
             self.view.insert(edit, start_point, issue)
+
+
+class ReplaceIssueCommand(sublime_plugin.TextCommand):
+    def run(self, edit, start, end, snippet):
+        if snippet:
+            self.view.replace(edit, sublime.Region(start, end), snippet)
 
 
 class ClearViewCommand(sublime_plugin.TextCommand):
