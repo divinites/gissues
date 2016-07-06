@@ -6,9 +6,9 @@ It was initially inspired by github-issues.vim.
 
 All commands are runnable through Command Palette, please have a look at *Command Palette.sublime-commands* to get more ideas about the commands available. 
 
-some shortcut keys are pre-defined:
+Some shortcut keys are pre-defined:
 
-- In an issue List view, Press **Enter** or **Right Arrow** to open a paticular issue
+- In an issue List view, Press **Enter** or **Right Arrow** to open a particular issue
 - In an issue view, Press **Super+S** to sync current issue or comments with Github
 - In an issue view, Press **Super+Shift+S** to post a new issue to Github
 

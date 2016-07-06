@@ -1,0 +1,13 @@
+{
+   "linux": {
+        "*": [
+            "requests",
+            "ssl-linux"
+        ]
+    },
+    "*": {
+        "*": [
+            "requests"
+        ]
+   }
+}
