@@ -1,1 +1,2 @@
-Update: all basic functions work.
+- Update: all basic functions work.
+- Update: Modified Readme.md
