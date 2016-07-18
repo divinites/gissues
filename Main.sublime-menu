@@ -18,7 +18,7 @@
                         [
                             {
                                 "command": "open_file",
-                                "args": {"file": "${packages}/gissues/github_issue.sublime-settings"},
+                                "args": {"file": "${packages}/GitHubIssue/github_issue.sublime-settings"},
                                 "caption": "Settings – Default"
                             },
                             {
@@ -30,7 +30,7 @@
                             {
                                 "command": "open_file",
                                 "args": {
-                                    "file": "${packages}/gissues/Default.sublime-keymap",
+                                    "file": "${packages}/GitHubIssue/Default.sublime-keymap",
                                     "platform": "OSX"
                                 },
                                 "caption": "Key Bindings – Default"
@@ -38,7 +38,7 @@
                             {
                                 "command": "open_file",
                                 "args": {
-                                    "file": "${packages}/gissues/Default.sublime-keymap",
+                                    "file": "${packages}/GitHubIssue/Default.sublime-keymap",
                                     "platform": "Linux"
                                 },
                                 "caption": "Key Bindings – Default"
@@ -46,7 +46,7 @@
                             {
                                 "command": "open_file",
                                 "args": {
-                                    "file": "${packages}/gissues/Default.sublime-keymap",
+                                    "file": "${packages}/GitHubIssue/Default.sublime-keymap",
                                     "platform": "Windows"
                                 },
                                 "caption": "Key Bindings – Default"
