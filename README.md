@@ -16,7 +16,7 @@ Set-ups:
 - There is a sample configuration in Settings - Default
 - Four options available:
 
-```
+```json
 {
 "token": "",
 "username": "",
@@ -37,7 +37,7 @@ After installing this plug-in, it would be better to restart sublime text to mak
 
 ## Usage
 
-All commands are runnable through Command Palette, please have a look at *Command Palette.sublime-commands* to get more ideas about the commands available. 
+All commands are runnable through Command Palette, please have a look at *Command Palette.sublime-commands* to get more ideas about the commands available.
 
 Some shortcut keys are pre-defined:
 

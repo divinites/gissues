@@ -1,7 +1,7 @@
 import sublime
 import sublime_plugin
-from gissues.libgit import issue
-from gissues.libgit import utils
+from .libgit import issue
+from .libgit import utils
 import re
 import os
 from queue import Queue

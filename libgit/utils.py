@@ -25,11 +25,12 @@ def format_issue(issue):
 
 def format_comment(comment):
     snippet = ''
-    snippet += "## Comment ID:  " + str(comment['id']) + LINE_ENDS
+    snippet += "*" + '-' * 10 + "Start <Comment " + str(comment['id']) + '>' + '-' * 10 + "*" + LINE_ENDS
     snippet += "*<commented by " + comment['user'][
         'login'] + "   UpdateTime: " + comment[
             'updated_at'] + '>*' + LINE_ENDS
     snippet += filter_line_ends(comment['body']) + LINE_ENDS
+    snippet += "*" + '-' * 10 + "End <Comment " + str(comment['id']) + '>' + '-' * 10 + "*" + LINE_ENDS
     return snippet
 
 
@@ -100,13 +101,16 @@ class ViewConverter:
         crucial_line = {}
         crucial_line['header_end'] = 0
         crucial_line['comment_start'] = []
+        crucial_line['comment_end'] = []
         crucial_line['add_comment'] = 0
         crucial_line['end'] = 0
         for idx, line in enumerate(lines):
             if line.strip().startswith("*" + "-" * 10 + "Content"):
                 crucial_line["header_end"] = idx
-            elif line.strip().startswith("## Comment ID:"):
+            elif line.strip().startswith("*" + '-' * 10 + "Start <Comment"):
                 crucial_line["comment_start"].append(idx)
+            elif line.strip().startswith("*" + '-' * 10 + "End <Comment"):
+                crucial_line["comment_end"].append(idx)
             elif line.strip().startswith("## Add New Comment:"):
                 crucial_line["add_comment"] = idx
             elif line.strip().startswith("*" + "-" * 10 + "END"):
@@ -148,15 +152,11 @@ class ViewConverter:
             while comment_pointer < number_of_comments:
                 comment_headline_number = crucial_lines['comment_start'][
                     comment_pointer]
-                if comment_pointer + 1 < number_of_comments:
-                    next_headline_number = crucial_lines['comment_start'][
-                        comment_pointer + 1]
-                else:
-                    next_headline_number = crucial_lines['add_comment']
-                comment_id = int(re.search('(?<=Comment ID:).*', lines[
+                comment_endline_number = crucial_lines['comment_end'][comment_pointer]
+                comment_id = int(re.search(r'(?<=\<Comment\s).*(?=>)', lines[
                     comment_headline_number]).group(0).strip())
                 comment_body = '\n'.join(lines[comment_headline_number + 2:
-                                               next_headline_number])
+                                               comment_endline_number])
                 comment_dict[comment_id] = comment_body
                 comment_pointer += 1
         return comment_dict
