@@ -1,0 +1,34 @@
+[
+        { "keys": [ "enter" ],
+          "command": "show_github_issue",
+          "context": [{
+            "key": "selector",
+            "operator": "equal",
+            "operand": "text.issue.list",
+          },]
+        },
+        { "keys": [ "right" ],
+          "command": "show_github_issue",
+          "context": [{
+            "key": "selector",
+            "operator": "equal",
+            "operand": "text.issue.list",
+          },]
+        },
+        { "keys": [ "ctrl+s" ],
+          "command": "update_github_issue",
+          "context": [{
+            "key": "selector",
+            "operator": "equal",
+            "operand": "text.html.github.issue",
+          },]
+        },
+        { "keys": [ "ctrl+shift+s" ],
+          "command": "post_github_issue",
+          "context": [{
+            "key": "selector",
+            "operator": "equal",
+            "operand": "text.html.github.issue",
+          },]
+        },
+]
