@@ -2,6 +2,7 @@ import sublime
 import sublime_plugin
 from .libgit import issue
 from .libgit import utils
+from .libgit import github
 import re
 import os
 from queue import Queue
@@ -18,7 +19,11 @@ def plugin_loaded():
 class ShowGithubIssueListCommand(sublime_plugin.WindowCommand):
     def run(self, **args):
         global issue_list
-        issue_list.find_repo()
+        repo_list = github.get_repo_list()
+        entries = ["manually enter repository..."]
+        entries.extend(["{}/{}".format(repo[0], repo[1]) for repo in repo_list])
+        current_window = sublime.active_window()
+        current_window.show_quick_panel(entries, issue_list.find_repo)
         print_in_view = issue.PrintListInView(issue_list, **args)
         print_in_view.start()
 

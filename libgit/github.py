@@ -2,6 +2,7 @@ import requests
 import sublime
 import os
 import subprocess
+from subprocess import CalledProcessError
 from .utils import find_git
 import re
 
@@ -34,22 +35,47 @@ class GitHubAccount:
             raise Exception("Please check whether the repo_name is correct.")
 
 
-def get_github_repo_info():
+def on_repo_selection(selection):
+
+    def on_done(content):
+        self.username, self.repo_name = content.split('/')
+
+    current_window = sublime.active_window()
+    if selection >= 0:
+        if selection == 0:
+            current_window.run_command('hide_panel')
+            current_window.show_input_panel('Enter repo in the format username/repo_name:', '', on_done, None, None)
+        else:
+            self.username, self.repo_name =
+    log("username and repo_name are {} and {}".format(self.username,
+                                                      self.repo_name))
+
+
+
+def get_repo_list():
+    repo_list = []
+    folder_list = sublime.active_window().folders()
+    if folder_list:
+        for folder_path in folder_list:
+            repo_info = get_github_repo_info(folder_path)
+            if repo_info != (-1, -1):
+                repo_list.append(repo_info)
+    return repo_list
+
+
+def get_github_repo_info(folder_path):
     '''
     Find the repo name. It essentially does two attempts:
     - First it try the open folder's name
     - If the first attempt fails, it tries to run "git config --get remote.origin.url" in current directory
     '''
-    current_window = sublime.active_window()
-    file_name = current_window.active_view().file_name()
-    try:
-        folder = os.path.abspath(os.path.dirname(file_name))
-    except:
-        folder = current_window.folders()[0]
     git = find_git()
-    cmd = [git, '-C', folder, 'config', '--get', 'remote.origin.url']
+    cmd = [git, '-C', folder_path, 'config', '--get', 'remote.origin.url']
     try:
-        repo_url = subprocess.check_output(' '.join(cmd), shell=True)
+        try:
+            repo_url = subprocess.check_output(' '.join(cmd), shell=True)
+        except CalledProcessError:
+            return (-1, -1)
         repo_url = repo_url.decode('utf-8')
         if repo_url.startswith('https'):
             repo_url = re.search(r'(?<=https://github.com/).*', repo_url).group(0)

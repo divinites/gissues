@@ -1,4 +1,4 @@
-from .github import GitHubAccount, get_github_repo_info
+from .github import GitHubAccount, get_repo_list
 from .utils import LINE_ENDS, get_issue_post, compare_issues, log
 from .utils import format_issue, format_comment, find_comment_region
 import sublime
@@ -13,10 +13,8 @@ class IssueList:
         self.username = None
         # self.repo_name = 'github-issues'
 
-    def find_repo(self):
-        self.username, self.repo_name = get_github_repo_info()
-        log("username and repo_name are {} and {}".format(self.username,
-                                                          self.repo_name))
+    def find_repo(self, selection):
+        pass
 
     def get(self, **params):
         issue_list_url = self.github_account.join_issue_url(
