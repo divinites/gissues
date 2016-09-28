@@ -4,6 +4,7 @@ import os
 import subprocess
 from subprocess import CalledProcessError
 from .utils import find_git
+from .utils import log
 import re
 
 
@@ -35,32 +36,46 @@ class GitHubAccount:
             raise Exception("Please check whether the repo_name is correct.")
 
 
-def on_repo_selection(selection):
+class LoadRepoList:
 
-    def on_done(content):
-        self.username, self.repo_name = content.split('/')
+    def __init__(self):
+        self.username = None
+        self.repo_name = None
+        self.window = sublime.active_window()
+        self.entries = None
 
-    current_window = sublime.active_window()
-    if selection >= 0:
-        if selection == 0:
-            current_window.run_command('hide_panel')
-            current_window.show_input_panel('Enter repo in the format username/repo_name:', '', on_done, None, None)
+    def format_entries(self):
+        repo_list = []
+        folder_list = sublime.active_window().folders()
+        if folder_list:
+            for folder_path in folder_list:
+                repo_info = get_github_repo_info(folder_path)
+                if repo_info != (-1, -1):
+                    repo_list.append(repo_info)
+        entries = ["manually enter repository..."]
+        entries.extend(["{}/{}".format(repo[0], repo[1]) for repo in repo_list])
+        self.entries = entries
+        print(self.entries)
+
+    def show_selection_panel(self):
+        self.window.show_quick_panel(self.entries, self.on_repo_selection)
+
+    def on_done(self, content):
+        if '/' in content:
+            self.username, self.repo_name = content.split('/')
+            print(self.username + '/' + self.repo_name)
         else:
-            self.username, self.repo_name =
-    log("username and repo_name are {} and {}".format(self.username,
-                                                      self.repo_name))
+            raise Exception("Please enter repo in the format username/repo_name")
 
-
-
-def get_repo_list():
-    repo_list = []
-    folder_list = sublime.active_window().folders()
-    if folder_list:
-        for folder_path in folder_list:
-            repo_info = get_github_repo_info(folder_path)
-            if repo_info != (-1, -1):
-                repo_list.append(repo_info)
-    return repo_list
+    def on_repo_selection(self, selection):
+        if selection >= 0:
+            if selection == 0:
+                self.window.run_command('hide_panel')
+                self.window.show_input_panel('Enter repo in the format username/repo_name:', '', self.on_done, None, None)
+            else:
+                print(selection)
+                print(self.entries[selection])
+                self.username, self.repo_name = self.entries[selection].split('/')
 
 
 def get_github_repo_info(folder_path):

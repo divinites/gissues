@@ -1,4 +1,4 @@
-from .github import GitHubAccount, get_repo_list
+from .github import GitHubAccount
 from .utils import LINE_ENDS, get_issue_post, compare_issues, log
 from .utils import format_issue, format_comment, find_comment_region
 import sublime
@@ -6,27 +6,27 @@ import threading
 import json
 
 
-class IssueList:
+class IssueObj:
     def __init__(self, settings):
         self.github_account = GitHubAccount(settings)
         self.repo_name = None
         self.username = None
-        # self.repo_name = 'github-issues'
 
-    def find_repo(self, selection):
-        pass
+    def find_repo(self, username, repo_name):
+        self.username = username
+        self.repo_name = repo_name
 
     def get(self, **params):
-        issue_list_url = self.github_account.join_issue_url(
+        issue_url = self.github_account.join_issue_url(
             username=self.username,
             repo_name=self.repo_name)
-        return self.github_account.session.get(issue_list_url, **params)
+        return self.github_account.session.get(issue_url, **params)
 
     def post_issue(self, **params):
-        issue_list_url = self.github_account.join_issue_url(
+        issue_url = self.github_account.join_issue_url(
             username=self.username,
             repo_name=self.repo_name)
-        return self.github_account.session.post(issue_list_url, **params)
+        return self.github_account.session.post(issue_url, **params)
 
     def update_issue(self, issue_number, **params):
         issue_url = self.github_account.join_issue_url(
