@@ -12,9 +12,18 @@ class IssueObj:
         self.repo_name = None
         self.username = None
 
-    def find_repo(self, username, repo_name):
+    def get_repo(self, username, repo_name):
         self.username = username
         self.repo_name = repo_name
+
+    def find_repo(self, view, repo_storage):
+        repo_dictionary = repo_storage.get()
+        view_id = view.id()
+        if view_id in repo_dictionary:
+            self.username, self.repo_name = repo_dictionary[view_id]
+            repo_storage.put(repo_dictionary)
+        else:
+            raise Exception("Which repository should I post?")
 
     def get(self, **params):
         issue_url = self.github_account.join_issue_url(
@@ -68,10 +77,11 @@ class IssueObj:
 
 
 class PrintListInView(threading.Thread):
-    def __init__(self, issue_list, **args):
+    def __init__(self, issue_list, repo_storage, **args):
         super(PrintListInView, self).__init__(self)
         self.issue_list = issue_list
         self.args = args
+        self.repo_storage = repo_storage
 
     def run(self):
         issue_response = self.issue_list.get(params=self.args)
@@ -87,13 +97,16 @@ class PrintListInView(threading.Thread):
             view.run_command("clear_view")
             view.run_command("set_file_type",
                              {"syntax":
-                              "Packages/GitHubIssue/list.sublime-syntax"})
+                              "Packages/gissues/list.sublime-syntax"})
             view.settings().set('color_scheme',
-                                "Packages/GitHubIssue/list.tmTheme")
+                                "Packages/gissues/list.tmTheme")
             view.run_command("insert_issue", {"issue": snippet})
 
             view.set_read_only(True)
             view.set_scratch(True)
+            repo_dictionary = self.repo_storage.get()
+            repo_dictionary[view.id()] = (self.issue_list.username, self.issue_list.repo_name)
+            self.repo_storage.put(repo_dictionary)
         else:
             sublime.status_message(
                 "Cannot obtain issue list, error code {}".format(str(
@@ -135,7 +148,7 @@ class PrintIssueInView(threading.Thread):
             self.view.run_command("clear_view")
             self.view.run_command("set_file_type",
                                   {"syntax":
-                                   "Packages/GitHubIssue/issue.tmLanguage"})
+                                   "Packages/gissues/issue.tmLanguage"})
             self.view.run_command("insert_issue", {"issue": snippet})
 
             self.view.set_scratch(True)
@@ -172,7 +185,7 @@ class PostNewIssue(IssueManipulate):
             self.view.run_command("clear_view")
             self.view.run_command("set_file_type",
                                   {"syntax":
-                                   "Packages/GitHubIssue/issue.tmLanguage"})
+                                   "Packages/gissues/issue.tmLanguage"})
             self.view.run_command("insert_issue", {"issue": snippet})
             self.view.run_command("insert_issue",
                                   {"start_point": self.view.size(),

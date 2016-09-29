@@ -192,7 +192,7 @@ def create_new_issue_view():
     view = sublime.active_window().new_file()
     view.run_command("set_file_type",
                       {"syntax":
-                       "Packages/GitHubIssue/issue.tmLanguage"})
+                       "Packages/gissues/issue.tmLanguage"})
     view.run_command("insert_issue", {"issue": snippet})
     view.set_scratch(True)
 

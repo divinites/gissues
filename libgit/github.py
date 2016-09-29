@@ -36,48 +36,6 @@ class GitHubAccount:
             raise Exception("Please check whether the repo_name is correct.")
 
 
-class LoadRepoList:
-
-    def __init__(self):
-        self.username = None
-        self.repo_name = None
-        self.window = sublime.active_window()
-        self.entries = None
-
-    def format_entries(self):
-        repo_list = []
-        folder_list = sublime.active_window().folders()
-        if folder_list:
-            for folder_path in folder_list:
-                repo_info = get_github_repo_info(folder_path)
-                if repo_info != (-1, -1):
-                    repo_list.append(repo_info)
-        entries = ["manually enter repository..."]
-        entries.extend(["{}/{}".format(repo[0], repo[1]) for repo in repo_list])
-        self.entries = entries
-        print(self.entries)
-
-    def show_selection_panel(self):
-        self.window.show_quick_panel(self.entries, self.on_repo_selection)
-
-    def on_done(self, content):
-        if '/' in content:
-            self.username, self.repo_name = content.split('/')
-            print(self.username + '/' + self.repo_name)
-        else:
-            raise Exception("Please enter repo in the format username/repo_name")
-
-    def on_repo_selection(self, selection):
-        if selection >= 0:
-            if selection == 0:
-                self.window.run_command('hide_panel')
-                self.window.show_input_panel('Enter repo in the format username/repo_name:', '', self.on_done, None, None)
-            else:
-                print(selection)
-                print(self.entries[selection])
-                self.username, self.repo_name = self.entries[selection].split('/')
-
-
 def get_github_repo_info(folder_path):
     '''
     Find the repo name. It essentially does two attempts:
