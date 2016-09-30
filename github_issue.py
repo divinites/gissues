@@ -9,8 +9,6 @@ import logging
 from queue import Queue
 from functools import partial
 
-logging.basicConfig(filename='example.log', level=logging.DEBUG)
-
 
 def plugin_loaded():
     global active_issue_obj, issue_obj_storage, repo_info_storage
@@ -44,18 +42,13 @@ class ShowGithubIssueCommand(sublime_plugin.WindowCommand):
         target_line = view.substr(view.line(view.sel()[0]))
         match_id = re.search(r'^\d+(?=\s)', target_line)
         issue_number = int(match_id.group(0))
-        view_id = view.id()
-        repo_info_dictionary = repo_info_storage.get()
-        logging.debug("view_id is in repo_info_dictionary: " + str(view_id in repo_info_dictionary))
-        if view_id in repo_info_dictionary:
+        try:
             active_issue_obj.find_repo(view, repo_info_storage)
-            repo_info_storage.put(repo_info_dictionary)
-            logging.debug("put back repo_dictionary in the queue")
             print_in_view = issue.PrintIssueInView(
                 active_issue_obj, issue_number, issue_obj_storage)
             print_in_view.start()
-        else:
-            repo_info_storage.put(repo_info_dictionary)
+        except:
+            # repo_info_storage.put(repo_info_dictionary)
             raise Exception("Cannot find repo information!")
 
 
