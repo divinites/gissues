@@ -99,9 +99,9 @@ class PrintListInView(threading.Thread):
             view.run_command("clear_view")
             view.run_command("set_file_type",
                              {"syntax":
-                              "Packages/gissues/list.sublime-syntax"})
+                              "Packages/GitHubIssue/list.sublime-syntax"})
             view.settings().set('color_scheme',
-                                "Packages/gissues/list.tmTheme")
+                                "Packages/GitHubIssue/list.tmTheme")
             view.run_command("insert_issue", {"issue": snippet})
 
             view.set_read_only(True)
@@ -150,7 +150,7 @@ class PrintIssueInView(threading.Thread):
             self.view.run_command("clear_view")
             self.view.run_command("set_file_type",
                                   {"syntax":
-                                   "Packages/gissues/issue.tmLanguage"})
+                                   "Packages/GitHubIssue/issue.tmLanguage"})
             self.view.run_command("insert_issue", {"issue": snippet})
 
             self.view.set_scratch(True)
@@ -188,7 +188,7 @@ class PostNewIssue(IssueManipulate):
             self.view.run_command("clear_view")
             self.view.run_command("set_file_type",
                                   {"syntax":
-                                   "Packages/gissues/issue.tmLanguage"})
+                                   "Packages/GitHubIssue/issue.tmLanguage"})
             self.view.run_command("insert_issue", {"issue": snippet})
             logging.debug("set syntax")
             self.view.run_command("insert_issue",
