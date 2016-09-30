@@ -1,10 +1,8 @@
 import requests
-import sublime
 import os
 import subprocess
 from subprocess import CalledProcessError
 from .utils import find_git
-from .utils import log
 import re
 
 

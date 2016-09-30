@@ -1,14 +1,9 @@
 import sublime
 import re
-
+import logging
 
 LINE_ENDS = '\n' if sublime.platform() != 'windows' else '\r\n'
 DEBUG_FLAG = sublime.load_settings("github_issue.sublime-settings").get('debug', 0)
-
-
-def log(string, debug_flag=DEBUG_FLAG):
-    if debug_flag == 1:
-        print("Github Issue>>>" + string)
 
 
 def format_issue(issue):
@@ -18,7 +13,7 @@ def format_issue(issue):
     snippet += "## State        : " + issue['state'] + LINE_ENDS
     snippet += "## Locked       : " + str(issue['locked']) + LINE_ENDS
     snippet += "## Assignee     : " + str(issue['assignee']) + LINE_ENDS
-    snippet +=  "*" + '-' * 10 + "Content" + '-' * 10 + "*" + LINE_ENDS
+    snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + LINE_ENDS
     snippet += filter_line_ends(issue['body']) + LINE_ENDS
     return snippet
 
@@ -36,10 +31,10 @@ def format_comment(comment):
 
 def find_git():
     if sublime.platform() != 'windows':
-        log('using git')
+        logging.debug('using git')
         return 'git'
     else:
-        log('using git.exe')
+        logging.debug('using git.exe')
         return 'git.exe'
 
 
@@ -60,20 +55,20 @@ class ViewConverter:
         for key, value in info_dict.items():
             prepared_key = key.lower()
             if value == 'False':
-                log(str(key) + "value is " + value)
+                logging.debug(str(key) + "value is " + value)
                 prepared_value = False
             elif value == 'True':
-                log(str(key) + "value is " + value)
+                logging.debug(str(key) + "value is " + value)
                 prepared_value = True
             elif value == 'None':
-                log(str(key) + "value is " + value)
+                logging.debug(str(key) + "value is " + value)
                 prepared_value = None
             elif value.isdigit():
-                log(str(key) + "value is " + value)
+                logging.debug(str(key) + "value is " + value)
                 prepared_value = int(value)
             else:
                 prepared_value = value
-                log(str(key) + "value is " + value)
+                logging.debug(str(key) + "value is " + value)
             prepared_dict[prepared_key] = prepared_value
         return prepared_dict
 
@@ -117,7 +112,7 @@ class ViewConverter:
                 crucial_line["end"] = idx
             else:
                 pass
-        log("curcial line is " + str(crucial_line))
+        logging.debug("curcial line is " + str(crucial_line))
         return crucial_line
 
     @staticmethod
@@ -128,7 +123,7 @@ class ViewConverter:
             key = matched_item.group(1)
             value = matched_item.group(3)
             info_dict[key] = value
-        log("issue_header is " + str(info_dict))
+        logging.debug("issue_header is " + str(info_dict))
         return info_dict
 
     @staticmethod
@@ -206,7 +201,7 @@ def compare_issues(original_issue, issue_in_view):
     modified_keys = set(issue_in_view['issue'].keys())
     original_keys = set(original_issue['issue'].keys())
     intersection_keys = modified_keys.intersection(original_keys)
-    log("intersection_keys are" + str(intersection_keys))
+    logging.debug("intersection_keys are" + str(intersection_keys))
     modified_part = {key: issue_in_view['issue'][key]
                      for key in intersection_keys
                      if original_issue['issue'][key] != issue_in_view[
@@ -216,8 +211,8 @@ def compare_issues(original_issue, issue_in_view):
         additional_part = {key: issue_in_view['issue'][key]
                            for key in additional_keys}
         modified_part.update(additional_part)
-    log('original_issue is' + str(original_issue['issue']))
-    log("modified_parts are " + str(modified_part))
+    logging.debug('original_issue is' + str(original_issue['issue']))
+    logging.debug("modified_parts are " + str(modified_part))
     modified_comments = {}
     comment_ids_in_view = set(issue_in_view['comments'].keys())
     original_comment_ids = set(original_issue['comments'].keys())
@@ -225,6 +220,6 @@ def compare_issues(original_issue, issue_in_view):
     for comment_id in issue_in_view['comments'].keys():
         if issue_in_view['comments'][comment_id] != original_issue['comments'][comment_id]['body']:
             modified_comments[comment_id] = issue_in_view['comments'][comment_id]
-    log("original_comments are " + str(original_issue["comments"]))
-    log("modified_comments are " + str(modified_comments))
+    logging.debug("original_comments are " + str(original_issue["comments"]))
+    logging.debug("modified_comments are " + str(modified_comments))
     return (modified_part, modified_comments, deleted_comments)

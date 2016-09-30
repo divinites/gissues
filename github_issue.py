@@ -5,8 +5,11 @@ from .libgit import utils
 from .libgit import github
 import re
 import os
+import logging
 from queue import Queue
 from functools import partial
+
+logging.basicConfig(filename='example.log', level=logging.DEBUG)
 
 
 def plugin_loaded():
@@ -23,6 +26,7 @@ class ShowGithubIssueListCommand(sublime_plugin.WindowCommand):
     def run(self, **args):
         repo_loader = LoadRepoList()
         repo_loader.format_entries()
+        logging.debug("I am showing the issue list!")
         repo_loader.show_panel_then_print_list(**args)
 
 
@@ -42,9 +46,11 @@ class ShowGithubIssueCommand(sublime_plugin.WindowCommand):
         issue_number = int(match_id.group(0))
         view_id = view.id()
         repo_info_dictionary = repo_info_storage.get()
+        logging.debug("view_id is in repo_info_dictionary: " + str(view_id in repo_info_dictionary))
         if view_id in repo_info_dictionary:
             active_issue_obj.find_repo(view, repo_info_storage)
             repo_info_storage.put(repo_info_dictionary)
+            logging.debug("put back repo_dictionary in the queue")
             print_in_view = issue.PrintIssueInView(
                 active_issue_obj, issue_number, issue_obj_storage)
             print_in_view.start()

@@ -1,9 +1,10 @@
 from .github import GitHubAccount
-from .utils import LINE_ENDS, get_issue_post, compare_issues, log
+from .utils import LINE_ENDS, get_issue_post, compare_issues
 from .utils import format_issue, format_comment, find_comment_region
 import sublime
 import threading
 import json
+import logging
 
 
 class IssueObj:
@@ -20,6 +21,7 @@ class IssueObj:
         repo_dictionary = repo_storage.get()
         view_id = view.id()
         if view_id in repo_dictionary:
+            logging.debug("found the view in repo_dictionary")
             self.username, self.repo_name = repo_dictionary[view_id]
             repo_storage.put(repo_dictionary)
         else:
@@ -168,7 +170,7 @@ class IssueManipulate(threading.Thread):
 class PostNewIssue(IssueManipulate):
     def run(self):
         issue_post = get_issue_post(self.view)
-        log("preparing updating issue " + str(issue_post['issue']))
+        logging.debug("preparing updating issue " + str(issue_post['issue']))
         post_result = self.issue_list.post_issue(
             data=json.dumps(issue_post['issue']))
         if post_result.status_code in (200, 201):
@@ -179,6 +181,7 @@ class PostNewIssue(IssueManipulate):
             self.issue_dict.put(issue_dict)
             issue = post_result.json()
             snippet = format_issue(issue)
+            logging.debug("format issue")
             snippet += "## Add New Comment:" + LINE_ENDS
             snippet += LINE_ENDS
             snippet += "*" + "-" * 10 + "END" + '-' * 10 + "*"
@@ -187,6 +190,7 @@ class PostNewIssue(IssueManipulate):
                                   {"syntax":
                                    "Packages/gissues/issue.tmLanguage"})
             self.view.run_command("insert_issue", {"issue": snippet})
+            logging.debug("set syntax")
             self.view.run_command("insert_issue",
                                   {"start_point": self.view.size(),
                                    "issue":
@@ -222,7 +226,7 @@ class UpdateIssue(IssueManipulate):
                                                updating_issue.json()['updated_at'])})
             else:
                 sublime.status_message("Issue update fails")
-                log("issue update fails, error code " + str(
+                logging.debug("issue update fails, error code " + str(
                     updating_issue.status_code))
         if comment_change:
             for comment_id, content in comment_change.items():
@@ -240,7 +244,7 @@ class UpdateIssue(IssueManipulate):
                                                updating_comment.json()['updated_at'])})
                 else:
                     sublime.status_message("Comment update fails")
-                    log("issue update fails, error code " + str(
+                    logging.debug("issue update fails, error code " + str(
                         updating_comment.status_code))
         if deleted_comments:
             for comment_id in deleted_comments:
@@ -275,10 +279,10 @@ class UpdateIssue(IssueManipulate):
                                            str(new_comment.json()['id']),
                                            new_comment.json()['created_at'])})
                 comment_id = new_comment.json()['id']
-                log("new comment id is " + str(comment_id))
+                logging.debug("new comment id is " + str(comment_id))
 
             else:
                 sublime.status_message("Comment post fails")
-                log("comment post fails, error code " + str(
+                logging.debug("comment post fails, error code " + str(
                     new_comment.status_code))
         self.issue_dict.put(issue_dict)
