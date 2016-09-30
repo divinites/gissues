@@ -1,5 +1,7 @@
 Thanks for installing Github Issue!
 
+You will need to restart Sublime Text after installing this plug-in to make it work properly.
+
 This plugin aims at providing a convenient way to write and update issues inside sublime text. Instead of opening a external Internet browser, this plug-in open a new buffer and let users to write/modify issue content using Markdown natively within sublime Text.
 
 It was initially inspired by github-issues.vim.

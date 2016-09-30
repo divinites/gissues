@@ -1,0 +1,5 @@
+Big update! Please restart Sublime Text to make the plugin work.
+
+- Writing issues without forking or downloading repos from github
+- Now you can choose the repo that you want to write issue for from a list of repos of sidbar folders.
+- Ability to mannually enter the repos'name
