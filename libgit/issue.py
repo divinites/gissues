@@ -198,7 +198,7 @@ class PostNewIssue(IssueManipulate):
                                        str(post_result.json()['id']),
                                        post_result.json()['created_at'])})
         else:
-            sublime.status_message("Issue not Posted, please try again.")
+            sublime.status_message("Issue not Posted, error code {} please try again.".format(str(post_result.status_code)))
 
 
 class UpdateIssue(IssueManipulate):

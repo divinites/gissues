@@ -2,7 +2,22 @@ import sublime
 import re
 import logging
 
-LINE_ENDS = '\n' if sublime.platform() != 'windows' else '\r\n'
+
+# def find_line_ends():
+    # system_setting = sublime.load_settings("Preferences.sublime-settings").get('default_line_ending').get("default_line_ending")
+    # if system_setting != 'system':
+    #     if system_setting == 'windows':
+    #         return '\r\n'
+    #     else:
+    #         return '\n'
+    # else:
+    #     if sublime.platform() == 'windows':
+    #         return '\r\n'
+    #     else:
+    # return '\n'
+
+
+LINE_ENDS = '\n'
 DEBUG_FLAG = sublime.load_settings("github_issue.sublime-settings").get('debug', 0)
 
 
