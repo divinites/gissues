@@ -116,11 +116,13 @@ class PrintListInView(threading.Thread):
 
 
 class PrintIssueInView(threading.Thread):
-    def __init__(self, issue_list, issue_number, issue_dict, view=None):
+    def __init__(self, issue_list, issue_number, issue_dict, repo_info, repo_info_storage, view=None):
         super(PrintIssueInView, self).__init__(self)
         self.issue_list = issue_list
         self.issue_number = issue_number
         self.issue_dict = issue_dict
+        self.repo_info = repo_info
+        self.repo_info_storage = repo_info_storage
         self.view = view
 
     def run(self):
@@ -154,6 +156,9 @@ class PrintIssueInView(threading.Thread):
             self.view.run_command("insert_issue", {"issue": snippet})
 
             self.view.set_scratch(True)
+            repo_dict = self.repo_info_storage.get()
+            repo_dict[self.view.id()] = self.repo_info
+            self.repo_info_storage.put(repo_dict)
 
 
 class IssueManipulate(threading.Thread):

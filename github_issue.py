@@ -44,8 +44,9 @@ class ShowGithubIssueCommand(sublime_plugin.WindowCommand):
         issue_number = int(match_id.group(0))
         try:
             active_issue_obj.find_repo(view, repo_info_storage)
+            repo_info = (active_issue_obj.username, active_issue_obj.repo_name)
             print_in_view = issue.PrintIssueInView(
-                active_issue_obj, issue_number, issue_obj_storage)
+                active_issue_obj, issue_number, issue_obj_storage, repo_info, repo_info_storage)
             print_in_view.start()
         except:
             # repo_info_storage.put(repo_info_dictionary)
@@ -86,7 +87,10 @@ class UpdateGithubIssueCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         global active_issue_obj, issue_obj_storage, repo_info_storage
-        active_issue_obj.find_repo(self.view, repo_info_storage)
+        if not repo_info_storage.empty():
+            active_issue_obj.find_repo(self.view, repo_info_storage)
+        else:
+            raise Exception("Error in obtaining Repo Info!")
         update_issue = issue.UpdateIssue(
             issue_list=active_issue_obj, issue_dict=issue_obj_storage)
         update_issue.start()
