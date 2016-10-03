@@ -13,6 +13,11 @@ from functools import partial
 def plugin_loaded():
     global active_issue_obj, issue_obj_storage, repo_info_storage
     settings = sublime.load_settings("github_issue.sublime-settings")
+    debug_flag = sublime.load_settings("github_issue.sublime-settings").get('debug', 0)
+    if debug_flag == 0:
+        logging.basicConfig(level=logging.ERROR)
+    else:
+        logging.basicConfig(level=logging.DEBUG)
     repo_info_storage = Queue()
     issue_obj_storage = Queue()
     active_issue_obj = issue.IssueObj(settings)
@@ -24,7 +29,7 @@ class ShowGithubIssueListCommand(sublime_plugin.WindowCommand):
     def run(self, **args):
         repo_loader = LoadRepoList()
         repo_loader.format_entries()
-        logging.debug("I am showing the issue list!")
+        utils.github_log("I am showing the issue list!")
         repo_loader.show_panel_then_print_list(**args)
 
 
@@ -150,6 +155,8 @@ class LoadRepoList:
     def on_enter_repo_info(self, content, subsequent_action, **args):
         if '/' in content:
             self.username, self.repo_name = content.split('/')
+            utils.github_log("username is " + str(self.username))
+            utils.github_log("repo name is " + str(self.repo_name))
             subsequent_action(**args)
         else:
             raise Exception(

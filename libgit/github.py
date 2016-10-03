@@ -2,7 +2,7 @@ import requests
 import os
 import subprocess
 from subprocess import CalledProcessError
-from .utils import find_git
+from .utils import find_git, github_log
 import re
 
 
@@ -27,9 +27,12 @@ class GitHubAccount:
             username = self.username
         if repo_name:
             if not issue_number:
-                return '/'.join([API_URL, username, repo_name, 'issues'])
+                joint_url = '/'.join([API_URL, username, repo_name, 'issues'])
+
             else:
-                return '/'.join([API_URL, username, repo_name, 'issues', issue_number])
+                joint_url = '/'.join([API_URL, username, repo_name, 'issues', issue_number])
+            github_log("the joint url is " + joint_url)
+            return joint_url
         else:
             raise Exception("Please check whether the repo_name is correct.")
 
@@ -48,6 +51,7 @@ def get_github_repo_info(folder_path):
         except CalledProcessError:
             return (-1, -1)
         repo_url = repo_url.decode('utf-8')
+        github_log("repo address is " + repo_url)
         if repo_url.startswith('https'):
             repo_url = re.search(r'(?<=https://github.com/).*', repo_url).group(0)
         elif repo_url.startswith('git'):
@@ -61,4 +65,5 @@ def get_github_repo_info(folder_path):
         raise Exception("Error in find repo URL!")
     if repo_name.endswith(".git"):
         repo_name = repo_name[:-4]
+    github_log("find username {} and repo_name {}".format(username, repo_name))
     return (username, repo_name)
