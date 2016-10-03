@@ -46,7 +46,7 @@ def format_comment(comment):
             'updated_at'] + '>*' + LINE_ENDS
     snippet += filter_line_ends(comment['body']) + LINE_ENDS
     snippet += "*" + '-' * 10 + "End <Comment " + str(comment['id']) + '>' + '-' * 10 + "*" + LINE_ENDS
-    github_log("comment id " + comment['id'] + "formated")
+    github_log("comment id " + str(comment['id']) + "formated")
     return snippet
 
 
