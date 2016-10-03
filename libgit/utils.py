@@ -18,7 +18,11 @@ import logging
 
 
 LINE_ENDS = '\n'
-DEBUG_FLAG = sublime.load_settings("github_issue.sublime-settings").get('debug', 0)
+
+
+def github_log(console_str):
+    logging.info("GitHub-Issue >>> " + console_str)
+
 
 
 def format_issue(issue):
@@ -30,6 +34,7 @@ def format_issue(issue):
     snippet += "## Assignee     : " + str(issue['assignee']) + LINE_ENDS
     snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + LINE_ENDS
     snippet += filter_line_ends(issue['body']) + LINE_ENDS
+    github_log("Issue title " + issue["title"] + " formated")
     return snippet
 
 
@@ -41,22 +46,25 @@ def format_comment(comment):
             'updated_at'] + '>*' + LINE_ENDS
     snippet += filter_line_ends(comment['body']) + LINE_ENDS
     snippet += "*" + '-' * 10 + "End <Comment " + str(comment['id']) + '>' + '-' * 10 + "*" + LINE_ENDS
+    github_log("comment id " + comment['id'] + "formated")
     return snippet
 
 
 def find_git():
     if sublime.platform() != 'windows':
-        logging.debug('using git')
+        github_log('using git')
         return 'git'
     else:
-        logging.debug('using git.exe')
+        github_log('using git.exe')
         return 'git.exe'
 
 
 def filter_line_ends(issue):
     if sublime.platform() != 'windows':
+        github_log("filtering line ends")
         return issue.replace('\r', '')
     else:
+        github_log("no need to fix issue line ends")
         return issue
 
 
@@ -70,20 +78,20 @@ class ViewConverter:
         for key, value in info_dict.items():
             prepared_key = key.lower()
             if value == 'False':
-                logging.debug(str(key) + "value is " + value)
+                github_log(str(key) + "value is " + value)
                 prepared_value = False
             elif value == 'True':
-                logging.debug(str(key) + "value is " + value)
+                github_log(str(key) + "value is " + value)
                 prepared_value = True
             elif value == 'None':
-                logging.debug(str(key) + "value is " + value)
+                github_log(str(key) + "value is " + value)
                 prepared_value = None
             elif value.isdigit():
-                logging.debug(str(key) + "value is " + value)
+                github_log(str(key) + "value is " + value)
                 prepared_value = int(value)
             else:
                 prepared_value = value
-                logging.debug(str(key) + "value is " + value)
+                github_log(str(key) + "value is " + value)
             prepared_dict[prepared_key] = prepared_value
         return prepared_dict
 
@@ -127,7 +135,7 @@ class ViewConverter:
                 crucial_line["end"] = idx
             else:
                 pass
-        logging.debug("curcial line is " + str(crucial_line))
+        github_log("curcial line is " + str(crucial_line))
         return crucial_line
 
     @staticmethod
@@ -138,7 +146,7 @@ class ViewConverter:
             key = matched_item.group(1)
             value = matched_item.group(3)
             info_dict[key] = value
-        logging.debug("issue_header is " + str(info_dict))
+        github_log("issue_header is " + str(info_dict))
         return info_dict
 
     @staticmethod
@@ -200,10 +208,12 @@ def create_new_issue_view():
     snippet += LINE_ENDS
     snippet += "*" + '-' * 10 + "END" + '-' * 10 + "*" + LINE_ENDS
     view = sublime.active_window().new_file()
+    github_log("Create new view to write the issue")
     view.run_command("set_file_type",
                       {"syntax":
                        "Packages/GitHubIssue/issue.tmLanguage"})
     view.run_command("insert_issue", {"issue": snippet})
+    github_log("insert a blank issue")
     view.set_scratch(True)
 
 
@@ -216,7 +226,7 @@ def compare_issues(original_issue, issue_in_view):
     modified_keys = set(issue_in_view['issue'].keys())
     original_keys = set(original_issue['issue'].keys())
     intersection_keys = modified_keys.intersection(original_keys)
-    logging.debug("intersection_keys are" + str(intersection_keys))
+    github_log("intersection_keys are" + str(intersection_keys))
     modified_part = {key: issue_in_view['issue'][key]
                      for key in intersection_keys
                      if original_issue['issue'][key] != issue_in_view[
@@ -226,8 +236,8 @@ def compare_issues(original_issue, issue_in_view):
         additional_part = {key: issue_in_view['issue'][key]
                            for key in additional_keys}
         modified_part.update(additional_part)
-    logging.debug('original_issue is' + str(original_issue['issue']))
-    logging.debug("modified_parts are " + str(modified_part))
+    github_log('original_issue is' + str(original_issue['issue']))
+    github_log("modified_parts are " + str(modified_part))
     modified_comments = {}
     comment_ids_in_view = set(issue_in_view['comments'].keys())
     original_comment_ids = set(original_issue['comments'].keys())
@@ -235,6 +245,6 @@ def compare_issues(original_issue, issue_in_view):
     for comment_id in issue_in_view['comments'].keys():
         if issue_in_view['comments'][comment_id] != original_issue['comments'][comment_id]['body']:
             modified_comments[comment_id] = issue_in_view['comments'][comment_id]
-    logging.debug("original_comments are " + str(original_issue["comments"]))
-    logging.debug("modified_comments are " + str(modified_comments))
+    github_log("original_comments are " + str(original_issue["comments"]))
+    github_log("modified_comments are " + str(modified_comments))
     return (modified_part, modified_comments, deleted_comments)
