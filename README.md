@@ -29,19 +29,19 @@ Token means the github access token, you can get one from [this link](https://gi
 
 **Attention! To have a usable token, it would be safe to choose the following scopes when generating the token:**
 
-- admin:org,
+- _admin:org_,
 
-- admin:org_hook,
+- _admin:org\_hook_,
 
-- admin:public_key,
+- _admin:public\_key_,
 
-- admin:repo_hook,
+- _admin:repo\_hook_,
 
-- gist,
+- _gist_,
 
-- notifications,
+- _notifications_,
 
-- repo
+- _repo_
 
 If you find without one or more scopes listed above, the plug-in also works properly, please submit an issue. After testing, I will modify the scope list.
 
@@ -61,9 +61,11 @@ Some shortcut keys are pre-defined:
 
 - In an issue List view, Press **Enter** or **Right Arrow** to open a particular issue
 
-- In an issue view, Press **Super+S** to sync current issue or comments with Github
+- In an issue view, Press **Super+S**(**Ctrl+S** in Windows)to sync current issue or comments with Github
 
-- In an issue view, Press **Super+Shift+S** to post a new issue to Github
+- In an issue view, Press **Super+Shift+S**(**Ctrl+Shift+S** in Windows) to post a new issue to Github
+
+- in an issue view, you can **open**, **close**, __lock__ or __unlock__ an issue simply by changing corresponding line.
 
 
 ## Illustration
