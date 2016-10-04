@@ -11,7 +11,9 @@ class GitHubAccount:
         self.session = requests.Session()
         self.settings = settings
         api_token = self.settings.get('token', '')
+        github_log("The first 8 digits of your GitHub Token is {}".format(api_token[:8]))
         self.username = self.settings.get('username', '')
+        github_log("Your own username is {}".format(self.username))
         password = self.settings.get('password', '')
         if api_token:
             self.session.headers['Authorization'] = 'token %s' % api_token
