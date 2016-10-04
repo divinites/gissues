@@ -211,7 +211,7 @@ def create_new_issue_view():
     github_log("Create new view to write the issue")
     view.run_command("set_file_type",
                       {"syntax":
-                       "Packages/GitHubIssue/issue.tmLanguage"})
+                       "Packages/GitHubIssue/Issue.sublime-syntax"})
     view.run_command("insert_issue", {"issue": snippet})
     github_log("insert a blank issue")
     view.set_scratch(True)

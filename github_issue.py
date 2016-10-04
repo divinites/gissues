@@ -70,7 +70,7 @@ class PostGithubIssueCommand(sublime_plugin.WindowCommand):
     def is_enabled(self):
         self.view = sublime.active_window().active_view()
         _, syntax_name = os.path.split(self.view.settings().get('syntax'))
-        if syntax_name == "issue.tmLanguage":
+        if syntax_name == "Issue.sublime-syntax":
             return True
         return False
 
@@ -86,7 +86,7 @@ class UpdateGithubIssueCommand(sublime_plugin.WindowCommand):
     def is_enabled(self):
         self.view = sublime.active_window().active_view()
         _, syntax_name = os.path.split(self.view.settings().get('syntax'))
-        if syntax_name == "issue.tmLanguage":
+        if syntax_name == "Issue.sublime-syntax":
             return True
         return False
 

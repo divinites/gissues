@@ -7,6 +7,7 @@ import json
 
 
 class IssueObj:
+
     def __init__(self, settings):
         self.github_account = GitHubAccount(settings)
         self.repo_name = None
@@ -151,7 +152,7 @@ class PrintIssueInView(threading.Thread):
             self.view.run_command("clear_view")
             self.view.run_command("set_file_type",
                                   {"syntax":
-                                   "Packages/GitHubIssue/issue.tmLanguage"})
+                                   "Packages/GitHubIssue/Issue.sublime-syntax"})
             self.view.run_command("insert_issue", {"issue": snippet})
 
             self.view.set_scratch(True)
@@ -192,7 +193,7 @@ class PostNewIssue(IssueManipulate):
             self.view.run_command("clear_view")
             self.view.run_command("set_file_type",
                                   {"syntax":
-                                   "Packages/GitHubIssue/issue.tmLanguage"})
+                                   "Packages/GitHubIssue/Issue.sublime-syntax"})
             self.view.run_command("insert_issue", {"issue": snippet})
             github_log("set syntax")
             self.view.run_command("insert_issue",
