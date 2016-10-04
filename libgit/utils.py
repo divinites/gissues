@@ -24,7 +24,6 @@ def github_log(console_str):
     logging.info("GitHub-Issue >>> " + console_str)
 
 
-
 def format_issue(issue):
     snippet = ''
     snippet += "# Title         : " + issue["title"] + LINE_ENDS
@@ -213,6 +212,10 @@ def create_new_issue_view():
                       {"syntax":
                        "Packages/GitHubIssue/Issue.sublime-syntax"})
     view.run_command("insert_issue", {"issue": snippet})
+    view.sel().clear()
+    start_point = view.text_point(0, 18)
+    view.sel().add(sublime.Region(start_point))
+    view.show(start_point)
     github_log("insert a blank issue")
     view.set_scratch(True)
 
