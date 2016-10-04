@@ -27,6 +27,24 @@ Set-ups:
 
 Token means the github access token, you can get one from [this link](https://github.com/settings/tokens)
 
+**Attention! To have a usable token, it would be safe to choose the following scopes when generating the token:**
+
+- admin:org,
+
+- admin:org_hook,
+
+- admin:public_key,
+
+- admin:repo_hook,
+
+- gist,
+
+- notifications,
+
+- repo
+
+If you find without one or more scopes listed above, the plug-in also works properly, please submit an issue. After testing, I will modify the scope list.
+
 Alternatively, you can use password (not recommended, since username and password will be stored in the configuration file in plain text). The program will first look at whether token is set, if no token, it will then look at pasword option.
 
 To sum up, the username is always required, passowrd and token are optional but at least one of them should be provided.
@@ -42,7 +60,9 @@ All commands are runnable through Command Palette, please have a look at *Comman
 Some shortcut keys are pre-defined:
 
 - In an issue List view, Press **Enter** or **Right Arrow** to open a particular issue
+
 - In an issue view, Press **Super+S** to sync current issue or comments with Github
+
 - In an issue view, Press **Super+Shift+S** to post a new issue to Github
 
 
