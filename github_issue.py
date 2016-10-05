@@ -15,8 +15,8 @@ def plugin_loaded():
     global active_issue_obj, issue_obj_storage, repo_info_storage
     settings = sublime.load_settings("github_issue.sublime-settings")
     pc.read_settings(settings)
-    pc.line_ends = find_line_ends()
-    print(repr(pc.line_ends))
+    # pc.line_ends = find_line_ends()
+    pc.line_ends = "\n"
     logging.basicConfig(level=logging.DEBUG if pc.debug_flag == 0 else logging.INFO)
     repo_info_storage = Queue()
     issue_obj_storage = Queue()
