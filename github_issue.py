@@ -3,8 +3,8 @@ import sublime_plugin
 from .libgit import issue
 from .libgit import utils
 from .libgit import github
+from . import parameter_container as pc
 import re
-import os
 import logging
 from queue import Queue
 from functools import partial
@@ -13,8 +13,9 @@ from functools import partial
 def plugin_loaded():
     global active_issue_obj, issue_obj_storage, repo_info_storage
     settings = sublime.load_settings("github_issue.sublime-settings")
-    debug_flag = sublime.load_settings("github_issue.sublime-settings").get('debug', 0)
-    if debug_flag == 0:
+    pc.read_settings(settings)
+
+    if pc.debug_flag == 0:
         logging.basicConfig(level=logging.ERROR)
     else:
         logging.basicConfig(level=logging.DEBUG)
@@ -36,8 +37,8 @@ class ShowGithubIssueListCommand(sublime_plugin.WindowCommand):
 class ShowGithubIssueCommand(sublime_plugin.WindowCommand):
     def is_enabled(self):
         current_view = sublime.active_window().active_view()
-        _, syntax_name = os.path.split(current_view.settings().get('syntax'))
-        if syntax_name == "list.sublime-syntax":
+        syntax_name = current_view.settings().get('syntax')
+        if syntax_name == pc.list_syntax:
             return True
         return False
 
@@ -69,8 +70,8 @@ class NewGithubIssueCommand(sublime_plugin.WindowCommand):
 class PostGithubIssueCommand(sublime_plugin.WindowCommand):
     def is_enabled(self):
         self.view = sublime.active_window().active_view()
-        _, syntax_name = os.path.split(self.view.settings().get('syntax'))
-        if syntax_name == "Issue.sublime-syntax":
+        syntax_name = self.view.settings().get('syntax')
+        if syntax_name == pc.issue_syntax:
             return True
         return False
 
@@ -85,8 +86,8 @@ class PostGithubIssueCommand(sublime_plugin.WindowCommand):
 class UpdateGithubIssueCommand(sublime_plugin.WindowCommand):
     def is_enabled(self):
         self.view = sublime.active_window().active_view()
-        _, syntax_name = os.path.split(self.view.settings().get('syntax'))
-        if syntax_name == "Issue.sublime-syntax":
+        syntax_name = self.view.settings().get('syntax')
+        if syntax_name == pc.issue_syntax:
             return True
         return False
 
@@ -187,8 +188,30 @@ class LoadRepoList:
 
     def create_issue(self):
         global repo_info_storage
-        utils.create_new_issue_view()
+        create_new_issue_view()
         view_id = sublime.active_window().active_view().id()
         repo_dictionary = repo_info_storage.get()
         repo_dictionary[view_id] = (self.username, self.repo_name)
         repo_info_storage.put(repo_dictionary)
+
+
+def create_new_issue_view():
+    snippet = ''
+    snippet += "# Title         : " + pc.line_ends
+    snippet += "## Assignee     : " + pc.line_ends
+    snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + pc.line_ends
+    snippet += pc.line_ends
+    snippet += "*" + '-' * 10 + "END" + '-' * 10 + "*" + pc.line_ends
+    view = sublime.active_window().new_file()
+    utils.github_log("Create new view to write the issue")
+    view.run_command("set_file_type",
+                      {"syntax":
+                       pc.issue_syntax})
+    utils.github_log("new issue will have a syntax {}".format(pc.issue_syntax))
+    view.run_command("insert_issue", {"issue": snippet})
+    view.sel().clear()
+    start_point = view.text_point(0, 18)
+    view.sel().add(sublime.Region(start_point))
+    view.show(start_point)
+    utils.github_log("insert a blank issue")
+    view.set_scratch(True)

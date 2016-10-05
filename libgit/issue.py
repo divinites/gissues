@@ -1,5 +1,6 @@
 from .github import GitHubAccount
-from .utils import LINE_ENDS, get_issue_post, compare_issues, github_log
+from .. import parameter_container as pc
+from .utils import get_issue_post, compare_issues, github_log
 from .utils import format_issue, format_comment, find_comment_region
 import sublime
 import threading
@@ -90,16 +91,16 @@ class PrintListInView(threading.Thread):
         if issue_response.status_code in (200, 201):
             json_list = issue_response.json()
             snippet = ''
-            snippet += 'Issue No.' + '   ' + 'Locked    ' + 'Issue Title' + LINE_ENDS
+            snippet += 'Issue No.' + '   ' + 'Locked    ' + 'Issue Title' + pc.line_ends
             for issue in json_list:
                 snippet += "{:<12}{:<10}{}".format(
                     str(issue['number']), issue['locked'],
-                    issue['title']) + LINE_ENDS
+                    issue['title']) + pc.line_ends
             view = sublime.active_window().new_file()
             view.run_command("clear_view")
             view.run_command("set_file_type",
                              {"syntax":
-                              "Packages/GitHubIssue/list.sublime-syntax"})
+                              pc.list_syntax})
             view.settings().set('color_scheme',
                                 "Packages/GitHubIssue/list.tmTheme")
             view.run_command("insert_issue", {"issue": snippet})
@@ -137,8 +138,8 @@ class PrintIssueInView(threading.Thread):
             for comment in comments:
                 comment_dict[comment['id']] = comment
                 snippet += format_comment(comment)
-            snippet += "## Add New Comment:" + LINE_ENDS
-            snippet += LINE_ENDS
+            snippet += "## Add New Comment:" + pc.line_ends
+            snippet += pc.line_ends
             snippet += "*" + "-" * 10 + "END" + '-' * 10 + "*"
             if not self.view:
                 self.view = sublime.active_window().new_file()
@@ -152,7 +153,7 @@ class PrintIssueInView(threading.Thread):
             self.view.run_command("clear_view")
             self.view.run_command("set_file_type",
                                   {"syntax":
-                                   "Packages/GitHubIssue/Issue.sublime-syntax"})
+                                   pc.issue_syntax})
             self.view.run_command("insert_issue", {"issue": snippet})
 
             self.view.set_scratch(True)
@@ -187,13 +188,13 @@ class PostNewIssue(IssueManipulate):
             issue = post_result.json()
             snippet = format_issue(issue)
             github_log("format issue")
-            snippet += "## Add New Comment:" + LINE_ENDS
-            snippet += LINE_ENDS
+            snippet += "## Add New Comment:" + pc.line_ends
+            snippet += pc.line_ends
             snippet += "*" + "-" * 10 + "END" + '-' * 10 + "*"
             self.view.run_command("clear_view")
             self.view.run_command("set_file_type",
                                   {"syntax":
-                                   "Packages/GitHubIssue/Issue.sublime-syntax"})
+                                   pc.issue_syntax})
             self.view.run_command("insert_issue", {"issue": snippet})
             github_log("set syntax")
             self.view.run_command("insert_issue",
@@ -272,8 +273,8 @@ class UpdateIssue(IssueManipulate):
                 sublime.status_message("Comment Posted")
                 issue_dict[view_id]["comments"][new_comment.json()['id']] = new_comment.json()
                 snippet = format_comment(new_comment.json())
-                snippet += "## Add New Comment:" + LINE_ENDS
-                snippet += LINE_ENDS
+                snippet += "## Add New Comment:" + pc.line_ends
+                snippet += pc.line_ends
                 snippet += "*" + "-" * 10 + "END" + '-' * 10 + "*"
                 a, b = find_comment_region(self.view)
                 self.view.run_command("replace_issue", {"start": a, "end": b, "snippet": snippet})

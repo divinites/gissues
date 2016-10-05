@@ -1,7 +1,6 @@
 import requests
 import os
 import subprocess
-from subprocess import CalledProcessError
 from .utils import find_git, github_log
 import re
 
@@ -50,7 +49,7 @@ def get_github_repo_info(folder_path):
     try:
         try:
             repo_url = subprocess.check_output(' '.join(cmd), shell=True)
-        except CalledProcessError:
+        except:
             return (-1, -1)
         repo_url = repo_url.decode('utf-8')
         github_log("repo address is " + repo_url)

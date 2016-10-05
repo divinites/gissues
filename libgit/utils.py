@@ -1,9 +1,10 @@
 import sublime
 import re
 import logging
+from .. import parameter_container as pc
 
 
-# def find_line_ends():
+# def find_pc.line_ends():
     # system_setting = sublime.load_settings("Preferences.sublime-settings").get('default_line_ending').get("default_line_ending")
     # if system_setting != 'system':
     #     if system_setting == 'windows':
@@ -17,34 +18,31 @@ import logging
     # return '\n'
 
 
-LINE_ENDS = '\n'
-
-
 def github_log(console_str):
     logging.info("GitHub-Issue >>> " + console_str)
 
 
 def format_issue(issue):
     snippet = ''
-    snippet += "# Title         : " + issue["title"] + LINE_ENDS
-    snippet += "## Number       : " + str(issue['number']) + LINE_ENDS
-    snippet += "## State        : " + issue['state'] + LINE_ENDS
-    snippet += "## Locked       : " + str(issue['locked']) + LINE_ENDS
-    snippet += "## Assignee     : " + str(issue['assignee']) + LINE_ENDS
-    snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + LINE_ENDS
-    snippet += filter_line_ends(issue['body']) + LINE_ENDS
+    snippet += "# Title         : " + issue["title"] + pc.line_ends
+    snippet += "## Number       : " + str(issue['number']) + pc.line_ends
+    snippet += "## State        : " + issue['state'] + pc.line_ends
+    snippet += "## Locked       : " + str(issue['locked']) + pc.line_ends
+    snippet += "## Assignee     : " + str(issue['assignee']) + pc.line_ends
+    snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + pc.line_ends
+    snippet += filter_line_ends(issue['body']) + pc.line_ends
     github_log("Issue title " + issue["title"] + " formated")
     return snippet
 
 
 def format_comment(comment):
     snippet = ''
-    snippet += "*" + '-' * 10 + "Start <Comment " + str(comment['id']) + '>' + '-' * 10 + "*" + LINE_ENDS
+    snippet += "*" + '-' * 10 + "Start <Comment " + str(comment['id']) + '>' + '-' * 10 + "*" + pc.line_ends
     snippet += "*<commented by " + comment['user'][
         'login'] + "   UpdateTime: " + comment[
-            'updated_at'] + '>*' + LINE_ENDS
-    snippet += filter_line_ends(comment['body']) + LINE_ENDS
-    snippet += "*" + '-' * 10 + "End <Comment " + str(comment['id']) + '>' + '-' * 10 + "*" + LINE_ENDS
+            'updated_at'] + '>*' + pc.line_ends
+    snippet += filter_line_ends(comment['body']) + pc.line_ends
+    snippet += "*" + '-' * 10 + "End <Comment " + str(comment['id']) + '>' + '-' * 10 + "*" + pc.line_ends
     github_log("comment id " + str(comment['id']) + "formated")
     return snippet
 
@@ -198,26 +196,6 @@ def get_issue_post(view):
             'comments': comment_dict,
             'new_comment': new_comment}
 
-
-def create_new_issue_view():
-    snippet = ''
-    snippet += "# Title         : " + LINE_ENDS
-    snippet += "## Assignee     : " + LINE_ENDS
-    snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + LINE_ENDS
-    snippet += LINE_ENDS
-    snippet += "*" + '-' * 10 + "END" + '-' * 10 + "*" + LINE_ENDS
-    view = sublime.active_window().new_file()
-    github_log("Create new view to write the issue")
-    view.run_command("set_file_type",
-                      {"syntax":
-                       "Packages/GitHubIssue/Issue.sublime-syntax"})
-    view.run_command("insert_issue", {"issue": snippet})
-    view.sel().clear()
-    start_point = view.text_point(0, 18)
-    view.sel().add(sublime.Region(start_point))
-    view.show(start_point)
-    github_log("insert a blank issue")
-    view.set_scratch(True)
 
 
 def find_comment_region(view):
