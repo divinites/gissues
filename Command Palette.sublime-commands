@@ -6,7 +6,7 @@
     },
     {
         "caption": "GitHub Issue: Show All Issue List",
-        "args": {"state": "all"},
+        "args": {"state": "all", "per_page": 30},
         "command": "show_github_issue_list"
     },
     {
