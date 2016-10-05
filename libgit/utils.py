@@ -41,12 +41,12 @@ def find_git():
 
 
 def filter_line_ends(issue):
-    if pc.line_ends == '\n':
-        github_logger.info("filtering line ends")
-        return issue.replace('\r', '')
-    else:
-        github_logger.info("no need to fix issue line ends")
-        return issue
+    # if pc.line_ends == '\n':
+    github_logger.info("filtering line ends")
+    return issue.replace('\r', '')
+    # else:
+    #     github_logger.info("no need to fix issue line ends")
+    #     return issue
 
 
 class ViewConverter:
