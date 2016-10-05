@@ -10,7 +10,9 @@ if int(sublime.version()) >= 3118:
 
         @classmethod
         def is_applicable(cls, settings):
-            return settings.get('syntax') == pc.list_syntax
+            if settings.get('syntax') == pc.list_syntax:
+                return True
+            return False
 
         def on_selection_modified_async(self):
             self.view.add_regions(

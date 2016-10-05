@@ -6,8 +6,15 @@ name: GitHub Issue List
 scope: text.issue.list
 contexts:
   main:
-    - match: ^(.{12})(.{10})(.*)
+    - match: ^(\d.{12})(.{9})(.*)
       captures:
         1: number
         2: lock
         3: title
+
+    - match: ^Page:.{2}(\|_First_\|).{13}(\|_Prev_\|).{13}(\|_Next_\|).{13}(\|_Last_\|)
+      captures:
+        1: first
+        2: prev
+        3: next
+        4: last

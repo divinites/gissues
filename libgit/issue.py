@@ -92,11 +92,15 @@ class PrintListInView(threading.Thread):
         if issue_response.status_code in (200, 201):
             json_list = issue_response.json()
             snippet = ''
+            snippet += "-" * 50 + pc.line_ends
             snippet += 'Issue No.' + '   ' + 'Locked    ' + 'Issue Title' + pc.line_ends
+            snippet += "-" * 50 + pc.line_ends
             for issue in json_list:
                 snippet += "{:<12}{:<10}{}".format(
                     str(issue['number']), issue['locked'],
                     issue['title']) + pc.line_ends
+            snippet += "-" * 50 + pc.line_ends * 3
+            snippet += "Page:  |_First_|     ...     |_Prev_|     ...     |_Next_|     ...     |_Last_|" + pc.line_ends
             view = sublime.active_window().new_file()
             view.run_command("clear_view")
             view.run_command("set_file_type",

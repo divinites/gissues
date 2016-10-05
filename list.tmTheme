@@ -69,6 +69,50 @@
         </dict>
         <dict>
             <key>name</key>
+            <string>first</string>
+            <key>scope</key>
+            <string>text.issue.list first</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key>
+                <string>#3CFFF2</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>name</key>
+            <string>prev</string>
+            <key>scope</key>
+            <string>text.issue.list prev</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key>
+                <string>#E854FC</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>name</key>
+            <string>next</string>
+            <key>scope</key>
+            <string>text.issue.list next</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key>
+                <string>#F2FF31</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>name</key>
+            <string>last</string>
+            <key>scope</key>
+            <string>text.issue.list last</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key>
+                <string>#2CFF23</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>name</key>
             <string>title</string>
             <key>scope</key>
             <string>text.issue.list title</string>

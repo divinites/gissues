@@ -1,11 +1,11 @@
 [
     {
-        "caption": "GitHub Issue: Show Issue List",
-        "args": {},
+        "caption": "GitHub Issue: Show Open Issues",
+        "args": {"per_page": 30},
         "command": "show_github_issue_list"
     },
     {
-        "caption": "GitHub Issue: Show All Issue List",
+        "caption": "GitHub Issue: Show All Issues",
         "args": {"state": "all", "per_page": 30},
         "command": "show_github_issue_list"
     },
