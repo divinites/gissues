@@ -7,9 +7,11 @@ class ParameterContainer:
         self.list_syntax = "Packages/GitHubIssue/list.sublime-syntax"
         self.line_ends = '\n'
         self.debug_flag = 0
+        self.git_path = ""
 
     def read_settings(self, settings):
         self.issue_syntax = settings.get('syntax', 'Packages/GitHubIssue/Issue.sublime-syntax')
+        self.git_path = settings.get("git_path", '')
         self.debug_flag = settings.get('debug', 0)
 
 

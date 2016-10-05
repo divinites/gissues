@@ -4,20 +4,6 @@ import logging
 from .. import parameter_container as pc
 
 
-# def find_pc.line_ends():
-    # system_setting = sublime.load_settings("Preferences.sublime-settings").get('default_line_ending').get("default_line_ending")
-    # if system_setting != 'system':
-    #     if system_setting == 'windows':
-    #         return '\r\n'
-    #     else:
-    #         return '\n'
-    # else:
-    #     if sublime.platform() == 'windows':
-    #         return '\r\n'
-    #     else:
-    # return '\n'
-
-
 def github_log(console_str):
     logging.info("GitHub-Issue >>> " + console_str)
 
@@ -48,6 +34,8 @@ def format_comment(comment):
 
 
 def find_git():
+    if pc.git_path:
+        return pc.git_path
     if sublime.platform() != 'windows':
         github_log('using git')
         return 'git'
@@ -57,7 +45,7 @@ def find_git():
 
 
 def filter_line_ends(issue):
-    if sublime.platform() != 'windows':
+    if pc.line_ends == '\n':
         github_log("filtering line ends")
         return issue.replace('\r', '')
     else:
@@ -195,7 +183,6 @@ def get_issue_post(view):
     return {'issue': issue_post,
             'comments': comment_dict,
             'new_comment': new_comment}
-
 
 
 def find_comment_region(view):

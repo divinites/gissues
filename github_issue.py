@@ -14,6 +14,7 @@ def plugin_loaded():
     global active_issue_obj, issue_obj_storage, repo_info_storage
     settings = sublime.load_settings("github_issue.sublime-settings")
     pc.read_settings(settings)
+    pc.line_ends = find_line_ends()
 
     if pc.debug_flag == 0:
         logging.basicConfig(level=logging.ERROR)
@@ -215,3 +216,17 @@ def create_new_issue_view():
     view.show(start_point)
     utils.github_log("insert a blank issue")
     view.set_scratch(True)
+
+
+def find_line_ends():
+    system_setting = sublime.load_settings("Preferences.sublime-settings").get('default_line_ending')
+    if system_setting != 'system':
+        if system_setting == 'windows':
+            return '\r\n'
+        else:
+            return '\n'
+    else:
+        if sublime.platform() == 'windows':
+            return '\r\n'
+        else:
+            return '\n'

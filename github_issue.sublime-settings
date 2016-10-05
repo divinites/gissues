@@ -3,6 +3,7 @@
     "username": "",
     "password": "",
     "debug": 0,
-    "syntax": ""
+    "syntax": "",
+    "git_path": ""
 
 }
