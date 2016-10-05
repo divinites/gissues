@@ -1,4 +1,6 @@
-global parameter_container
+import logging
+
+global parameter_container, github_logger
 
 
 class ParameterContainer:
@@ -16,3 +18,5 @@ class ParameterContainer:
 
 
 parameter_container = ParameterContainer()
+github_logger = logging.getLogger("GitHubIssue")
+

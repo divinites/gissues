@@ -1,7 +1,8 @@
 import requests
 import os
 import subprocess
-from .utils import find_git, github_log
+from .utils import find_git
+from .. import github_logger
 import re
 
 
@@ -10,9 +11,9 @@ class GitHubAccount:
         self.session = requests.Session()
         self.settings = settings
         api_token = self.settings.get('token', '')
-        github_log("The first 8 digits of your GitHub Token is {}".format(api_token[:8]))
+        github_logger.info("The first 8 digits of your GitHub Token is {}".format(api_token[:8]))
         self.username = self.settings.get('username', '')
-        github_log("Your own username is {}".format(self.username))
+        github_logger.info("Your own username is {}".format(self.username))
         password = self.settings.get('password', '')
         if api_token:
             self.session.headers['Authorization'] = 'token %s' % api_token
@@ -32,7 +33,7 @@ class GitHubAccount:
 
             else:
                 joint_url = '/'.join([API_URL, username, repo_name, 'issues', issue_number])
-            github_log("the joint url is " + joint_url)
+            github_logger.info("the joint url is " + joint_url)
             return joint_url
         else:
             raise Exception("Please check whether the repo_name is correct.")
@@ -52,7 +53,7 @@ def get_github_repo_info(folder_path):
         except:
             return (-1, -1)
         repo_url = repo_url.decode('utf-8')
-        github_log("repo address is " + repo_url)
+        github_logger.info("repo address is " + repo_url)
         if repo_url.startswith('https'):
             repo_url = re.search(r'(?<=https://github.com/).*', repo_url).group(0)
         elif repo_url.startswith('git'):
@@ -66,5 +67,5 @@ def get_github_repo_info(folder_path):
         raise Exception("Error in find repo URL!")
     if repo_name.endswith(".git"):
         repo_name = repo_name[:-4]
-    github_log("find username {} and repo_name {}".format(username, repo_name))
+    github_logger.info("find username {} and repo_name {}".format(username, repo_name))
     return (username, repo_name)

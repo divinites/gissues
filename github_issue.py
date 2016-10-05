@@ -4,6 +4,7 @@ from .libgit import issue
 from .libgit import utils
 from .libgit import github
 from . import parameter_container as pc
+from . import github_logger
 import re
 import logging
 from queue import Queue
@@ -15,11 +16,7 @@ def plugin_loaded():
     settings = sublime.load_settings("github_issue.sublime-settings")
     pc.read_settings(settings)
     pc.line_ends = find_line_ends()
-
-    if pc.debug_flag == 0:
-        logging.basicConfig(level=logging.ERROR)
-    else:
-        logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG if pc.debug_flag == 0 else logging.INFO)
     repo_info_storage = Queue()
     issue_obj_storage = Queue()
     active_issue_obj = issue.IssueObj(settings)
@@ -31,7 +28,7 @@ class ShowGithubIssueListCommand(sublime_plugin.WindowCommand):
     def run(self, **args):
         repo_loader = LoadRepoList()
         repo_loader.format_entries()
-        utils.github_log("I am showing the issue list!")
+        github_logger.info("I am showing the issue list!")
         repo_loader.show_panel_then_print_list(**args)
 
 
@@ -155,14 +152,15 @@ class LoadRepoList:
         self.window.show_quick_panel(self.entries, _param_on_repo_selection)
 
     def on_enter_repo_info(self, content, subsequent_action, **args):
+        global github_logger
         if '/' in content:
             self.username, self.repo_name = content.split('/')
-            utils.github_log("username is " + str(self.username))
-            utils.github_log("repo name is " + str(self.repo_name))
+            github_logger.info("username is " + str(self.username))
+            github_logger.info("repo name is " + str(self.repo_name))
             subsequent_action(**args)
         else:
             raise Exception(
-                "Please enter repo in the format username/repo_name")
+          "Please enter repo in the format username/repo_name")
 
     def on_repo_selection(self, selection, subsequent_action, **args):
         if selection >= 0:
@@ -204,17 +202,17 @@ def create_new_issue_view():
     snippet += pc.line_ends
     snippet += "*" + '-' * 10 + "END" + '-' * 10 + "*" + pc.line_ends
     view = sublime.active_window().new_file()
-    utils.github_log("Create new view to write the issue")
+    github_logger.info("Create new view to write the issue")
     view.run_command("set_file_type",
                       {"syntax":
                        pc.issue_syntax})
-    utils.github_log("new issue will have a syntax {}".format(pc.issue_syntax))
+    github_logger.info("new issue will have a syntax {}".format(pc.issue_syntax))
     view.run_command("insert_issue", {"issue": snippet})
     view.sel().clear()
     start_point = view.text_point(0, 18)
     view.sel().add(sublime.Region(start_point))
     view.show(start_point)
-    utils.github_log("insert a blank issue")
+    github_logger.info("insert a blank issue")
     view.set_scratch(True)
 
 
