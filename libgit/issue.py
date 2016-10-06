@@ -110,6 +110,7 @@ class PrintListInView(threading.Thread):
                                 "Packages/GitHubIssue/list.tmTheme")
             view.run_command("insert_issue", {"issue": snippet})
 
+
             view.set_read_only(True)
             view.set_scratch(True)
             repo_dictionary = self.repo_storage.get()
@@ -159,6 +160,7 @@ class PrintIssueInView(threading.Thread):
             self.view.run_command("set_file_type",
                                   {"syntax":
                                    pc.issue_syntax})
+            self.
             self.view.run_command("insert_issue", {"issue": snippet})
 
             self.view.set_scratch(True)
@@ -202,6 +204,7 @@ class PostNewIssue(IssueManipulate):
                                    pc.issue_syntax})
             self.view.run_command("insert_issue", {"issue": snippet})
             github_logger.info("set syntax")
+            self.
             self.view.run_command("insert_issue",
                                   {"start_point": self.view.size(),
                                    "issue":

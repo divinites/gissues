@@ -213,6 +213,7 @@ def create_new_issue_view():
     start_point = view.text_point(0, 18)
     view.sel().add(sublime.Region(start_point))
     view.show(start_point)
+    view.set_encoding('UTF-8')
     github_logger.info("insert a blank issue")
     view.set_scratch(True)
 
