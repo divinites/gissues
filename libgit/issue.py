@@ -4,16 +4,17 @@ from .. import github_logger
 from .. import global_person_list, global_title_list
 from .utils import get_issue_post, compare_issues, restock, show_stock
 from .utils import format_issue, format_comment, find_comment_region, find_list_region
+from .utils import ViewConverter
 import sublime
 import threading
 import json
 
 
 class AcquireIssueTitle(threading.Thread):
-
     def __init__(self, issue_obj):
         super(AcquireIssueTitle, self).__init__(self)
-        self.issue_obj = IssueObj(issue_obj.settings, issue_obj.username, issue_obj.repo_name)
+        self.issue_obj = IssueObj(issue_obj.settings, issue_obj.username,
+                                  issue_obj.repo_name)
 
     def run(self):
         title_list = []
@@ -26,7 +27,9 @@ class AcquireIssueTitle(threading.Thread):
                 break
             else:
                 self.issue_obj.get(links['next']['url'])
-        global_title_list["{}/{}".format(self.issue_obj.username, self.issue_obj.repo_name)] = sorted(title_list, key=lambda x: x[1])
+        global_title_list["{}/{}".format(self.issue_obj.username,
+                                         self.issue_obj.repo_name)] = sorted(
+                                             title_list, key=lambda x: x[1])
 
 
 class IssueObj:
@@ -48,8 +51,10 @@ class IssueObj:
         view_id = view.id()
         try:
             github_logger.info("try to find the view in repo_dictionary...")
-            github_logger.info("repo_info_storage contains {}".format(show_stock(repo_info_storage, view_id)))
-            self.username, self.repo_name, self.issue_response = show_stock(repo_info_storage, view_id)
+            github_logger.info("repo_info_storage contains {}".format(
+                show_stock(repo_info_storage, view_id)))
+            self.username, self.repo_name, self.issue_response = show_stock(
+                repo_info_storage, view_id)
         except:
             raise Exception("Which repository should I post?")
 
@@ -57,8 +62,8 @@ class IssueObj:
         if not issue_url:
             issue_url = self.github_account.join_issue_url(
                 username=self.username, repo_name=self.repo_name)
-        self.issue_response = self.github_account.session.get(issue_url, **
-                                                              params)
+        self.issue_response = self.github_account.session.get(issue_url,
+                                                              **params)
         return self.issue_response
 
     def get_links(self, **params):
@@ -109,7 +114,13 @@ class IssueObj:
 
 
 class PrintListInView(threading.Thread):
-    def __init__(self, view, issue_list, repo_info_storage, command=None, new_flag=True, **args):
+    def __init__(self,
+                 view,
+                 issue_list,
+                 repo_info_storage,
+                 command=None,
+                 new_flag=True,
+                 **args):
         super(PrintListInView, self).__init__(self)
         self.issue_list = issue_list
         self.args = args
@@ -123,11 +134,13 @@ class PrintListInView(threading.Thread):
             if not self.issue_list.issue_response:
                 self.issue_list.get(params=self.args)
             else:
-                _, _, self.issue_list.issue_response = show_stock(self.repo_info_storage, self.view.id())
+                _, _, self.issue_list.issue_response = show_stock(
+                    self.repo_info_storage, self.view.id())
                 if self.command:
                     links = self.issue_list.get_links()
                     if self.command in links:
-                        self.issue_list.get(links[self.command]['url'], params=self.args)
+                        self.issue_list.get(links[self.command]['url'],
+                                            params=self.args)
                     else:
                         pass
         else:
@@ -143,13 +156,18 @@ class PrintListInView(threading.Thread):
             start_point, end_point = find_list_region(self.view)
             if self.view.is_read_only():
                 self.view.set_read_only(False)
-            self.view.run_command("replace_snippet",
-                                  {"snippet": snippet,
-                                   "start_point": start_point,
-                                   "end_point": end_point})
+            self.view.run_command("replace_snippet", {"snippet": snippet,
+                                                      "start_point":
+                                                      start_point,
+                                                      "end_point": end_point})
+            self.view.sel().clear()
+            view_converter = ViewConverter(self.view)
+            start = view_converter.get_line_regions()[3].a
+            self.view.sel().add(sublime.Region(start, start))
             self.view.set_read_only(True)
             restock(self.repo_info_storage, self.view.id(),
-                    (self.issue_list.username, self.issue_list.repo_name, issue_response))
+                    (self.issue_list.username, self.issue_list.repo_name,
+                     issue_response))
         else:
             sublime.status_message("Cannot obtain issue list, error code {}".
                                    format(str(issue_response.status_code)))
@@ -192,13 +210,21 @@ class PrintIssueInView(threading.Thread):
             if not self.view:
                 self.view = sublime.active_window().new_file()
             global_person_list[self.view.id()] = user_set
-            restock(self.issue_storage, self.view.id(),
-                    {"issue": issue,
-                     "comments": comment_dict})
-            restock(self.repo_info_storage, self.view.id(), (self.repo_info[0], self.repo_info[1], issue_response))
+            restock(self.issue_storage, self.view.id(), {"issue": issue,
+                                                         "comments":
+                                                         comment_dict})
+            restock(self.repo_info_storage, self.view.id(),
+                    (self.repo_info[0], self.repo_info[1], issue_response))
             self.view.run_command("erase_snippet")
             self.view.run_command("set_file_type", {"syntax": pc.issue_syntax})
             self.view.run_command("insert_issue_snippet", {"snippet": snippet})
+            view_converter = ViewConverter(self.view)
+            _, a, b, _ = view_converter.find_region_line("## Add New Comment:", "*" + "-" * 10 + "END")
+            self.view.sel().clear()
+            if b > a:
+                self.view.sel().add(sublime.Region(a + 1, a + 1))
+            else:
+                self.view.sel().add(sublime.Region(a, a))
             self.view.set_scratch(True)
 
 
