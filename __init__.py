@@ -31,5 +31,9 @@ parameter_container = ParameterContainer()
 github_logger = logging.getLogger("GitHubIssue")
 issue_obj_storage = Queue()
 repo_info_storage = Queue()
+global_title_list = {}
+global_person_list = {}
+# global_title_list_storage.put({})
+# global_person_list_storage.put({})
 issue_obj_storage.put({})
 repo_info_storage.put({})

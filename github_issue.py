@@ -198,6 +198,8 @@ class LoadRepoList:
         global active_issue_obj
         active_issue_obj.get_repo(self.username, self.repo_name)
         issue_view = utils.print_list_framework()
+        acquire_list = issue.AcquireIssueTitle(active_issue_obj)
+        acquire_list.start()
         print_in_view = issue.PrintListInView(issue_view, active_issue_obj,
                                               repo_info_storage, **args)
         print_in_view.start()

@@ -1,6 +1,7 @@
 from .github import GitHubAccount
 from .. import parameter_container as pc
 from .. import github_logger
+from .. import global_person_list, global_title_list
 from .utils import get_issue_post, compare_issues, restock, show_stock
 from .utils import format_issue, format_comment, find_comment_region, find_list_region
 import sublime
@@ -8,9 +9,30 @@ import threading
 import json
 
 
+class AcquireIssueTitle(threading.Thread):
+
+    def __init__(self, issue_obj):
+        super(AcquireIssueTitle, self).__init__(self)
+        self.issue_obj = IssueObj(issue_obj.settings, issue_obj.username, issue_obj.repo_name)
+
+    def run(self):
+        title_list = []
+        self.issue_obj.get({"state": "all"})
+        while True:
+            for issue in self.issue_obj.issue_response.json():
+                title_list.append((issue['title'], issue['number']))
+            links = self.issue_obj.get_links
+            if (not links) or 'next' not in links:
+                break
+            else:
+                self.issue_obj.get(links['next']['url'])
+        global_title_list["{}/{}".format(self.issue_obj.username, self.issue_obj.repo_name)] = sorted(title_list, key=lambda x: x[1])
+
+
 class IssueObj:
     def __init__(self, settings, username=None, repo_name=None):
         self.github_account = GitHubAccount(settings)
+        self.settings = settings
         self.repo_name = repo_name
         self.username = username
         self.issue_response = None
@@ -22,11 +44,12 @@ class IssueObj:
         self.username = username
         self.repo_name = repo_name
 
-    def find_repo(self, view, repo_storage):
+    def find_repo(self, view, repo_info_storage):
         view_id = view.id()
         try:
-            github_logger.info("found the view in repo_dictionary")
-            self.username, self.repo_name, self.issue_response = show_stock(repo_storage, view_id)
+            github_logger.info("try to find the view in repo_dictionary...")
+            github_logger.info("repo_info_storage contains {}".format(show_stock(repo_info_storage, view_id)))
+            self.username, self.repo_name, self.issue_response = show_stock(repo_info_storage, view_id)
         except:
             raise Exception("Which repository should I post?")
 
@@ -38,9 +61,9 @@ class IssueObj:
                                                               params)
         return self.issue_response
 
-    def get_links(self):
+    def get_links(self, **params):
         if not self.issue_response:
-            self.get()
+            self.get(**params)
         return self.issue_response.links
 
     def post_issue(self, **params):
@@ -86,11 +109,11 @@ class IssueObj:
 
 
 class PrintListInView(threading.Thread):
-    def __init__(self, view, issue_list, repo_storage, command=None, new_flag=True, **args):
+    def __init__(self, view, issue_list, repo_info_storage, command=None, new_flag=True, **args):
         super(PrintListInView, self).__init__(self)
         self.issue_list = issue_list
         self.args = args
-        self.repo_storage = repo_storage
+        self.repo_info_storage = repo_info_storage
         self.view = view
         self.command = command
         self.new_flag = new_flag
@@ -100,7 +123,7 @@ class PrintListInView(threading.Thread):
             if not self.issue_list.issue_response:
                 self.issue_list.get(params=self.args)
             else:
-                _, _, self.issue_list.issue_response = show_stock(self.repo_storage, self.view.id())
+                _, _, self.issue_list.issue_response = show_stock(self.repo_info_storage, self.view.id())
                 if self.command:
                     links = self.issue_list.get_links()
                     if self.command in links:
@@ -118,11 +141,14 @@ class PrintListInView(threading.Thread):
                     str(issue['number']), issue['locked'],
                     issue['title']) + pc.line_ends
             start_point, end_point = find_list_region(self.view)
+            if self.view.is_read_only():
+                self.view.set_read_only(False)
             self.view.run_command("replace_snippet",
                                   {"snippet": snippet,
                                    "start_point": start_point,
                                    "end_point": end_point})
-            restock(self.repo_storage, self.view.id(),
+            self.view.set_read_only(True)
+            restock(self.repo_info_storage, self.view.id(),
                     (self.issue_list.username, self.issue_list.repo_name, issue_response))
         else:
             sublime.status_message("Cannot obtain issue list, error code {}".
@@ -151,10 +177,13 @@ class PrintIssueInView(threading.Thread):
         if issue_response.status_code in (200, 201):
             issue = issue_response.json()
             comments = comments_response.json()
+            user_set = set([])
+            user_set.add(issue['user']['login'])
             snippet = ''
             snippet += format_issue(issue)
             comment_dict = {}
             for comment in comments:
+                user_set.add(comment['user']['login'])
                 comment_dict[comment['id']] = comment
                 snippet += format_comment(comment)
             snippet += "## Add New Comment:" + pc.line_ends
@@ -162,10 +191,11 @@ class PrintIssueInView(threading.Thread):
             snippet += "*" + "-" * 10 + "END" + '-' * 10 + "*"
             if not self.view:
                 self.view = sublime.active_window().new_file()
+            global_person_list[self.view.id()] = user_set
             restock(self.issue_storage, self.view.id(),
                     {"issue": issue,
                      "comments": comment_dict})
-            restock(self.repo_info_storage, self.view.id(), self.repo_info)
+            restock(self.repo_info_storage, self.view.id(), (self.repo_info[0], self.repo_info[1], issue_response))
             self.view.run_command("erase_snippet")
             self.view.run_command("set_file_type", {"syntax": pc.issue_syntax})
             self.view.run_command("insert_issue_snippet", {"snippet": snippet})

@@ -2,6 +2,7 @@ import sublime
 import sublime_plugin
 from . import parameter_container as pc
 from . import flag_container as fc
+from . import global_person_list, global_title_list
 
 
 def highlight(view, flags_dict):
@@ -24,6 +25,11 @@ class IssuePageIndicator(sublime_plugin.EventListener):
                 highlight(view, fc.pagination_flags)
         else:
             pass
+
+
+class AutoIssueCompletion(sublime_plugin.EventListener):
+    def on_query_completions(self, view, prefix, locations):
+        return global_person_list[view.id()]
 
 
 if int(sublime.version()) >= 3118:

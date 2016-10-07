@@ -21,6 +21,7 @@ def print_list_framework(view=None):
                         "Packages/GitHubIssue/list.tmTheme")
     view.run_command("insert_issue_snippet", {"snippet": snippet})
     view.set_scratch(True)
+    view.set_read_only(True)
     return view
 
 
@@ -28,7 +29,6 @@ def find_list_region(view=None):
     view_converter = ViewConverter(view)
     _, start_point, end_point, _ = view_converter.find_region_line("-" * 24 + '**' + "-" * 24, "-" * 23 +"*" * 4 + "-" * 23)
     return (start_point, end_point)
-
 
 
 def restock(storage, key, item):
