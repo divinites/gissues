@@ -25,7 +25,7 @@ def plugin_loaded():
     active_issue_obj = issue.IssueObj(settings)
 
 
-class IssueDestock(sublime_plugin.EventListener):
+class IssueStocks(sublime_plugin.EventListener):
     def on_pre_close(self, view):
         if view.settings().get('syntax') == pc.issue_syntax:
             try:
@@ -45,6 +45,7 @@ class ChangeIssuePageCommand(sublime_plugin.TextCommand):
         return False
 
     def run(self, edit, command):
+        global active_issue_obj
         github_logger.info("we have the command {}".format(command))
         view_text = "_{}_".format(command.capitalize())
         github_logger.info("we are matching {}".format(view_text))
@@ -54,7 +55,7 @@ class ChangeIssuePageCommand(sublime_plugin.TextCommand):
             if flag == view_text:
                 github_logger.info("flag matches, set {} to True".format(flag))
                 fc.pagination_flags[flag] = True
-        print_next_page_issues = issue.PrintListInView(self.view, active_issue_obj, repo_info_storage, command)
+        print_next_page_issues = issue.PrintListInView(self.view, active_issue_obj, repo_info_storage, command, False)
         print_next_page_issues.start()
 
 
@@ -204,7 +205,7 @@ class LoadRepoList:
     def create_issue(self):
         create_new_issue_view()
         view_id = sublime.active_window().active_view().id()
-        utils.restock(repo_info_storage, view_id, (self.username, self.repo_name))
+        utils.restock(repo_info_storage, view_id, (self.username, self.repo_name, None))
 
 
 def create_new_issue_view():

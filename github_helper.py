@@ -5,7 +5,6 @@ import sublime
 # from . import repo_info_storage
 
 
-
 class InsertIssueSnippetCommand(sublime_plugin.TextCommand):
     def run(self, edit, start_point=0, snippet=None):
         if snippet:

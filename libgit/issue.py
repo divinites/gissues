@@ -26,7 +26,7 @@ class IssueObj:
         view_id = view.id()
         try:
             github_logger.info("found the view in repo_dictionary")
-            self.username, self.repo_name = show_stock(repo_storage, view_id)
+            self.username, self.repo_name, self.issue_response = show_stock(repo_storage, view_id)
         except:
             raise Exception("Which repository should I post?")
 
@@ -86,24 +86,29 @@ class IssueObj:
 
 
 class PrintListInView(threading.Thread):
-    def __init__(self, view, issue_list, repo_storage, command=None, **args):
+    def __init__(self, view, issue_list, repo_storage, command=None, new_flag=True, **args):
         super(PrintListInView, self).__init__(self)
         self.issue_list = issue_list
         self.args = args
         self.repo_storage = repo_storage
         self.view = view
         self.command = command
+        self.new_flag = new_flag
 
     def run(self):
-        if not self.issue_list.issue_response:
-            self.issue_list.get(params=self.args)
+        if not self.new_flag:
+            if not self.issue_list.issue_response:
+                self.issue_list.get(params=self.args)
+            else:
+                _, _, self.issue_list.issue_response = show_stock(self.repo_storage, self.view.id())
+                if self.command:
+                    links = self.issue_list.get_links()
+                    if self.command in links:
+                        self.issue_list.get(links[self.command]['url'], params=self.args)
+                    else:
+                        pass
         else:
-            if self.command:
-                links = self.issue_list.get_links()
-                if self.command in links:
-                    self.issue_list.get(links[self.command]['url'], params=self.args)
-                else:
-                    pass
+            self.issue_list.get(params=self.args)
         issue_response = self.issue_list.issue_response
         if issue_response.status_code in (200, 201):
             json_list = issue_response.json()
@@ -118,7 +123,7 @@ class PrintListInView(threading.Thread):
                                    "start_point": start_point,
                                    "end_point": end_point})
             restock(self.repo_storage, self.view.id(),
-                    (self.issue_list.username, self.issue_list.repo_name))
+                    (self.issue_list.username, self.issue_list.repo_name, issue_response))
         else:
             sublime.status_message("Cannot obtain issue list, error code {}".
                                    format(str(issue_response.status_code)))
@@ -217,8 +222,10 @@ class UpdateIssue(IssueManipulate):
     def run(self):
         view_id = self.view.id()
         original_issue = show_stock(self.issue_storage, view_id)
+        github_logger.info("take out original issue")
         last_updated_time = original_issue['issue']['updated_at']
         modified_issue = get_issue_post(self.view)
+        github_logger.info("get the modified issue")
         issue_change, comment_change, deleted_comments = compare_issues(
             original_issue, modified_issue)
         if issue_change:
@@ -285,6 +292,7 @@ class UpdateIssue(IssueManipulate):
                 snippet += pc.line_ends
                 snippet += "*" + "-" * 10 + "END" + '-' * 10 + "*"
                 a, b = find_comment_region(self.view)
+                github_logger.info("insert the snippet")
                 self.view.run_command("replace_snippet", {"start_point": a,
                                                           "end_point": b,
                                                           "snippet": snippet})
