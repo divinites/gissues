@@ -14,14 +14,16 @@ Set-ups:
 - Open Preferences -> Package Settings -> Github Issue
 - Open Settings - User
 - There is a sample configuration in Settings - Default
-- Four options available:
+- Six options available:
 
 ```json
 {
 "token": "",
 "username": "",
 "password": "",
-"debug": 0
+"debug": 0,
+"syntax": "Packages/GitHubIssue/Issue.sublime-syntax",
+"git_path": ""
  }
 ```
 
@@ -49,7 +51,11 @@ Alternatively, you can use password (not recommended, since username and passwor
 
 To sum up, the username is always required, passowrd and token are optional but at least one of them should be provided.
 
-debug is a flag, if it is set to 1, the plug-in will print every single step and output in sublime console. Normally it should be set to 0.
+"debug" is a flag, if it is set to 1, the plug-in will print every single step and output in sublime console. Normally it should be set to 0.
+
+"Syntax" is your preferred markdown syntax for issue view.
+
+"git_path" is where your git executable lies, if git is in your system path, you normally do not need to set it.
 
 After installing this plug-in, it would be better to restart sublime text to make the plug-in work.
 
@@ -59,7 +65,9 @@ All commands are runnable through Command Palette, please have a look at *Comman
 
 Some shortcut keys are pre-defined:
 
-- In an issue List view, Press **Enter** or **Right Arrow** to open a particular issue
+- In an issue List view, Press **Enter** to open a particular issue, Press **Right/Left Arrow** turn to issue page down/up.
+
+- In an issue List view, PressPress **Ctrl + Right/Left Arrow** to goto last/first page of issues.
 
 - In an issue view, Press **Super+S**(**Ctrl+S** in Windows)to sync current issue or comments with Github
 

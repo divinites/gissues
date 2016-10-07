@@ -1,0 +1,11 @@
+Big update again! Please restart Sublime Text to make the plugin work.
+
+- Add pagination for long issue list.
+  - left arrow key "<-" : previous page.
+  - right arrow key "->": next page,
+  - ctrl/cmd + "<-"        : first page,
+  - ctrl/cmd + "->"        : last page;
+
+- Add two new config parameters in github_issue.sublime-settings:
+  -"syntax": default value is "Packages/GitHubIssue/Issue.sublime-syntax", you can change to your favorite markdown syntax, but if you change it, you will lose "cmd/ctrl +s " and "shift+ cmd/ctrl +s" as the default shortcut for update and post an issue respectively.
+  - git_path": default value is "", in case when the plug-in fails to detect your git execuable automatically

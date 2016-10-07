@@ -8,7 +8,8 @@
           },]
         },
         { "keys": [ "right" ],
-          "command": "forward_issue_page",
+          "command": "change_issue_page",
+          "args": {"command": "next"},
           "context": [{
             "key": "selector",
             "operator": "equal",
@@ -16,7 +17,26 @@
           },]
         },
         { "keys": [ "left" ],
-          "command": "backward_issue_page",
+          "command": "change_issue_page",
+          "args": {"command": "prev"},
+          "context": [{
+            "key": "selector",
+            "operator": "equal",
+            "operand": "text.issue.list",
+          },]
+        },
+        { "keys": [ "ctrl+right" ],
+          "command": "change_issue_page",
+          "args": {"command": "last"},
+          "context": [{
+            "key": "selector",
+            "operator": "equal",
+            "operand": "text.issue.list",
+          },]
+        },
+        { "keys": [ "ctrl+left"],
+          "command": "change_issue_page",
+          "args": {"command": "first"},
           "context": [{
             "key": "selector",
             "operator": "equal",
