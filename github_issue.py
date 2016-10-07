@@ -4,25 +4,58 @@ from .libgit import issue
 from .libgit import utils
 from .libgit import github
 from . import parameter_container as pc
+from . import flag_container as fc
 from . import github_logger
+from . import repo_info_storage, issue_obj_storage
 import re
 import logging
 from queue import Queue
 from functools import partial
 
+active_issue_obj = None
+
 
 def plugin_loaded():
-    global active_issue_obj, issue_obj_storage, repo_info_storage
+    global active_issue_obj
     settings = sublime.load_settings("github_issue.sublime-settings")
     pc.read_settings(settings)
     # pc.line_ends = find_line_ends()
     pc.line_ends = "\n"
     logging.basicConfig(level=logging.DEBUG if pc.debug_flag == 0 else logging.INFO)
-    repo_info_storage = Queue()
-    issue_obj_storage = Queue()
     active_issue_obj = issue.IssueObj(settings)
-    issue_obj_storage.put({})
-    repo_info_storage.put({})
+
+
+class IssueDestock(sublime_plugin.EventListener):
+    def on_pre_close(self, view):
+        if view.settings().get('syntax') == pc.issue_syntax:
+            try:
+                global issue_obj_storage, repo_info_storage
+                utils.destock(issue_obj_storage, view.id())
+                utils.destock(repo_info_storage, view.id())
+                github_logger.info("delete view related issue stock")
+            except:
+                pass
+
+
+class ChangeIssuePageCommand(sublime_plugin.TextCommand):
+    def is_enabled(self):
+        syntax_name = self.view.settings().get('syntax')
+        if syntax_name == pc.list_syntax:
+            return True
+        return False
+
+    def run(self, edit, command):
+        github_logger.info("we have the command {}".format(command))
+        view_text = "_{}_".format(command.capitalize())
+        github_logger.info("we are matching {}".format(view_text))
+        for flag in fc.pagination_flags.keys():
+            fc.pagination_flags[flag] = False
+            github_logger.info("{} set to False".format(flag))
+            if flag == view_text:
+                github_logger.info("flag matches, set {} to True".format(flag))
+                fc.pagination_flags[flag] = True
+        print_next_page_issues = issue.PrintListInView(self.view, active_issue_obj, repo_info_storage, command)
+        print_next_page_issues.start()
 
 
 class ShowGithubIssueListCommand(sublime_plugin.WindowCommand):
@@ -42,7 +75,7 @@ class ShowGithubIssueCommand(sublime_plugin.WindowCommand):
         return False
 
     def run(self):
-        global active_issue_obj, issue_obj_storage, repo_info_storage
+        global active_issue_obj
         view = sublime.active_window().active_view()
         target_line = view.substr(view.line(view.sel()[0]))
         match_id = re.search(r'^\d+(?=\s)', target_line)
@@ -60,7 +93,6 @@ class ShowGithubIssueCommand(sublime_plugin.WindowCommand):
 
 class NewGithubIssueCommand(sublime_plugin.WindowCommand):
     def run(self):
-        global repo_info_storage
         repo_loader = LoadRepoList()
         repo_loader.format_entries()
         repo_loader.show_panel_then_create_issue()
@@ -75,10 +107,10 @@ class PostGithubIssueCommand(sublime_plugin.WindowCommand):
         return False
 
     def run(self):
-        global active_issue_obj, issue_obj_storage, repo_info_storage
+        global active_issue_obj
         active_issue_obj.find_repo(self.view, repo_info_storage)
         post_issue = issue.PostNewIssue(
-            issue_list=active_issue_obj, issue_dict=issue_obj_storage)
+            issue_list=active_issue_obj, issue_storage=issue_obj_storage)
         post_issue.start()
 
 
@@ -91,31 +123,14 @@ class UpdateGithubIssueCommand(sublime_plugin.WindowCommand):
         return False
 
     def run(self):
-        global active_issue_obj, issue_obj_storage, repo_info_storage
+        global active_issue_obj
         if not repo_info_storage.empty():
             active_issue_obj.find_repo(self.view, repo_info_storage)
         else:
             raise Exception("Error in obtaining Repo Info!")
         update_issue = issue.UpdateIssue(
-            issue_list=active_issue_obj, issue_dict=issue_obj_storage)
+            issue_list=active_issue_obj, issue_storage=issue_obj_storage)
         update_issue.start()
-
-
-class InsertIssueCommand(sublime_plugin.TextCommand):
-    def run(self, edit, start_point=0, issue=None):
-        if issue:
-            self.view.insert(edit, start_point, issue)
-
-
-class ReplaceIssueCommand(sublime_plugin.TextCommand):
-    def run(self, edit, start, end, snippet):
-        if snippet:
-            self.view.replace(edit, sublime.Region(start, end), snippet)
-
-
-class ClearViewCommand(sublime_plugin.TextCommand):
-    def run(self, edit):
-        self.view.erase(edit, sublime.Region(0, self.view.size()))
 
 
 class LoadRepoList:
@@ -153,7 +168,6 @@ class LoadRepoList:
         self.window.show_quick_panel(self.entries, _param_on_repo_selection)
 
     def on_enter_repo_info(self, content, subsequent_action, **args):
-        global github_logger
         if '/' in content:
             self.username, self.repo_name = content.split('/')
             github_logger.info("username is " + str(self.username))
@@ -180,19 +194,17 @@ class LoadRepoList:
                 subsequent_action(**args)
 
     def print_issue_list(self, **args):
-        global active_issue_obj, repo_info_storage
+        global active_issue_obj
         active_issue_obj.get_repo(self.username, self.repo_name)
-        print_in_view = issue.PrintListInView(active_issue_obj,
+        issue_view = utils.print_list_framework()
+        print_in_view = issue.PrintListInView(issue_view, active_issue_obj,
                                               repo_info_storage, **args)
         print_in_view.start()
 
     def create_issue(self):
-        global repo_info_storage
         create_new_issue_view()
         view_id = sublime.active_window().active_view().id()
-        repo_dictionary = repo_info_storage.get()
-        repo_dictionary[view_id] = (self.username, self.repo_name)
-        repo_info_storage.put(repo_dictionary)
+        utils.restock(repo_info_storage, view_id, (self.username, self.repo_name))
 
 
 def create_new_issue_view():
@@ -208,7 +220,7 @@ def create_new_issue_view():
                       {"syntax":
                        pc.issue_syntax})
     github_logger.info("new issue will have a syntax {}".format(pc.issue_syntax))
-    view.run_command("insert_issue", {"issue": snippet})
+    view.run_command("insert_issue_snippet", {"snippet": snippet})
     view.sel().clear()
     start_point = view.text_point(0, 18)
     view.sel().add(sublime.Region(start_point))

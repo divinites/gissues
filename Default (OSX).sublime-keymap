@@ -8,7 +8,35 @@
           },]
         },
         { "keys": [ "right" ],
-          "command": "show_github_issue",
+          "command": "change_issue_page",
+          "args": {"command": "next"},
+          "context": [{
+            "key": "selector",
+            "operator": "equal",
+            "operand": "text.issue.list",
+          },]
+        },
+        { "keys": [ "left" ],
+          "command": "change_issue_page",
+          "args": {"command": "prev"},
+          "context": [{
+            "key": "selector",
+            "operator": "equal",
+            "operand": "text.issue.list",
+          },]
+        },
+        { "keys": [ "super+right" ],
+          "command": "change_issue_page",
+          "args": {"command": "last"},
+          "context": [{
+            "key": "selector",
+            "operator": "equal",
+            "operand": "text.issue.list",
+          },]
+        },
+        { "keys": [ "super+left"],
+          "command": "change_issue_page",
+          "args": {"command": "first"},
           "context": [{
             "key": "selector",
             "operator": "equal",

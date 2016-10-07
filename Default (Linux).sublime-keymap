@@ -8,7 +8,15 @@
           },]
         },
         { "keys": [ "right" ],
-          "command": "show_github_issue",
+          "command": "forward_issue_page",
+          "context": [{
+            "key": "selector",
+            "operator": "equal",
+            "operand": "text.issue.list",
+          },]
+        },
+        { "keys": [ "left" ],
+          "command": "backward_issue_page",
           "context": [{
             "key": "selector",
             "operator": "equal",

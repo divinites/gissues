@@ -4,6 +4,58 @@ from .. import parameter_container as pc
 from .. import github_logger
 
 
+def print_list_framework(view=None):
+    snippet = ''
+    snippet += "-" * 50 + pc.line_ends
+    snippet += 'Issue No.' + '   ' + 'Locked    ' + 'Issue Title' + pc.line_ends
+    snippet += "-" * 24 + '**' + "-" * 24 + pc.line_ends
+    snippet += "-" * 23 +"*" * 4 + "-" * 23 + pc.line_ends * 3
+    snippet += "Page:  |_First_|     ...     |_Prev_|     ...     |_Next_|     ...     |_Last_|" + pc.line_ends
+    if not view:
+        view = sublime.active_window().new_file()
+    view.run_command("erase_snippet")
+    view.run_command("set_file_type",
+                     {"syntax":
+                      pc.list_syntax})
+    view.settings().set('color_scheme',
+                        "Packages/GitHubIssue/list.tmTheme")
+    view.run_command("insert_issue_snippet", {"snippet": snippet})
+    view.set_scratch(True)
+    return view
+
+
+def find_list_region(view=None):
+    view_converter = ViewConverter(view)
+    _, start_point, end_point, _ = view_converter.find_region_line("-" * 24 + '**' + "-" * 24, "-" * 23 +"*" * 4 + "-" * 23)
+    return (start_point, end_point)
+
+
+
+def restock(storage, key, item):
+    if not storage.empty():
+        dictionary = storage.get()
+        dictionary[key] = item
+        storage.put(dictionary)
+
+
+def show_stock(storage, key):
+    if not storage.empty():
+        dictionary = storage.get()
+        content = dictionary[key]
+        storage.put(dictionary)
+        return content
+
+
+def destock(storage, key):
+    if not storage.empty():
+        dictionary = storage.get()
+        try:
+            del dictionary[key]
+        except:
+            pass
+        storage.put(dictionary)
+
+
 def format_issue(issue):
     snippet = ''
     snippet += "# Title         : " + issue["title"] + pc.line_ends
@@ -76,14 +128,16 @@ class ViewConverter:
             prepared_dict[prepared_key] = prepared_value
         return prepared_dict
 
-    def find_region(self, region_start_string, region_end_string):
-        a, b = 0, 0
+    def find_region_line(self, region_start_string, region_end_string):
+        a, b, c, d = 0, 0, 0, 0
         for line, line_region in zip(self.readlines(), self.get_line_regions()):
             if line.strip().startswith(region_start_string):
                 a = line_region.a
+                c = line_region.b
             if line.strip().startswith(region_end_string):
                 b = line_region.b
-        return (a, b)
+                d = line_region.a
+        return (a, c, d, b)
 
     def readlines(self):
         lines = []
@@ -183,7 +237,8 @@ def get_issue_post(view):
 
 def find_comment_region(view):
     view_converter = ViewConverter(view)
-    return view_converter.find_region("## Add New Comment:", "*" + "-" * 10 + "END")
+    a, _, _, b = view_converter.find_region_line("## Add New Comment:", "*" + "-" * 10 + "END")
+    return (a, b)
 
 
 def compare_issues(original_issue, issue_in_view):
