@@ -7,6 +7,7 @@ from . import parameter_container as pc
 from . import flag_container as fc
 from . import github_logger
 from . import repo_info_storage, issue_obj_storage
+from . import global_person_list, global_title_list
 import re
 import logging
 from queue import Queue
@@ -29,9 +30,10 @@ class IssueStocks(sublime_plugin.EventListener):
     def on_pre_close(self, view):
         if view.settings().get('syntax') == pc.issue_syntax:
             try:
-                global issue_obj_storage, repo_info_storage
-                utils.destock(issue_obj_storage, view.id())
-                utils.destock(repo_info_storage, view.id())
+                view_id = view.id()
+                utils.destock(issue_obj_storage, view_id)
+                utils.destock(repo_info_storage, view_id)
+                del global_person_list[view_id]
                 github_logger.info("delete view related issue stock")
             except:
                 pass
@@ -83,7 +85,7 @@ class ShowGithubIssueCommand(sublime_plugin.WindowCommand):
         issue_number = int(match_id.group(0))
         try:
             active_issue_obj.find_repo(view, repo_info_storage)
-            repo_info = (active_issue_obj.username, active_issue_obj.repo_name)
+            repo_info = (active_issue_obj.username, active_issue_obj.repo_name, None)
             print_in_view = issue.PrintIssueInView(
                 active_issue_obj, issue_number, issue_obj_storage, repo_info, repo_info_storage)
             print_in_view.start()

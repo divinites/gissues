@@ -1,0 +1,11 @@
+Add label support:
+
+In the view of issues, there is a new line:
+
+# Label   :
+
+You can add/remove labels now.
+
+Currently it only supports existing labels, if you type a non-exisiting label name, the system will ignore it.
+
+In the next release, it will support new labels.

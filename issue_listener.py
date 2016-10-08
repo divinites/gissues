@@ -27,9 +27,9 @@ class IssuePageIndicator(sublime_plugin.EventListener):
             pass
 
 
-class AutoIssueCompletion(sublime_plugin.EventListener):
-    def on_query_completions(self, view, prefix, locations):
-        return global_person_list[view.id()]
+# class AutoIssueCompletion(sublime_plugin.EventListener):
+#     def on_query_completions(self, view, prefix, locations):
+#         return global_person_list[view.id()]
 
 
 if int(sublime.version()) >= 3118:

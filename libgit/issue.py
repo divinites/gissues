@@ -8,6 +8,7 @@ from .utils import ViewConverter
 import sublime
 import threading
 import json
+import random
 
 
 class AcquireIssueTitle(threading.Thread):
@@ -18,11 +19,11 @@ class AcquireIssueTitle(threading.Thread):
 
     def run(self):
         title_list = []
-        self.issue_obj.get({"state": "all"})
+        self.issue_obj.get(params={"state": "all"})
         while True:
             for issue in self.issue_obj.issue_response.json():
                 title_list.append((issue['title'], issue['number']))
-            links = self.issue_obj.get_links
+            links = self.issue_obj.get_links()
             if (not links) or 'next' not in links:
                 break
             else:
@@ -112,6 +113,44 @@ class IssueObj:
             self.github_account.session.get(issue_url, **params),
             self.github_account.session.get(issue_url + '/comments', **params))
 
+    def replace_labels(self, issue_number, labels):
+        issue_url = self.github_account.join_issue_url(
+            username=self.username,
+            repo_name=self.repo_name,
+            issue_number=str(issue_number))
+        issue_url += "/labels"
+        github_logger.info("replace label url is {}".format(issue_url))
+        if len(labels) == 1 and labels[0] == '':
+            return self.github_account.session.delete(issue_url)
+        return self.github_account.session.put(issue_url, json=labels)
+
+    def get_all_labels(self):
+        issue_url = self.github_account.join_issue_url(
+            username=self.username, repo_name=self.repo_name)
+        issue_url = issue_url[:-7]
+        issue_url += "/labels"
+        labels = set([])
+        label_resp = self.github_account.session.get(issue_url)
+        if label_resp.status_code != 200:
+            raise Exception("cannot get labels")
+        for label in label_resp.json():
+            labels.add(label['name'])
+        return labels
+
+    def get_labels(self, issue_number):
+        pass
+
+
+    def generate_labels(self, labels):
+        issue_url = self.github_account.join_issue_url(
+            username=self.username, repo_name=self.repo_name)
+        issue_url += "/labels"
+        for label in labels:
+            color = "#%06x" % random.randint(0, 0xFFFFFF)
+            label_resp = self.github_account.session.post(issue_url, data={"color": color, "name": label})
+            if label_resp.status_code != 201:
+                raise Exception("error creating label {}".format(label))
+
 
 class PrintListInView(threading.Thread):
     def __init__(self,
@@ -196,6 +235,9 @@ class PrintIssueInView(threading.Thread):
             issue = issue_response.json()
             comments = comments_response.json()
             user_set = set([])
+            label_set = set([])
+            for label_info in issue['labels']:
+                label_set.add(label_info['name'])
             user_set.add(issue['user']['login'])
             snippet = ''
             snippet += format_issue(issue)
@@ -210,7 +252,9 @@ class PrintIssueInView(threading.Thread):
             if not self.view:
                 self.view = sublime.active_window().new_file()
             global_person_list[self.view.id()] = user_set
+            github_logger.info("person list is {}".format(str(global_person_list)))
             restock(self.issue_storage, self.view.id(), {"issue": issue,
+                                                         "label": label_set,
                                                          "comments":
                                                          comment_dict})
             restock(self.repo_info_storage, self.view.id(),
@@ -282,7 +326,7 @@ class UpdateIssue(IssueManipulate):
         last_updated_time = original_issue['issue']['updated_at']
         modified_issue = get_issue_post(self.view)
         github_logger.info("get the modified issue")
-        issue_change, comment_change, deleted_comments = compare_issues(
+        issue_change, label_change, comment_change, deleted_comments = compare_issues(
             original_issue, modified_issue)
         if issue_change:
             updating_issue = self.issue_list.update_issue(
@@ -303,6 +347,9 @@ class UpdateIssue(IssueManipulate):
                 sublime.status_message("Issue update fails")
                 github_logger.info("issue update fails, error code " + str(
                     updating_issue.status_code))
+        if label_change != -1:
+            github_logger.info("new labels are {}".format(repr(label_change)))
+            self.issue_list.replace_labels(original_issue['issue']['number'], list(label_change))
         if comment_change:
             for comment_id, content in comment_change.items():
                 updating_comment = self.issue_list.update_comment(

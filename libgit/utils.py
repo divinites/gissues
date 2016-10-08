@@ -57,10 +57,15 @@ def destock(storage, key):
 
 
 def format_issue(issue):
+    labels = []
+    if issue["labels"]:
+        for label_obj in issue["labels"]:
+            labels.append(label_obj['name'])
     snippet = ''
     snippet += "# Title         : " + issue["title"] + pc.line_ends
     snippet += "## Number       : " + str(issue['number']) + pc.line_ends
     snippet += "## State        : " + issue['state'] + pc.line_ends
+    snippet += "## Label        : " + ", ".join(labels) + pc.line_ends
     snippet += "## Locked       : " + str(issue['locked']) + pc.line_ends
     snippet += "## Assignee     : " + str(issue['assignee']) + pc.line_ends
     snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + pc.line_ends
@@ -122,9 +127,12 @@ class ViewConverter:
             elif value.isdigit():
                 github_logger.info(str(key) + "value is " + value)
                 prepared_value = int(value)
+            elif prepared_key == 'label':
+                github_logger.info(str(key) + "value is " + value)
+                prepared_value = set([x.strip() for x in value.split(', ')])
+                github_logger.info("labels are " + str(prepared_value))
             else:
                 prepared_value = value
-                github_logger.info(str(key) + "value is " + value)
             prepared_dict[prepared_key] = prepared_value
         return prepared_dict
 
@@ -231,6 +239,7 @@ def get_issue_post(view):
     comment_dict = ViewConverter.get_comment_list(view_lines, crucial_lines)
     new_comment = ViewConverter.get_new_comment(view_lines, crucial_lines)
     return {'issue': issue_post,
+            'label': issue_post.pop("label"),
             'comments': comment_dict,
             'new_comment': new_comment}
 
@@ -257,6 +266,9 @@ def compare_issues(original_issue, issue_in_view):
         modified_part.update(additional_part)
     github_logger.info('original_issue is' + str(original_issue['issue']))
     github_logger.info("modified_parts are " + str(modified_part))
+    new_label = -1
+    if original_issue['label'] != issue_in_view['label']:
+        new_label = issue_in_view['label']
     modified_comments = {}
     comment_ids_in_view = set(issue_in_view['comments'].keys())
     original_comment_ids = set(original_issue['comments'].keys())
@@ -266,4 +278,4 @@ def compare_issues(original_issue, issue_in_view):
             modified_comments[comment_id] = issue_in_view['comments'][comment_id]
     github_logger.info("original_comments are " + str(original_issue["comments"]))
     github_logger.info("modified_comments are " + str(modified_comments))
-    return (modified_part, modified_comments, deleted_comments)
+    return (modified_part, new_label, modified_comments, deleted_comments)
