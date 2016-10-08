@@ -188,6 +188,8 @@ class LoadRepoList:
                     self.on_enter_repo_info,
                     subsequent_action=subsequent_action,
                     **args)
+                content = sublime.get_clipboard(256)
+                sublime.set_clipboard(content.strip())
                 self.window.show_input_panel(
                     'Enter repo in the format username/repo_name:', '',
                     _param_on_enter_repo_info, None, None)
