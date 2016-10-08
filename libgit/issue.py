@@ -30,7 +30,7 @@ class AcquireIssueTitle(threading.Thread):
                 self.issue_obj.get(links['next']['url'])
         global_title_list["{}/{}".format(self.issue_obj.username,
                                          self.issue_obj.repo_name)] = sorted(
-                                             title_list, key=lambda x: x[1])
+                                             title_list, key=lambda x: x[1], reverse=True)
 
 
 class IssueObj:

@@ -26,19 +26,6 @@ def plugin_loaded():
     active_issue_obj = issue.IssueObj(settings)
 
 
-class IssueStocks(sublime_plugin.EventListener):
-    def on_pre_close(self, view):
-        if view.settings().get('syntax') == pc.issue_syntax:
-            try:
-                view_id = view.id()
-                utils.destock(issue_obj_storage, view_id)
-                utils.destock(repo_info_storage, view_id)
-                del global_person_list[view_id]
-                github_logger.info("delete view related issue stock")
-            except:
-                pass
-
-
 class ChangeIssuePageCommand(sublime_plugin.TextCommand):
     def is_enabled(self):
         syntax_name = self.view.settings().get('syntax')
@@ -189,7 +176,8 @@ class LoadRepoList:
                     subsequent_action=subsequent_action,
                     **args)
                 content = sublime.get_clipboard(256)
-                sublime.set_clipboard(content.strip())
+                if content.count("/") == 1:  # Add a condition to try not to jerperdize irrelevant clipboard content
+                    sublime.set_clipboard(content.strip())
                 self.window.show_input_panel(
                     'Enter repo in the format username/repo_name:', '',
                     _param_on_enter_repo_info, None, None)

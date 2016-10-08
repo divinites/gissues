@@ -4,6 +4,8 @@
     "password": "",
     "debug": 0,
     "syntax": "Packages/GitHubIssue/Issue.sublime-syntax",
-    "git_path": ""
+    "git_path": "",
+    "issue_title_completion": true,
+    "user_completion": true
 
 }
