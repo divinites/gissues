@@ -1,7 +1,7 @@
 from .github import GitHubAccount
 from .. import parameter_container as pc
 from .. import github_logger
-from .. import global_person_list, global_title_list
+from .. import global_person_list, global_title_list, global_label_list
 from .utils import get_issue_post, compare_issues, restock, show_stock
 from .utils import format_issue, format_comment, find_comment_region, find_list_region
 from .utils import ViewConverter
@@ -19,10 +19,12 @@ class AcquireIssueTitle(threading.Thread):
 
     def run(self):
         title_list = []
+
         self.issue_obj.get(params={"state": "all"})
+        label_list = self.issue_obj.get_all_labels()
         while True:
             for issue in self.issue_obj.issue_response.json():
-                title_list.append((issue['title'], issue['number']))
+                title_list.append((issue['title'], issue['number'], 0 if issue['state'] == 'open' else 1))
             links = self.issue_obj.get_links()
             if (not links) or 'next' not in links:
                 break
@@ -30,7 +32,9 @@ class AcquireIssueTitle(threading.Thread):
                 self.issue_obj.get(links['next']['url'])
         global_title_list["{}/{}".format(self.issue_obj.username,
                                          self.issue_obj.repo_name)] = sorted(
-                                             title_list, key=lambda x: x[1], reverse=True)
+                                             title_list, key=lambda x: (x[2], x[1] * -1))
+        global_label_list["{}/{}".format(self.issue_obj.username,
+                                         self.issue_obj.repo_name)] = label_list
 
 
 class IssueObj:
@@ -353,10 +357,6 @@ class UpdateIssue(IssueManipulate):
                 github_logger.info("issue update fails, error code " + str(
                     updating_issue.status_code))
         if label_change != -1:
-            try:
-                label_change.remove('')
-            except KeyError:
-                pass
             github_logger.info("new labels are {}".format(repr(label_change)))
             all_labels = self.issue_list.get_all_labels()
             new_labels = label_change.difference(all_labels)

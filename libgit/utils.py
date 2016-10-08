@@ -65,7 +65,7 @@ def format_issue(issue):
     snippet += "# Title         : " + issue["title"] + pc.line_ends
     snippet += "## Number       : " + str(issue['number']) + pc.line_ends
     snippet += "## State        : " + issue['state'] + pc.line_ends
-    snippet += "## Label        : " + ", ".join(labels) + pc.line_ends
+    snippet += "## Label        : " + " ".join(['@' + label for label in labels]) + pc.line_ends
     snippet += "## Locked       : " + str(issue['locked']) + pc.line_ends
     snippet += "## Assignee     : " + str(issue['assignee']) + pc.line_ends
     snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + pc.line_ends
@@ -116,20 +116,25 @@ class ViewConverter:
         for key, value in info_dict.items():
             prepared_key = key.lower()
             if value == 'False':
-                github_logger.info(str(key) + "value is " + value)
+                github_logger.info(str(key) + " value is " + value)
                 prepared_value = False
             elif value == 'True':
-                github_logger.info(str(key) + "value is " + value)
+                github_logger.info(str(key) + " value is " + value)
                 prepared_value = True
             elif value == 'None':
-                github_logger.info(str(key) + "value is " + value)
+                github_logger.info(str(key) + " value is " + value)
                 prepared_value = None
             elif value.isdigit():
-                github_logger.info(str(key) + "value is " + value)
+                github_logger.info(str(key) + " value is " + value)
                 prepared_value = int(value)
             elif prepared_key == 'label':
-                github_logger.info(str(key) + "value is " + value)
-                prepared_value = set([x.strip() for x in value.split(', ')])
+                github_logger.info(str(key) + " value is " + value)
+                prepared_value = set([x.strip() for x in value.split('@')])
+                github_logger.info("prepared value is {}".format(str(prepared_value)))
+                try:
+                    prepared_value.remove('')
+                except KeyError:
+                    pass
                 github_logger.info("labels are " + str(prepared_value))
             else:
                 prepared_value = value

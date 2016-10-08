@@ -13,6 +13,8 @@ class ParameterContainer:
         self.git_path = ""
         self.title_completion = True
         self.name_completion = True
+        self.custom_scope = []
+        self.label_completion = True
 
     def read_settings(self, settings):
         self.issue_syntax = settings.get('syntax', 'Packages/GitHubIssue/Issue.sublime-syntax')
@@ -20,6 +22,9 @@ class ParameterContainer:
         self.debug_flag = settings.get('debug', 0)
         self.title_completion = settings.get('issue_title_completion', True)
         self.name_completion = settings.get('user_completion', True)
+        self.label_completion = settings.get("label_completion", True)
+        self.custom_scope = settings.get('custom_completion_scope', [])
+
 
 class FlagContainer:
     def __init__(self):
@@ -37,6 +42,7 @@ issue_obj_storage = Queue()
 repo_info_storage = Queue()
 global_title_list = {}
 global_person_list = {}
+global_label_list = {}
 # global_title_list_storage.put({})
 # global_person_list_storage.put({})
 issue_obj_storage.put({})

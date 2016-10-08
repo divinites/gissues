@@ -6,6 +6,8 @@
     "syntax": "Packages/GitHubIssue/Issue.sublime-syntax",
     "git_path": "",
     "issue_title_completion": true,
-    "user_completion": true
+    "user_completion": true,
+    "label_completion": true,
+    "custom_completion_scope": []
 
 }

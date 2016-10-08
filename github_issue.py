@@ -7,7 +7,6 @@ from . import parameter_container as pc
 from . import flag_container as fc
 from . import github_logger
 from . import repo_info_storage, issue_obj_storage
-from . import global_person_list, global_title_list
 import re
 import logging
 from queue import Queue
