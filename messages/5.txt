@@ -1,0 +1,14 @@
+Full label support! Again, please restart sublime Text to avoid possible errors.
+
+you can add label simply by writing label's name in the corresponding line, if you want to add mutiple labels, just splits them with `,`
+
+If a label is new, it will first create the label and add it to the issue. If a label exists already, it will be added directly.
+
+for example:
+
+# Title         : test
+## Number       : 1
+## State        : open
+## Label        : new label, label1, label2
+## Locked       : False
+## Assignee     : None

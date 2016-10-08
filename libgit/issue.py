@@ -143,8 +143,8 @@ class IssueObj:
         issue_url = issue_url[:-7]
         issue_url += "/labels"
         for label in labels:
-            color = "#%06x" % random.randint(0, 0xFFFFFF)
-            label_resp = self.github_account.session.post(issue_url, data={"color": color, "name": label})
+            color = "%06x" % random.randint(0, 0xFFFFFF)
+            label_resp = self.github_account.session.post(issue_url, json={"color": color, "name": label})
             github_logger.info("the generate labels code is {}".format(label_resp.status_code))
             if label_resp.status_code != 201:
                 raise Exception("error creating label {}".format(label))
@@ -257,7 +257,7 @@ class PrintIssueInView(threading.Thread):
                                                          comment_dict})
             restock(self.repo_info_storage, self.view.id(),
                     (self.repo_info[0], self.repo_info[1], issue_response))
-            self.view.run_command("erase_snippet")
+            self.view.run_command("erase_snippet", {"start_point": 0, "end_point": self.view.size()})
             self.view.run_command("set_file_type", {"syntax": pc.issue_syntax})
             self.view.run_command("insert_issue_snippet", {"snippet": snippet})
             view_converter = ViewConverter(self.view)
@@ -291,16 +291,21 @@ class PostNewIssue(IssueManipulate):
         if post_result.status_code in (200, 201):
             sublime.status_message("Issue Posted")
             if self.issue_storage:
+                issue = post_result.json()
+                label_set = set([])
+                for label_info in issue['labels']:
+                    label_set.add(label_info['name'])
                 restock(self.issue_storage, self.view.id(),
-                        {'issue': post_result.json(),
+                        {'issue': issue,
+                         'label': label_set,
                          'comments': {}})
-            issue = post_result.json()
+                github_logger.info("view id {} is stocked".format(str(self.view.id())))
             snippet = format_issue(issue)
             github_logger.info("format issue")
             snippet += "## Add New Comment:" + pc.line_ends
             snippet += pc.line_ends
             snippet += "*" + "-" * 10 + "END" + '-' * 10 + "*"
-            self.view.run_command("erase_snippet")
+            self.view.run_command("erase_snippet", {"start_point": 0, "end_point": self.view.size()})
             self.view.run_command("set_file_type", {"syntax": pc.issue_syntax})
             self.view.run_command("insert_issue_snippet", {"snippet": snippet})
             github_logger.info("set syntax")
@@ -320,7 +325,9 @@ class UpdateIssue(IssueManipulate):
     def run(self):
         view_id = self.view.id()
         original_issue = show_stock(self.issue_storage, view_id)
-        github_logger.info("take out original issue")
+        if original_issue:
+            github_logger.info("successfully take out original issue")
+        github_logger.info("take out original issue with title {}".format(original_issue['issue']['title']))
         last_updated_time = original_issue['issue']['updated_at']
         modified_issue = get_issue_post(self.view)
         github_logger.info("get the modified issue")
@@ -346,7 +353,15 @@ class UpdateIssue(IssueManipulate):
                 github_logger.info("issue update fails, error code " + str(
                     updating_issue.status_code))
         if label_change != -1:
+            try:
+                label_change.remove('')
+            except KeyError:
+                pass
             github_logger.info("new labels are {}".format(repr(label_change)))
+            all_labels = self.issue_list.get_all_labels()
+            new_labels = label_change.difference(all_labels)
+            if len(new_labels) > 0:
+                self.issue_list.generate_labels(new_labels)
             self.issue_list.replace_labels(original_issue['issue']['number'], list(label_change))
         if comment_change:
             for comment_id, content in comment_change.items():

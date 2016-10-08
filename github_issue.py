@@ -217,6 +217,7 @@ class LoadRepoList:
 def create_new_issue_view():
     snippet = ''
     snippet += "# Title         : " + pc.line_ends
+    snippet += "## Label        : " + pc.line_ends
     snippet += "## Assignee     : " + pc.line_ends
     snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + pc.line_ends
     snippet += pc.line_ends
