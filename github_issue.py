@@ -172,7 +172,7 @@ class LoadRepoList:
 
     def on_enter_repo_info(self, content, subsequent_action, **args):
         if '/' in content:
-            self.username, self.repo_name = content.split('/')
+            self.username, self.repo_name = [x.strip() for x in content.split('/')]
             github_logger.info("username is " + str(self.username))
             github_logger.info("repo name is " + str(self.repo_name))
             subsequent_action(**args)

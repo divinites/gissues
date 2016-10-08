@@ -137,17 +137,15 @@ class IssueObj:
             labels.add(label['name'])
         return labels
 
-    def get_labels(self, issue_number):
-        pass
-
-
     def generate_labels(self, labels):
         issue_url = self.github_account.join_issue_url(
             username=self.username, repo_name=self.repo_name)
+        issue_url = issue_url[:-7]
         issue_url += "/labels"
         for label in labels:
             color = "#%06x" % random.randint(0, 0xFFFFFF)
             label_resp = self.github_account.session.post(issue_url, data={"color": color, "name": label})
+            github_logger.info("the generate labels code is {}".format(label_resp.status_code))
             if label_resp.status_code != 201:
                 raise Exception("error creating label {}".format(label))
 
