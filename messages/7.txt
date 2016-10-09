@@ -1,0 +1,11 @@
+Thanks for supporting Github Issue!
+
+I add two features in this release:
+
+- protect issue header area when writing issues.
+
+- add a unified command "post_or_update_issue" and a unified shortcut "super+s" to post AND update issues.
+
+
+
+Version 2.1.6 is quite mature and stable, it includes all features that github-issue.vim has. Special thanks for the testing works and useful suggestions from @Kristinita !

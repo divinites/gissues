@@ -6,25 +6,43 @@ This plugin aims at providing a convenient way to write and update issues inside
 
 It was initially inspired by github-issues.vim.
 
+## Features
+
+- Create/post/update/open/close github issues inside Sublime Text.
+
+- Browse/navigate the issue list of any public repos and users' private repos.
+
+- Auto-complete issue titles, labels and issue participants.
+
+- Using Markdown as the default syntax of issue, allowing users to choose other syntaxes as well.
+
 
 ## Configuration
 
 Set-ups:
 
 - Open Preferences -> Package Settings -> Github Issue
+
 - Open Settings - User
+
 - There is a sample configuration in Settings - Default
-- Six options available:
+
+- Ten options available:
 
 ```json
 {
-"token": "",
-"username": "",
-"password": "",
-"debug": 0,
-"syntax": "Packages/GitHubIssue/Issue.sublime-syntax",
-"git_path": ""
- }
+    "token": "",
+    "username": "",
+    "password": "",
+    "debug": 0,
+    "syntax": "Packages/GitHubIssue/Issue.sublime-syntax",
+    "git_path": "",
+    "issue\_title\_completion": true,
+    "user_completion": true,
+    "label_completion": true,
+    "custom\_completion\_scope": []
+
+}
 ```
 
 Token means the github access token, you can get one from [this link](https://github.com/settings/tokens)
@@ -51,27 +69,34 @@ Alternatively, you can use password (not recommended, since username and passwor
 
 To sum up, the username is always required, passowrd and token are optional but at least one of them should be provided.
 
-"debug" is a flag, if it is set to 1, the plug-in will print every single step and output in sublime console. Normally it should be set to 0.
+*"debug"* is a flag, if it is set to 1, the plug-in will print every single step and output in sublime console. Normally it should be set to 0.
 
-"Syntax" is your preferred markdown syntax for issue view.
+*"syntax"* is your preferred markdown syntax for issue view.
 
-"git_path" is where your git executable lies, if git is in your system path, you normally do not need to set it.
+_"git\_path"_ is where your git executable lies, if git is in your system path, you normally do not need to set it.
+_"issue\_title\_completion"_, _"user\_completion"_ and _"label\_completion"_ are autocompletion flags:
+
+- _"issue\_title\_completion"_ autocompletes other issue titles, so that users can easily refer them;
+
+- _"user\_completion"_ autocompletes issue participants, so that users can easily _@_ them;
+
+- _"label\_completion"_ autocompletes labels (only available in the "##Label     :" line).
+
+_"custom\_completion\_scope"_: By default, autocompletion only takes place in the scope "text.html.github.issue", if you have customized syntax, you probably want to add correponding scopes here to make autocompletion work under your syntax.
 
 After installing this plug-in, it would be better to restart sublime text to make the plug-in work.
 
 ## Usage
 
-All commands are runnable through Command Palette, please have a look at *Command Palette.sublime-commands* to get more ideas about the commands available.
+All commands are runnable through Command Palette, please have a look at *Command Palette.sublime-commands* and type _GithubIssue_ to get more ideas about the commands available.
 
 Some shortcut keys are pre-defined:
 
 - In an issue List view, Press **Enter** to open a particular issue, Press **Right/Left Arrow** turn to issue page down/up.
 
-- In an issue List view, PressPress **Ctrl + Right/Left Arrow** to goto last/first page of issues.
+- In an issue List view, Press **Ctrl + Right/Left Arrow** to goto last/first page of issues.
 
 - In an issue view, Press **Super+S**(**Ctrl+S** in Windows)to sync current issue or comments with Github
-
-- In an issue view, Press **Super+Shift+S**(**Ctrl+Shift+S** in Windows) to post a new issue to Github
 
 - in an issue view, you can **open**, **close**, __lock__ or __unlock__ an issue simply by changing corresponding line.
 
@@ -97,6 +122,28 @@ Some shortcut keys are pre-defined:
 - Modify a comment:
 ![modify a comment](https://www.scislab.com/static/media/uploads/blog/modi_comment.gif)
 
+## Change Log
 
+- 0.0.1: First public version, only show list works.
+
+- 0.1.0: All basic function works.
+
+- 1.0.0: Add messages, dependencies and ready for Package Control Channel.
+
+- 1.1.0: Add the feature that users can directly enter repo information and write issues/comments.
+
+- 1.2.0: Add logging system and solve CRLF problems.
+
+- 1.3.0: Add issue syntax customization and adjust cursor position.
+
+- 1.5.0: Add issue list pagination and page view control
+
+- 1.6.0: Add basic label support
+
+- 2.0.0: Add auto-completion support
+
+- 2.1.0: Add protection to the issue header and add a command "post_or_update_issue"
+
+- 2.1.6: various minor improvements
 
 
