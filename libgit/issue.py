@@ -11,16 +11,16 @@ import json
 import random
 
 
-class AcquireIssueTitle(threading.Thread):
-    def __init__(self, issue_obj):
-        super(AcquireIssueTitle, self).__init__(self)
-        self.issue_obj = IssueObj(issue_obj.settings, issue_obj.username,
-                                  issue_obj.repo_name)
+class AcquireRepoInfo(threading.Thread):
+    def __init__(self, username, repo_name):
+        super(AcquireRepoInfo, self).__init__(self)
+        self.issue_obj = IssueObj(sublime.load_settings("github_issue.sublime-settings"), username, repo_name)
 
     def run(self):
         title_list = []
-
         self.issue_obj.get(params={"state": "all"})
+        if self.issue_obj.issue_response.status_code not in (200, 201):
+            raise Exception("Cannnot find relevant repo info, please check the input!")
         label_list = self.issue_obj.get_all_labels()
         while True:
             for issue in self.issue_obj.issue_response.json():
@@ -30,11 +30,10 @@ class AcquireIssueTitle(threading.Thread):
                 break
             else:
                 self.issue_obj.get(links['next']['url'])
-        global_title_list["{}/{}".format(self.issue_obj.username,
-                                         self.issue_obj.repo_name)] = sorted(
-                                             title_list, key=lambda x: (x[2], x[1] * -1))
-        global_label_list["{}/{}".format(self.issue_obj.username,
-                                         self.issue_obj.repo_name)] = label_list
+        repo_info = "{}/{}".format(self.issue_obj.username, self.issue_obj.repo_name)
+        # if repo_info not in global_title_list:
+        global_title_list[repo_info] = sorted(title_list, key=lambda x: (x[2], x[1] * -1))
+        global_label_list[repo_info] = label_list
 
 
 class IssueObj:
@@ -124,9 +123,9 @@ class IssueObj:
             issue_number=str(issue_number))
         issue_url += "/labels"
         github_logger.info("replace label url is {}".format(issue_url))
-        if len(labels) == 1 and labels[0] == '':
+        if len(labels) == 1 and '' in labels:
             return self.github_account.session.delete(issue_url)
-        return self.github_account.session.put(issue_url, json=labels)
+        return self.github_account.session.put(issue_url, json=list(labels))
 
     def get_all_labels(self):
         issue_url = self.github_account.join_issue_url(
@@ -140,6 +139,18 @@ class IssueObj:
         for label in label_resp.json():
             labels.add(label['name'])
         return labels
+
+    def attach_labels(self, issue_number, labels):
+        issue_url = self.github_account.join_issue_url(
+            username=self.username,
+            repo_name=self.repo_name,
+            issue_number=str(issue_number))
+        issue_url += "/labels"
+        all_labels = self.get_all_labels()
+        new_labels = set(labels).difference(all_labels)
+        if len(new_labels) > 0:
+            self.generate_labels(new_labels)
+        self.replace_labels(issue_number, labels)
 
     def generate_labels(self, labels):
         issue_url = self.github_account.join_issue_url(
@@ -288,11 +299,17 @@ class IssueManipulate(threading.Thread):
 class PostNewIssue(IssueManipulate):
     def run(self):
         issue_post = get_issue_post(self.view)
-        github_logger.info("preparing updating issue " + str(issue_post[
+        github_logger.info("preparing posting issue " + str(issue_post[
             'issue']))
         post_result = self.issue_list.post_issue(
             data=json.dumps(issue_post['issue']))
+        # acquire_issue_info = AcquireIssueTitle(self.issue_list)
+        # acquire_issue_info.start()
         if post_result.status_code in (200, 201):
+            issue = post_result.json()
+            if len(issue_post['label']) != 0:
+                self.issue_list.attach_labels(issue['number'], issue_post['label'])
+            post_result = self.issue_list.get_issue(issue['number'])[0]
             sublime.status_message("Issue Posted")
             if self.issue_storage:
                 issue = post_result.json()
@@ -358,11 +375,7 @@ class UpdateIssue(IssueManipulate):
                     updating_issue.status_code))
         if label_change != -1:
             github_logger.info("new labels are {}".format(repr(label_change)))
-            all_labels = self.issue_list.get_all_labels()
-            new_labels = label_change.difference(all_labels)
-            if len(new_labels) > 0:
-                self.issue_list.generate_labels(new_labels)
-            self.issue_list.replace_labels(original_issue['issue']['number'], list(label_change))
+            self.issue_list.attach_labels(original_issue['issue']['number'], list(label_change))
         if comment_change:
             for comment_id, content in comment_change.items():
                 updating_comment = self.issue_list.update_comment(

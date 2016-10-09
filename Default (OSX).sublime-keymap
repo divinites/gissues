@@ -44,15 +44,7 @@
           },]
         },
         { "keys": [ "super+s" ],
-          "command": "update_github_issue",
-          "context": [{
-            "key": "selector",
-            "operator": "equal",
-            "operand": "text.html.github.issue",
-          },]
-        },
-        { "keys": [ "super+shift+s" ],
-          "command": "post_github_issue",
+          "command": "post_or_update_issue",
           "context": [{
             "key": "selector",
             "operator": "equal",

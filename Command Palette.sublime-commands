@@ -20,13 +20,8 @@
         "command": "new_github_issue"
     },
     {
-        "caption": "GitHub Issue: Post Issue",
+        "caption": "GitHub Issue: post/update Issue",
         "args": {},
-        "command": "post_github_issue"
-    },
-    {
-        "caption": "GitHub Issue: Update Issue",
-        "args": {},
-        "command": "update_github_issue"
+        "command": "post_or_update_issue"
     },
 ]

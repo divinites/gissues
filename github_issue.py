@@ -88,15 +88,9 @@ class NewGithubIssueCommand(sublime_plugin.WindowCommand):
 
 
 class PostGithubIssueCommand(sublime_plugin.WindowCommand):
-    def is_enabled(self):
-        self.view = sublime.active_window().active_view()
-        syntax_name = self.view.settings().get('syntax')
-        if syntax_name == pc.issue_syntax:
-            return True
-        return False
-
     def run(self):
         global active_issue_obj
+        self.view = sublime.active_window().active_view()
         active_issue_obj.find_repo(self.view, repo_info_storage)
         post_issue = issue.PostNewIssue(
             issue_list=active_issue_obj, issue_storage=issue_obj_storage)
@@ -104,15 +98,9 @@ class PostGithubIssueCommand(sublime_plugin.WindowCommand):
 
 
 class UpdateGithubIssueCommand(sublime_plugin.WindowCommand):
-    def is_enabled(self):
-        self.view = sublime.active_window().active_view()
-        syntax_name = self.view.settings().get('syntax')
-        if syntax_name == pc.issue_syntax:
-            return True
-        return False
-
     def run(self):
         global active_issue_obj
+        self.view = sublime.active_window().active_view()
         if not repo_info_storage.empty():
             active_issue_obj.find_repo(self.view, repo_info_storage)
         else:
@@ -161,6 +149,8 @@ class LoadRepoList:
             self.username, self.repo_name = [x.strip() for x in content.split('/')]
             github_logger.info("username is " + str(self.username))
             github_logger.info("repo name is " + str(self.repo_name))
+            acquire_repo_info = issue.AcquireRepoInfo(self.username, self.repo_name)
+            acquire_repo_info.start()
             subsequent_action(**args)
         else:
             raise Exception(
@@ -189,8 +179,8 @@ class LoadRepoList:
         global active_issue_obj
         active_issue_obj.get_repo(self.username, self.repo_name)
         issue_view = utils.print_list_framework()
-        acquire_list = issue.AcquireIssueTitle(active_issue_obj)
-        acquire_list.start()
+        # acquire_list = issue.AcquireIssueTitle(active_issue_obj)
+        # acquire_list.start()
         print_in_view = issue.PrintListInView(issue_view, active_issue_obj,
                                               repo_info_storage, **args)
         print_in_view.start()

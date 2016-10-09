@@ -33,7 +33,7 @@ class IssueListListener(sublime_plugin.EventListener):
             header_split = "*----------Content----------*"
             possible_header = view.lines(sublime.Region(0, view.size()))[:7]
             header_split_line = 6
-            github_logger.info("view.substr(possible_header[2]) is {}".format(view.substr(possible_header[2])))
+            github_logger.info("view.substr(possible_header[3]) is {}".format(view.substr(possible_header[3])))
             if view.substr(possible_header[3]) == header_split:
                 header_split_line = 3
             current_point = view.sel()[0].a
@@ -53,7 +53,6 @@ class IssueListListener(sublime_plugin.EventListener):
                 view.sel().add(sublime.Region(new_cursor_position, new_cursor_position))
             else:
                 pass
-
 
     def on_selection_modified_async(self, view):
         if view.settings().get('syntax') == pc.list_syntax:

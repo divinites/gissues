@@ -1,6 +1,7 @@
 import sublime_plugin
 import sublime
-# from . import parameter_container as pc
+from . import github_logger
+from . import parameter_container as pc
 # from . import flag_container as fc
 # from . import repo_info_storage
 
@@ -20,3 +21,30 @@ class ReplaceSnippetCommand(sublime_plugin.TextCommand):
     def run(self, edit, start_point, end_point, snippet):
         if snippet:
             self.view.replace(edit, sublime.Region(start_point, end_point), snippet)
+
+
+class PostOrUpdateIssueCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        self.window = sublime.active_window()
+        self.view = self.window.active_view()
+        syntax_name = self.view.settings().get('syntax')
+        if syntax_name == pc.issue_syntax:
+            return True
+        return False
+
+    def run(self):
+        header_split = "*----------Content----------*"
+        possible_header = self.view.lines(sublime.Region(0, self.view.size()))[:7]
+        header_split_line = 6
+        github_logger.info("post or update?")
+        github_logger.info("view.substr(possible_header[3]) is {}".format(self.view.substr(possible_header[3])))
+        if self.view.substr(possible_header[3]) == header_split:
+            header_split_line = 3
+        if header_split_line == 3:
+            github_logger.info("post")
+            self.window.run_command("post_github_issue")
+        elif header_split_line == 6:
+            github_logger.info("update")
+            self.window.run_command("update_github_issue")
+        else:
+            pass

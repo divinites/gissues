@@ -32,7 +32,8 @@ class FlagContainer:
                                  "_Last_": False,
                                  "_Prev_": False,
                                  "_Next_": False}
-
+        # self.label_change = False
+        # self.title_change = False
 
 
 flag_container = FlagContainer()
