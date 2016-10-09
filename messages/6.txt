@@ -1,0 +1,7 @@
+Another big update! -- auto-completion!
+
+- when writing issues/comments, type "@" will auto-complete people who ever talked in the same issue, type "#" will auto-complete issue number.
+
+- In the line of Label, type "@" will auto-complete existing tags.
+
+Attention: the syntax of label has changed, now labels are no more separated by ",", instead, they all have a prefix "@" and are separated with space.
