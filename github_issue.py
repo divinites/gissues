@@ -5,10 +5,9 @@ from .libgit import utils
 from .libgit import github
 from . import parameter_container as pc
 from . import flag_container as fc
-from . import github_logger
+from . import log
 from . import repo_info_storage, issue_obj_storage
 import re
-import logging
 from queue import Queue
 from functools import partial
 
@@ -21,7 +20,7 @@ def plugin_loaded():
     pc.read_settings(settings)
     # pc.line_ends = find_line_ends()
     pc.line_ends = "\n"
-    logging.basicConfig(level=logging.DEBUG if pc.debug_flag == 0 else logging.INFO)
+    log("debug level is {}".format(str(pc.debug_flag)))
     active_issue_obj = issue.IssueObj(settings)
 
 
@@ -34,14 +33,14 @@ class ChangeIssuePageCommand(sublime_plugin.TextCommand):
 
     def run(self, edit, command):
         global active_issue_obj
-        github_logger.info("we have the command {}".format(command))
+        log("we have the command {}".format(command))
         view_text = "_{}_".format(command.capitalize())
-        github_logger.info("we are matching {}".format(view_text))
+        log("we are matching {}".format(view_text))
         for flag in fc.pagination_flags.keys():
             fc.pagination_flags[flag] = False
-            github_logger.info("{} set to False".format(flag))
+            log("{} set to False".format(flag))
             if flag == view_text:
-                github_logger.info("flag matches, set {} to True".format(flag))
+                log("flag matches, set {} to True".format(flag))
                 fc.pagination_flags[flag] = True
         print_next_page_issues = issue.PrintListInView(self.view, active_issue_obj, repo_info_storage, command, False)
         print_next_page_issues.start()
@@ -51,7 +50,7 @@ class ShowGithubIssueListCommand(sublime_plugin.WindowCommand):
     def run(self, **args):
         repo_loader = LoadRepoList()
         repo_loader.format_entries()
-        github_logger.info("I am showing the issue list!")
+        log("I am showing the issue list!")
         repo_loader.show_panel_then_print_list(**args)
 
 
@@ -147,8 +146,8 @@ class LoadRepoList:
     def on_enter_repo_info(self, content, subsequent_action, **args):
         if '/' in content:
             self.username, self.repo_name = [x.strip() for x in content.split('/')]
-            github_logger.info("username is " + str(self.username))
-            github_logger.info("repo name is " + str(self.repo_name))
+            log("username is " + str(self.username))
+            log("repo name is " + str(self.repo_name))
             acquire_repo_info = issue.AcquireRepoInfo(self.username, self.repo_name)
             acquire_repo_info.start()
             subsequent_action(**args)
@@ -200,18 +199,18 @@ def create_new_issue_view():
     snippet += pc.line_ends
     snippet += "*" + '-' * 10 + "END" + '-' * 10 + "*" + pc.line_ends
     view = sublime.active_window().new_file()
-    github_logger.info("Create new view to write the issue")
+    log("Create new view to write the issue")
     view.run_command("set_file_type",
                       {"syntax":
                        pc.issue_syntax})
-    github_logger.info("new issue will have a syntax {}".format(pc.issue_syntax))
+    log("new issue will have a syntax {}".format(pc.issue_syntax))
     view.run_command("insert_issue_snippet", {"snippet": snippet})
     view.sel().clear()
     start_point = view.text_point(0, 18)
     view.sel().add(sublime.Region(start_point))
     view.show(start_point)
     view.set_encoding('UTF-8')
-    github_logger.info("insert a blank issue")
+    log("insert a blank issue")
     view.set_scratch(True)
 
 

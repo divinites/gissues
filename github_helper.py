@@ -1,6 +1,6 @@
 import sublime_plugin
 import sublime
-from . import github_logger
+from . import log
 from . import parameter_container as pc
 # from . import flag_container as fc
 # from . import repo_info_storage
@@ -36,15 +36,15 @@ class PostOrUpdateIssueCommand(sublime_plugin.WindowCommand):
         header_split = "*----------Content----------*"
         possible_header = self.view.lines(sublime.Region(0, self.view.size()))[:7]
         header_split_line = 6
-        github_logger.info("post or update?")
-        github_logger.info("view.substr(possible_header[3]) is {}".format(self.view.substr(possible_header[3])))
+        log("post or update?")
+        log("view.substr(possible_header[3]) is {}".format(self.view.substr(possible_header[3])))
         if self.view.substr(possible_header[3]) == header_split:
             header_split_line = 3
         if header_split_line == 3:
-            github_logger.info("post")
+            log("post")
             self.window.run_command("post_github_issue")
         elif header_split_line == 6:
-            github_logger.info("update")
+            log("update")
             self.window.run_command("update_github_issue")
         else:
             pass

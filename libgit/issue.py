@@ -1,6 +1,6 @@
 from .github import GitHubAccount
 from .. import parameter_container as pc
-from .. import github_logger
+from .. import log
 from .. import global_person_list, global_title_list, global_label_list
 from .. import repo_info_storage
 from .utils import get_issue_post, compare_issues, restock, show_stock
@@ -61,8 +61,8 @@ class IssueObj:
     def find_repo(self, view, repo_info_storage):
         view_id = view.id()
         try:
-            github_logger.info("try to find the view in repo_dictionary...")
-            github_logger.info("repo_info_storage contains {}".format(
+            log("try to find the view in repo_dictionary...")
+            log("repo_info_storage contains {}".format(
                 show_stock(repo_info_storage, view_id)))
             self.username, self.repo_name, self.issue_response = show_stock(
                 repo_info_storage, view_id)
@@ -129,7 +129,7 @@ class IssueObj:
             repo_name=self.repo_name,
             issue_number=str(issue_number))
         issue_url += "/labels"
-        github_logger.info("replace label url is {}".format(issue_url))
+        log("replace label url is {}".format(issue_url))
         if len(labels) == 1 and '' in labels:
             return self.github_account.session.delete(issue_url)
         return self.github_account.session.put(issue_url, json=list(labels))
@@ -169,7 +169,7 @@ class IssueObj:
             label_resp = self.github_account.session.post(
                 issue_url, json={"color": color,
                                  "name": label})
-            github_logger.info("the generate labels code is {}".format(
+            log("the generate labels code is {}".format(
                 label_resp.status_code))
             if label_resp.status_code != 201:
                 raise Exception("error creating label {}".format(label))
@@ -275,7 +275,7 @@ class PrintIssueInView(threading.Thread):
             if not self.view:
                 self.view = sublime.active_window().new_file()
             global_person_list[self.view.id()] = user_set
-            github_logger.info("person list is {}".format(
+            log("person list is {}".format(
                 str(global_person_list)))
             restock(self.issue_storage, self.view.id(), {"issue": issue,
                                                          "label": label_set,
@@ -313,7 +313,7 @@ class IssueManipulate(threading.Thread):
 class PostNewIssue(IssueManipulate):
     def run(self):
         issue_post = get_issue_post(self.view)
-        github_logger.info("preparing posting issue " + str(issue_post[
+        log("preparing posting issue " + str(issue_post[
             'issue']))
         post_result = self.issue_list.post_issue(
             data=json.dumps(issue_post['issue']))
@@ -339,12 +339,12 @@ class UpdateIssue(IssueManipulate):
         view_id = self.view.id()
         original_issue = show_stock(self.issue_storage, view_id)
         if original_issue:
-            github_logger.info("successfully take out original issue")
-        github_logger.info("take out original issue with title {}".format(
+            log("successfully take out original issue")
+        log("take out original issue with title {}".format(
             original_issue['issue']['title']))
         last_updated_time = original_issue['issue']['updated_at']
         modified_issue = get_issue_post(self.view)
-        github_logger.info("get the modified issue")
+        log("get the modified issue")
         issue_change, label_change, comment_change, deleted_comments = compare_issues(
             original_issue, modified_issue)
         if issue_change:
@@ -364,10 +364,10 @@ class UpdateIssue(IssueManipulate):
                              updating_issue.json()['updated_at'])})
             else:
                 sublime.status_message("Issue update fails")
-                github_logger.info("issue update fails, error code " + str(
+                log("issue update fails, error code " + str(
                     updating_issue.status_code))
         if label_change != -1:
-            github_logger.info("new labels are {}".format(repr(label_change)))
+            log("new labels are {}".format(repr(label_change)))
             self.issue_list.attach_labels(original_issue['issue']['number'],
                                           list(label_change))
         if comment_change:
@@ -386,7 +386,7 @@ class UpdateIssue(IssueManipulate):
                              updating_comment.json()['updated_at'])})
                 else:
                     sublime.status_message("Comment update fails")
-                    github_logger.info("issue update fails, error code " + str(
+                    log("issue update fails, error code " + str(
                         updating_comment.status_code))
         if deleted_comments:
             for comment_id in deleted_comments:
@@ -415,7 +415,7 @@ class UpdateIssue(IssueManipulate):
                 snippet += pc.line_ends
                 snippet += "*" + "-" * 10 + "END" + '-' * 10 + "*"
                 a, b = find_comment_region(self.view)
-                github_logger.info("insert the snippet")
+                log("insert the snippet")
                 self.view.run_command("replace_snippet", {"start_point": a,
                                                           "end_point": b,
                                                           "snippet": snippet})
@@ -426,10 +426,10 @@ class UpdateIssue(IssueManipulate):
                          str(new_comment.json()['id']),
                          new_comment.json()['created_at'])})
                 comment_id = new_comment.json()['id']
-                github_logger.info("new comment id is " + str(comment_id))
+                log("new comment id is " + str(comment_id))
 
             else:
                 sublime.status_message("Comment post fails")
-                github_logger.info("comment post fails, error code " + str(
+                log("comment post fails, error code " + str(
                     new_comment.status_code))
         restock(self.issue_storage, view_id, original_issue)
