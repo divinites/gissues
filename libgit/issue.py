@@ -2,6 +2,7 @@ from .github import GitHubAccount
 from .. import parameter_container as pc
 from .. import github_logger
 from .. import global_person_list, global_title_list, global_label_list
+from .. import repo_info_storage
 from .utils import get_issue_post, compare_issues, restock, show_stock
 from .utils import format_issue, format_comment, find_comment_region, find_list_region
 from .utils import ViewConverter
@@ -14,25 +15,31 @@ import random
 class AcquireRepoInfo(threading.Thread):
     def __init__(self, username, repo_name):
         super(AcquireRepoInfo, self).__init__(self)
-        self.issue_obj = IssueObj(sublime.load_settings("github_issue.sublime-settings"), username, repo_name)
+        self.issue_obj = IssueObj(
+            sublime.load_settings("github_issue.sublime-settings"), username,
+            repo_name)
 
     def run(self):
         title_list = []
         self.issue_obj.get(params={"state": "all"})
         if self.issue_obj.issue_response.status_code not in (200, 201):
-            raise Exception("Cannnot find relevant repo info, please check the input!")
+            raise Exception(
+                "Cannnot find relevant repo info, please check the input!")
         label_list = self.issue_obj.get_all_labels()
         while True:
             for issue in self.issue_obj.issue_response.json():
-                title_list.append((issue['title'], issue['number'], 0 if issue['state'] == 'open' else 1))
+                title_list.append((issue['title'], issue['number'], 0
+                                   if issue['state'] == 'open' else 1))
             links = self.issue_obj.get_links()
             if (not links) or 'next' not in links:
                 break
             else:
                 self.issue_obj.get(links['next']['url'])
-        repo_info = "{}/{}".format(self.issue_obj.username, self.issue_obj.repo_name)
+        repo_info = "{}/{}".format(self.issue_obj.username,
+                                   self.issue_obj.repo_name)
         # if repo_info not in global_title_list:
-        global_title_list[repo_info] = sorted(title_list, key=lambda x: (x[2], x[1] * -1))
+        global_title_list[repo_info] = sorted(
+            title_list, key=lambda x: (x[2], x[1] * -1))
         global_label_list[repo_info] = label_list
 
 
@@ -159,8 +166,11 @@ class IssueObj:
         issue_url += "/labels"
         for label in labels:
             color = "%06x" % random.randint(0, 0xFFFFFF)
-            label_resp = self.github_account.session.post(issue_url, json={"color": color, "name": label})
-            github_logger.info("the generate labels code is {}".format(label_resp.status_code))
+            label_resp = self.github_account.session.post(
+                issue_url, json={"color": color,
+                                 "name": label})
+            github_logger.info("the generate labels code is {}".format(
+                label_resp.status_code))
             if label_resp.status_code != 201:
                 raise Exception("error creating label {}".format(label))
 
@@ -265,18 +275,22 @@ class PrintIssueInView(threading.Thread):
             if not self.view:
                 self.view = sublime.active_window().new_file()
             global_person_list[self.view.id()] = user_set
-            github_logger.info("person list is {}".format(str(global_person_list)))
+            github_logger.info("person list is {}".format(
+                str(global_person_list)))
             restock(self.issue_storage, self.view.id(), {"issue": issue,
                                                          "label": label_set,
                                                          "comments":
                                                          comment_dict})
             restock(self.repo_info_storage, self.view.id(),
                     (self.repo_info[0], self.repo_info[1], issue_response))
-            self.view.run_command("erase_snippet", {"start_point": 0, "end_point": self.view.size()})
+            self.view.run_command("erase_snippet",
+                                  {"start_point": 0,
+                                   "end_point": self.view.size()})
             self.view.run_command("set_file_type", {"syntax": pc.issue_syntax})
             self.view.run_command("insert_issue_snippet", {"snippet": snippet})
             view_converter = ViewConverter(self.view)
-            _, a, b, _ = view_converter.find_region_line("## Add New Comment:", "*" + "-" * 10 + "END")
+            _, a, b, _ = view_converter.find_region_line(
+                "## Add New Comment:", "*" + "-" * 10 + "END")
             self.view.sel().clear()
             if b > a:
                 self.view.sel().add(sublime.Region(a + 1, a + 1))
@@ -303,39 +317,17 @@ class PostNewIssue(IssueManipulate):
             'issue']))
         post_result = self.issue_list.post_issue(
             data=json.dumps(issue_post['issue']))
-        # acquire_issue_info = AcquireIssueTitle(self.issue_list)
-        # acquire_issue_info.start()
         if post_result.status_code in (200, 201):
             issue = post_result.json()
             if len(issue_post['label']) != 0:
-                self.issue_list.attach_labels(issue['number'], issue_post['label'])
-            post_result = self.issue_list.get_issue(issue['number'])[0]
-            sublime.status_message("Issue Posted")
-            if self.issue_storage:
-                issue = post_result.json()
-                label_set = set([])
-                for label_info in issue['labels']:
-                    label_set.add(label_info['name'])
-                restock(self.issue_storage, self.view.id(),
-                        {'issue': issue,
-                         'label': label_set,
-                         'comments': {}})
-                github_logger.info("view id {} is stocked".format(str(self.view.id())))
-            snippet = format_issue(issue)
-            github_logger.info("format issue")
-            snippet += "## Add New Comment:" + pc.line_ends
-            snippet += pc.line_ends
-            snippet += "*" + "-" * 10 + "END" + '-' * 10 + "*"
-            self.view.run_command("erase_snippet", {"start_point": 0, "end_point": self.view.size()})
-            self.view.run_command("set_file_type", {"syntax": pc.issue_syntax})
-            self.view.run_command("insert_issue_snippet", {"snippet": snippet})
-            github_logger.info("set syntax")
-            self.view.run_command(
-                "insert_issue_snippet",
-                {"start_point": self.view.size(),
-                 "snippet": "\n*<Issue number {} created at {}>*".format(
-                     str(post_result.json()['id']),
-                     post_result.json()['created_at'])})
+                self.issue_list.attach_labels(issue['number'],
+                                              issue_post['label'])
+            repo_info = (self.issue_list.username, self.issue_list.repo_name,
+                         None)
+            print_issue_in_view = PrintIssueInView(
+                self.issue_list, issue['number'], self.issue_storage,
+                repo_info, repo_info_storage, self.view)
+            print_issue_in_view.start()
         else:
             sublime.status_message(
                 "Issue not Posted, error code {} please try again.".format(
@@ -348,7 +340,8 @@ class UpdateIssue(IssueManipulate):
         original_issue = show_stock(self.issue_storage, view_id)
         if original_issue:
             github_logger.info("successfully take out original issue")
-        github_logger.info("take out original issue with title {}".format(original_issue['issue']['title']))
+        github_logger.info("take out original issue with title {}".format(
+            original_issue['issue']['title']))
         last_updated_time = original_issue['issue']['updated_at']
         modified_issue = get_issue_post(self.view)
         github_logger.info("get the modified issue")
@@ -375,7 +368,8 @@ class UpdateIssue(IssueManipulate):
                     updating_issue.status_code))
         if label_change != -1:
             github_logger.info("new labels are {}".format(repr(label_change)))
-            self.issue_list.attach_labels(original_issue['issue']['number'], list(label_change))
+            self.issue_list.attach_labels(original_issue['issue']['number'],
+                                          list(label_change))
         if comment_change:
             for comment_id, content in comment_change.items():
                 updating_comment = self.issue_list.update_comment(
