@@ -6,13 +6,25 @@ This plugin aims at providing a convenient way to write and update issues inside
 
 It was initially inspired by github-issues.vim.
 
+## Features
+
+- Create/post/update/open/close github issues inside Sublime Text.
+
+- Browse/navigate the issue list of any public repos and users' private repos.
+
+- Auto-complete issue titles, labels and issue participants.
+
+- Using Markdown as the default syntax of issue, allowing users to choose other syntaxes as well.
+
+
+
 All commands are runnable through Command Palette, please have a look at Command Palette.sublime-commands to get more ideas about the commands available.
 
 some shortcut keys are pre-defined:
 
 In an issue List view, Press Enter or Right Arrow to open a paticular issue
 In an issue view, Press Super+S to sync current issue or comments with Github
-In an issue view, Press Super+Shift+S to post a new issue to Github
+
 
 
 Please refer to: https://github.com/divinites/gissues for more information and illustrations.

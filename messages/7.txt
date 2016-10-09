@@ -8,4 +8,4 @@ I add two features in this release:
 
 
 
-Version 2.1.6 is quite mature and stable, it includes all features that github-issue.vim has. Special thanks for the testing works and useful suggestions from @Kristinita !
+Version 2.2.0 is quite mature and stable, it includes all features that github-issue.vim has. Special thanks for the testing works and useful suggestions from @Kristinita !

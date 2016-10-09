@@ -37,10 +37,10 @@ Set-ups:
     "debug": 0,
     "syntax": "Packages/GitHubIssue/Issue.sublime-syntax",
     "git_path": "",
-    "issue\_title\_completion": true,
+    "issue_title_completion": true,
     "user_completion": true,
     "label_completion": true,
-    "custom\_completion\_scope": []
+    "custom_completion_scope": []
 
 }
 ```
@@ -69,20 +69,20 @@ Alternatively, you can use password (not recommended, since username and passwor
 
 To sum up, the username is always required, passowrd and token are optional but at least one of them should be provided.
 
-*"debug"* is a flag, if it is set to 1, the plug-in will print every single step and output in sublime console. Normally it should be set to 0.
+**"debug"** is a flag, if it is set to 1, the plug-in will print every single step and output in sublime console. Normally it should be set to 0.
 
-*"syntax"* is your preferred markdown syntax for issue view.
+**"syntax"** is your preferred markdown syntax for issue view.
 
-_"git\_path"_ is where your git executable lies, if git is in your system path, you normally do not need to set it.
-_"issue\_title\_completion"_, _"user\_completion"_ and _"label\_completion"_ are autocompletion flags:
+__"git\_path"__ is where your git executable lies, if git is in your system path, you normally do not need to set it.
+__"issue\_title\_completion"__, __"user\_completion"__ and __"label\_completion"__ are autocompletion flags:
 
-- _"issue\_title\_completion"_ autocompletes other issue titles, so that users can easily refer them;
+- __"issue\_title\_completion"__ autocompletes other issue titles, so that users can easily refer them;
 
-- _"user\_completion"_ autocompletes issue participants, so that users can easily _@_ them;
+- __"user\_completion"__ autocompletes issue participants, so that users can easily __@__ them;
 
-- _"label\_completion"_ autocompletes labels (only available in the "##Label     :" line).
+- __"label\_completion"__ autocompletes labels (only available in the "##Label     :" line).
 
-_"custom\_completion\_scope"_: By default, autocompletion only takes place in the scope "text.html.github.issue", if you have customized syntax, you probably want to add correponding scopes here to make autocompletion work under your syntax.
+__"custom\_completion\_scope"__: By default, autocompletion only takes place in the scope "text.html.github.issue", if you have customized syntax, you probably want to add correponding scopes here to make autocompletion work under your syntax.
 
 After installing this plug-in, it would be better to restart sublime text to make the plug-in work.
 
@@ -124,26 +124,26 @@ Some shortcut keys are pre-defined:
 
 ## Change Log
 
-- 0.0.1: First public version, only show list works.
+- **0.0.1**: First public version, only show list works.
 
-- 0.1.0: All basic function works.
+- **0.1.0**: All basic function works.
 
-- 1.0.0: Add messages, dependencies and ready for Package Control Channel.
+- **1.0.0**: Add messages, dependencies and ready for Package Control Channel.
 
-- 1.1.0: Add the feature that users can directly enter repo information and write issues/comments.
+- **1.1.0**: Add the feature that users can directly enter repo information and write issues/comments.
 
-- 1.2.0: Add logging system and solve CRLF problems.
+- **1.2.0**: Add logging system and solve CRLF problems.
 
-- 1.3.0: Add issue syntax customization and adjust cursor position.
+- **1.3.0**: Add issue syntax customization and adjust cursor position.
 
-- 1.5.0: Add issue list pagination and page view control
+- **1.5.0**: Add issue list pagination and page view control
 
-- 1.6.0: Add basic label support
+- **1.6.0**: Add basic label support
 
-- 2.0.0: Add auto-completion support
+- **2.0.0**: Add auto-completion support
 
-- 2.1.0: Add protection to the issue header and add a command "post_or_update_issue"
+- **2.1.0**: Add protection to the issue header and add a command "post_or_update_issue"
 
-- 2.1.6: various minor improvements
+- **2.2.0**: various minor improvements
 
 
