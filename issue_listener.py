@@ -31,28 +31,34 @@ class IssueListListener(sublime_plugin.EventListener):
     def on_selection_modified(self, view):
         if view.settings().get('syntax') == pc.issue_syntax:
             header_split = "*----------Content----------*"
-            possible_header = view.lines(sublime.Region(0, view.size()))[:7]
-            header_split_line = 6
-            github_logger.info("view.substr(possible_header[3]) is {}".format(view.substr(possible_header[3])))
-            if view.substr(possible_header[3]) == header_split:
-                header_split_line = 3
-            current_point = view.sel()[0].a
-            github_logger.info("current cursor is located at {}".format(current_point))
-            row, col = view.rowcol(current_point)
-            github_logger.info("find the row {} and the col {}".format(row, col))
-            if row < header_split_line and col < 19:
-                github_logger.info("starting pushing back the cursor")
-                new_cursor_position = view.line(current_point).a + 18
-                github_logger.info("push back the cursor to {}".format(new_cursor_position))
-                view.sel().clear()
-                view.sel().add(sublime.Region(new_cursor_position, new_cursor_position))
-            elif row == header_split_line and col < 29:
-                new_cursor_position = view.line(current_point).a + 29
-                github_logger.info("push back the cursor to {}".format(new_cursor_position))
-                view.sel().clear()
-                view.sel().add(sublime.Region(new_cursor_position, new_cursor_position))
+            all_lines = view.lines(sublime.Region(0, view.size()))
+            if len(all_lines) > 7:
+                possible_header = view.lines(sublime.Region(0, view.size()))[:7]
             else:
-                pass
+                possible_header = all_lines
+            header_split_line = -1
+            for idx, line in enumerate(possible_header):
+                if view.substr(line) == header_split:
+                    header_split_line = idx
+                    break
+            if header_split_line > 0:
+                current_point = view.sel()[0].a
+                github_logger.info("current cursor is located at {}".format(current_point))
+                row, col = view.rowcol(current_point)
+                github_logger.info("find the row {} and the col {}".format(row, col))
+                if row < header_split_line and col < 19:
+                    github_logger.info("starting pushing back the cursor")
+                    new_cursor_position = view.line(current_point).a + 18
+                    github_logger.info("push back the cursor to {}".format(new_cursor_position))
+                    view.sel().clear()
+                    view.sel().add(sublime.Region(new_cursor_position, new_cursor_position))
+                elif row == header_split_line and col < 29:
+                    new_cursor_position = view.line(current_point).a + 29
+                    github_logger.info("push back the cursor to {}".format(new_cursor_position))
+                    view.sel().clear()
+                    view.sel().add(sublime.Region(new_cursor_position, new_cursor_position))
+                else:
+                    pass
 
     def on_selection_modified_async(self, view):
         if view.settings().get('syntax') == pc.list_syntax:
