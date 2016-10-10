@@ -104,7 +104,7 @@ Some shortcut keys are pre-defined:
 ## Illustration
 
 - Show issue list:
-![show issue list](https://www.scislab.com/static/media/uploads/blog/open_list.gif)
+![show issue list](https://www.scislab.com/static/media/uploads/PrivateGraphs/showlist.gif)
 
 - Create an Issue:
 ![create an issue](https://www.scislab.com/static/media/uploads/blog/create_issue.gif)
@@ -119,8 +119,13 @@ Some shortcut keys are pre-defined:
 
 - Delete a comment:
 ![delete a comment](https://www.scislab.com/static/media/uploads/blog/delete_comment.gif)
+
 - Modify a comment:
 ![modify a comment](https://www.scislab.com/static/media/uploads/blog/modi_comment.gif)
+
+- Auto-Completion of commits, issue references and other participants.
+![auto-completion](https://www.scislab.com/static/media/uploads/PrivateGraphs/completion.gif)
+
 
 ## Change Log
 
