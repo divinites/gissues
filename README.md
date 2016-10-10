@@ -40,6 +40,8 @@ Set-ups:
     "issue_title_completion": true,
     "user_completion": true,
     "label_completion": true,
+    "commit_completion": true,
+    "commit_completion_trigger": ":",
     "custom_completion_scope": []
 
 }
@@ -123,6 +125,9 @@ Some shortcut keys are pre-defined:
 - Modify a comment:
 ![modify a comment](https://www.scislab.com/static/media/uploads/blog/modi_comment.gif)
 
+- Auto-completion of labels, if a label does not exist, it will be automatically created.
+![label completion](https://www.scislab.com/static/media/uploads/PrivateGraphs/label.gif)
+
 - Auto-Completion of commits, issue references and other participants.
 ![auto-completion](https://www.scislab.com/static/media/uploads/PrivateGraphs/completion.gif)
 
@@ -150,5 +155,7 @@ Some shortcut keys are pre-defined:
 - **2.1.0**: Add protection to the issue header and add a command "post_or_update_issue"
 
 - **2.2.0**: various minor improvements
+
+- **2.3.0**: Add commit auto-completion
 
 
