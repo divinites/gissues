@@ -4,6 +4,7 @@ import sublime
 
 
 class IssueSetting:
+
     def __init__(self, settings=None):
         self.settings = settings
         self.setting_dictionary = {}
@@ -25,6 +26,7 @@ class IssueSetting:
 
 
 class FlagContainer:
+
     def __init__(self):
         self.pagination_flags = {"_First_": False,
                                  "_Last_": False,
@@ -50,4 +52,3 @@ global_commit_list = {}
 issue_obj_storage.put({})
 repo_info_storage.put({})
 COMPLETIONS_SCOPES = ['text.html.github.issue']
-

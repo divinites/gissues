@@ -23,6 +23,7 @@ def highlight(view, flags_dict):
 
 
 class IssueListListener(sublime_plugin.EventListener):
+
     def on_selection_modified(self, view):
         if view.settings().get('syntax') == settings.get("syntax", "Packages/GitHubIssue/Issue.sublime-syntax"):
             header_split = "*----------Content----------*"

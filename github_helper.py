@@ -2,29 +2,31 @@ import sublime_plugin
 import sublime
 from . import log
 from .github_issue import settings
-# from . import parameter_container as pc
-# from . import flag_container as fc
-# from . import repo_info_storage
 
 
 class InsertIssueSnippetCommand(sublime_plugin.TextCommand):
+
     def run(self, edit, start_point=0, snippet=None):
         if snippet:
             self.view.insert(edit, start_point, snippet)
 
 
 class EraseSnippetCommand(sublime_plugin.TextCommand):
+
     def run(self, edit, start_point=0, end_point=0):
         self.view.erase(edit, sublime.Region(start_point, end_point))
 
 
 class ReplaceSnippetCommand(sublime_plugin.TextCommand):
+
     def run(self, edit, start_point, end_point, snippet):
         if snippet:
-            self.view.replace(edit, sublime.Region(start_point, end_point), snippet)
+            self.view.replace(edit, sublime.Region(
+                start_point, end_point), snippet)
 
 
 class PostOrUpdateIssueCommand(sublime_plugin.WindowCommand):
+
     def is_enabled(self):
         self.window = sublime.active_window()
         self.view = self.window.active_view()
@@ -35,10 +37,12 @@ class PostOrUpdateIssueCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         header_split = "*----------Content----------*"
-        possible_header = self.view.lines(sublime.Region(0, self.view.size()))[:7]
+        possible_header = self.view.lines(
+            sublime.Region(0, self.view.size()))[:7]
         header_split_line = 6
         log("post or update?")
-        log("view.substr(possible_header[3]) is {}".format(self.view.substr(possible_header[3])))
+        log("view.substr(possible_header[3]) is {}".format(
+            self.view.substr(possible_header[3])))
         if self.view.substr(possible_header[3]) == header_split:
             header_split_line = 3
         if header_split_line == 3:

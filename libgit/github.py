@@ -7,11 +7,13 @@ import re
 
 
 class GitHubAccount:
+
     def __init__(self, settings):
         self.session = requests.Session()
         self.settings = settings
         api_token = self.settings.get('token', '')
-        log("The first 8 digits of your GitHub Token is {}".format(api_token[:8]))
+        log("The first 8 digits of your GitHub Token is {}".format(
+            api_token[:8]))
         self.username = self.settings.get('username', '')
         log("Your own username is {}".format(self.username))
         password = self.settings.get('password', '')
@@ -32,7 +34,8 @@ class GitHubAccount:
                 joint_url = '/'.join([API_URL, username, repo_name, 'issues'])
 
             else:
-                joint_url = '/'.join([API_URL, username, repo_name, 'issues', issue_number])
+                joint_url = '/'.join([API_URL, username,
+                                      repo_name, 'issues', issue_number])
             log("the joint url is " + joint_url)
             return joint_url
         else:
@@ -55,7 +58,8 @@ def get_github_repo_info(folder_path):
         repo_url = repo_url.decode('utf-8')
         log("repo address is " + repo_url)
         if repo_url.startswith('https'):
-            repo_url = re.search(r'(?<=https://github.com/).*', repo_url).group(0)
+            repo_url = re.search(
+                r'(?<=https://github.com/).*', repo_url).group(0)
         elif repo_url.startswith('git'):
             repo_url = re.search(r'(?<=git@github.com:).*', repo_url).group(0)
         else:

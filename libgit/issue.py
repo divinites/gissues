@@ -1,5 +1,4 @@
 from .github import GitHubAccount
-# from .. import parameter_container as pc
 from .. import log, LINE_END, settings
 from .. import global_person_list, global_title_list, global_label_list, global_commit_list
 from .. import repo_info_storage
@@ -13,6 +12,7 @@ import random
 
 
 class AcquireRepoInfo(threading.Thread):
+
     def __init__(self, username, repo_name):
         super(AcquireRepoInfo, self).__init__(self)
         self.issue_obj = IssueObj(
@@ -42,7 +42,8 @@ class AcquireRepoInfo(threading.Thread):
             if (not links) or 'next' not in links:
                 break
             else:
-                commit_set.update(self.issue_obj.get_commits(links["next"]["url"]))
+                commit_set.update(
+                    self.issue_obj.get_commits(links["next"]["url"]))
         repo_info = "{}/{}".format(self.issue_obj.username,
                                    self.issue_obj.repo_name)
         # if repo_info not in global_title_list:
@@ -54,6 +55,7 @@ class AcquireRepoInfo(threading.Thread):
 
 
 class IssueObj:
+
     def __init__(self, settings, username=None, repo_name=None):
         self.github_account = GitHubAccount(settings)
         self.settings = settings
@@ -200,6 +202,7 @@ class IssueObj:
 
 
 class PrintListInView(threading.Thread):
+
     def __init__(self,
                  view,
                  issue_list,
@@ -260,6 +263,7 @@ class PrintListInView(threading.Thread):
 
 
 class PrintIssueInView(threading.Thread):
+
     def __init__(self,
                  issue_list,
                  issue_number,
@@ -310,7 +314,8 @@ class PrintIssueInView(threading.Thread):
             self.view.run_command("erase_snippet",
                                   {"start_point": 0,
                                    "end_point": self.view.size()})
-            self.view.run_command("set_file_type", {"syntax": settings.get("syntax", "Packages/GitHubIssue/Issue.sublime-syntax")})
+            self.view.run_command("set_file_type", {"syntax": settings.get(
+                "syntax", "Packages/GitHubIssue/Issue.sublime-syntax")})
             self.view.run_command("insert_issue_snippet", {"snippet": snippet})
             view_converter = ViewConverter(self.view)
             _, a, b, _ = view_converter.find_region_line(
@@ -324,6 +329,7 @@ class PrintIssueInView(threading.Thread):
 
 
 class IssueManipulate(threading.Thread):
+
     def __init__(self, view=None, issue_storage=None, issue_list=None):
         super(IssueManipulate, self).__init__(self)
         if not view:
@@ -335,6 +341,7 @@ class IssueManipulate(threading.Thread):
 
 
 class PostNewIssue(IssueManipulate):
+
     def run(self):
         issue_post = get_issue_post(self.view)
         log("preparing posting issue " + str(issue_post[
@@ -359,6 +366,7 @@ class PostNewIssue(IssueManipulate):
 
 
 class UpdateIssue(IssueManipulate):
+
     def run(self):
         view_id = self.view.id()
         original_issue = show_stock(self.issue_storage, view_id)

@@ -10,7 +10,7 @@ def print_list_framework(view=None):
     snippet += "-" * 50 + LINE_END
     snippet += 'Issue No.' + '   ' + 'Locked    ' + 'Issue Title' + LINE_END
     snippet += "-" * 24 + '**' + "-" * 24 + LINE_END
-    snippet += "-" * 23 +"*" * 4 + "-" * 23 + LINE_END * 3
+    snippet += "-" * 23 + "*" * 4 + "-" * 23 + LINE_END * 3
     snippet += "Page:  |_First_|     ...     |_Prev_|     ...     |_Next_|     ...     |_Last_|" + LINE_END
     if not view:
         view = sublime.active_window().new_file()
@@ -19,7 +19,7 @@ def print_list_framework(view=None):
                      {"syntax":
                       "Packages/GitHubIssue/list.sublime-syntax"})
     view.settings().set('color_scheme',
-                        "Packages/GitHubIssue/list.tmTheme")
+                        "Packages/GitHubIssue/list.hidden-tmTheme")
     view.run_command("insert_issue_snippet", {"snippet": snippet})
     view.set_scratch(True)
     view.set_read_only(True)
@@ -28,7 +28,8 @@ def print_list_framework(view=None):
 
 def find_list_region(view=None):
     view_converter = ViewConverter(view)
-    _, start_point, end_point, _ = view_converter.find_region_line("-" * 24 + '**' + "-" * 24, "-" * 23 +"*" * 4 + "-" * 23)
+    _, start_point, end_point, _ = view_converter.find_region_line(
+        "-" * 24 + '**' + "-" * 24, "-" * 23 + "*" * 4 + "-" * 23)
     return (start_point, end_point)
 
 
@@ -66,7 +67,8 @@ def format_issue(issue):
     snippet += "# Title         : " + issue["title"] + LINE_END
     snippet += "## Number       : " + str(issue['number']) + LINE_END
     snippet += "## State        : " + issue['state'] + LINE_END
-    snippet += "## Label        : " + " ".join(['@' + label for label in labels]) + LINE_END
+    snippet += "## Label        : " + \
+        " ".join(['@' + label for label in labels]) + LINE_END
     snippet += "## Locked       : " + str(issue['locked']) + LINE_END
     snippet += "## Assignee     : " + str(issue['assignee']) + LINE_END
     snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + LINE_END
@@ -77,12 +79,14 @@ def format_issue(issue):
 
 def format_comment(comment):
     snippet = ''
-    snippet += "*" + '-' * 10 + "Start <Comment " + str(comment['id']) + '>' + '-' * 10 + "*" + LINE_END
+    snippet += "*" + '-' * 10 + "Start <Comment " + \
+        str(comment['id']) + '>' + '-' * 10 + "*" + LINE_END
     snippet += "*<commented by " + comment['user'][
         'login'] + "   UpdateTime: " + comment[
             'updated_at'] + '>*' + LINE_END
     snippet += filter_line_ends(comment['body']) + LINE_END
-    snippet += "*" + '-' * 10 + "End <Comment " + str(comment['id']) + '>' + '-' * 10 + "*" + LINE_END
+    snippet += "*" + '-' * 10 + "End <Comment " + \
+        str(comment['id']) + '>' + '-' * 10 + "*" + LINE_END
     log("comment id " + str(comment['id']) + "formated")
     return snippet
 
@@ -109,6 +113,7 @@ def filter_line_ends(issue):
 
 
 class ViewConverter:
+
     def __init__(self, view):
         self.view = view
 
@@ -220,7 +225,8 @@ class ViewConverter:
             while comment_pointer < number_of_comments:
                 comment_headline_number = crucial_lines['comment_start'][
                     comment_pointer]
-                comment_endline_number = crucial_lines['comment_end'][comment_pointer]
+                comment_endline_number = crucial_lines[
+                    'comment_end'][comment_pointer]
                 comment_id = int(re.search(r'(?<=\<Comment\s).*(?=>)', lines[
                     comment_headline_number]).group(0).strip())
                 comment_body = '\n'.join(lines[comment_headline_number + 2:
@@ -253,7 +259,8 @@ def get_issue_post(view):
 
 def find_comment_region(view):
     view_converter = ViewConverter(view)
-    a, _, _, b = view_converter.find_region_line("## Add New Comment:", "*" + "-" * 10 + "END")
+    a, _, _, b = view_converter.find_region_line(
+        "## Add New Comment:", "*" + "-" * 10 + "END")
     return (a, b)
 
 
@@ -282,7 +289,8 @@ def compare_issues(original_issue, issue_in_view):
     deleted_comments = original_comment_ids.difference(comment_ids_in_view)
     for comment_id in issue_in_view['comments'].keys():
         if issue_in_view['comments'][comment_id] != original_issue['comments'][comment_id]['body']:
-            modified_comments[comment_id] = issue_in_view['comments'][comment_id]
+            modified_comments[comment_id] = issue_in_view[
+                'comments'][comment_id]
     log("original_comments are " + str(original_issue["comments"]))
     log("modified_comments are " + str(modified_comments))
     return (modified_part, new_label, modified_comments, deleted_comments)

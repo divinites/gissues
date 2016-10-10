@@ -38,13 +38,15 @@ def plugin_loaded():
     else:
         auto_complete_trigger = custom_trigger
     system_setting.set("auto_complete_triggers", auto_complete_trigger)
-    log_level = logging.ERROR if settings.get('debug', 0) == 0 else logging.DEBUG
+    log_level = logging.ERROR if settings.get(
+        'debug', 0) == 0 else logging.DEBUG
     github_logger.setLevel(log_level)
     log("debug level is {}".format(str(log_level)))
     active_issue_obj = issue.IssueObj(settings)
 
 
 class ChangeIssuePageCommand(sublime_plugin.TextCommand):
+
     def is_enabled(self):
         syntax_name = self.view.settings().get('syntax')
         if syntax_name == "Packages/GitHubIssue/list.sublime-syntax":
@@ -68,6 +70,7 @@ class ChangeIssuePageCommand(sublime_plugin.TextCommand):
 
 
 class ShowGithubIssueListCommand(sublime_plugin.WindowCommand):
+
     def run(self, **args):
         repo_loader = LoadRepoList()
         repo_loader.format_entries()
@@ -76,6 +79,7 @@ class ShowGithubIssueListCommand(sublime_plugin.WindowCommand):
 
 
 class ShowGithubIssueCommand(sublime_plugin.WindowCommand):
+
     def is_enabled(self):
         current_view = sublime.active_window().active_view()
         syntax_name = current_view.settings().get('syntax')
@@ -103,6 +107,7 @@ class ShowGithubIssueCommand(sublime_plugin.WindowCommand):
 
 
 class NewGithubIssueCommand(sublime_plugin.WindowCommand):
+
     def run(self):
         repo_loader = LoadRepoList()
         repo_loader.format_entries()
@@ -110,6 +115,7 @@ class NewGithubIssueCommand(sublime_plugin.WindowCommand):
 
 
 class PostGithubIssueCommand(sublime_plugin.WindowCommand):
+
     def run(self):
         global active_issue_obj
         self.view = sublime.active_window().active_view()
@@ -120,6 +126,7 @@ class PostGithubIssueCommand(sublime_plugin.WindowCommand):
 
 
 class UpdateGithubIssueCommand(sublime_plugin.WindowCommand):
+
     def run(self):
         global active_issue_obj
         self.view = sublime.active_window().active_view()
@@ -133,6 +140,7 @@ class UpdateGithubIssueCommand(sublime_plugin.WindowCommand):
 
 
 class LoadRepoList:
+
     def __init__(self):
         self.username = None
         self.repo_name = None
@@ -229,8 +237,10 @@ def create_new_issue_view():
     snippet += "*" + '-' * 10 + "END" + '-' * 10 + "*" + LINE_END
     view = sublime.active_window().new_file()
     log("Create new view to write the issue")
-    view.run_command("set_file_type", {"syntax": settings.get("syntax", "Packages/GitHubIssue/Issue.sublime-syntax")})
-    log("new issue will have a syntax {}".format(settings.get("syntax", "Packages/GitHubIssue/Issue.sublime-syntax")))
+    view.run_command("set_file_type", {"syntax": settings.get(
+        "syntax", "Packages/GitHubIssue/Issue.sublime-syntax")})
+    log("new issue will have a syntax {}".format(settings.get(
+        "syntax", "Packages/GitHubIssue/Issue.sublime-syntax")))
     view.run_command("insert_issue_snippet", {"snippet": snippet})
     view.sel().clear()
     start_point = view.text_point(0, 18)
