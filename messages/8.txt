@@ -1,0 +1,5 @@
+ - add commit auto-completion
+
+ - adjust setting behaviour
+
+ Please restart Sublime Text after this upgrade.
