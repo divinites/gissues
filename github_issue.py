@@ -3,21 +3,24 @@ import sublime_plugin
 from .libgit import issue
 from .libgit import utils
 from .libgit import github
-from . import parameter_container as pc
+# from . import parameter_container as pc
 from . import flag_container as fc
-from . import log
+from . import log, LINE_END, settings, github_logger
 from . import repo_info_storage, issue_obj_storage
 import re
+import logging
 from queue import Queue
 from functools import partial
 
+
+global active_issue_obj
 active_issue_obj = None
 
 
 def plugin_loaded():
-    global active_issue_obj
-    settings = sublime.load_settings("github_issue.sublime-settings")
-    pc.read_settings(settings)
+    global active_issue_obj, settings
+    settings.refresh()
+    settings.settings.add_on_change("github_issue_reload", settings.refresh)
     system_setting = sublime.load_settings("Preferences.sublime-settings")
     custom_trigger = [{
         "characters": "@",
@@ -26,7 +29,7 @@ def plugin_loaded():
         "characters": "#",
         "selector": "text.html.github.issue"
     }, {
-        "characters": pc.commit_completion_trigger,
+        "characters": settings.get("commit_completion_trigger", ":"),
         "selector": "text.html.github.issue"
     }]
     auto_complete_trigger = system_setting.get("auto_complete_triggers")
@@ -35,16 +38,16 @@ def plugin_loaded():
     else:
         auto_complete_trigger = custom_trigger
     system_setting.set("auto_complete_triggers", auto_complete_trigger)
-
-    pc.line_ends = "\n"
-    log("debug level is {}".format(str(pc.debug_flag)))
+    log_level = logging.ERROR if settings.get('debug', 0) == 0 else logging.DEBUG
+    github_logger.setLevel(log_level)
+    log("debug level is {}".format(str(log_level)))
     active_issue_obj = issue.IssueObj(settings)
 
 
 class ChangeIssuePageCommand(sublime_plugin.TextCommand):
     def is_enabled(self):
         syntax_name = self.view.settings().get('syntax')
-        if syntax_name == pc.list_syntax:
+        if syntax_name == "Packages/GitHubIssue/list.sublime-syntax":
             return True
         return False
 
@@ -76,7 +79,7 @@ class ShowGithubIssueCommand(sublime_plugin.WindowCommand):
     def is_enabled(self):
         current_view = sublime.active_window().active_view()
         syntax_name = current_view.settings().get('syntax')
-        if syntax_name == pc.list_syntax:
+        if syntax_name == "Packages/GitHubIssue/list.sublime-syntax":
             return True
         return False
 
@@ -218,16 +221,16 @@ class LoadRepoList:
 
 def create_new_issue_view():
     snippet = ''
-    snippet += "# Title         : " + pc.line_ends
-    snippet += "## Label        : " + pc.line_ends
-    snippet += "## Assignee     : " + pc.line_ends
-    snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + pc.line_ends
-    snippet += pc.line_ends
-    snippet += "*" + '-' * 10 + "END" + '-' * 10 + "*" + pc.line_ends
+    snippet += "# Title         : " + LINE_END
+    snippet += "## Label        : " + LINE_END
+    snippet += "## Assignee     : " + LINE_END
+    snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + LINE_END
+    snippet += LINE_END
+    snippet += "*" + '-' * 10 + "END" + '-' * 10 + "*" + LINE_END
     view = sublime.active_window().new_file()
     log("Create new view to write the issue")
-    view.run_command("set_file_type", {"syntax": pc.issue_syntax})
-    log("new issue will have a syntax {}".format(pc.issue_syntax))
+    view.run_command("set_file_type", {"syntax": settings.get("syntax", "Packages/GitHubIssue/Issue.sublime-syntax")})
+    log("new issue will have a syntax {}".format(settings.get("syntax", "Packages/GitHubIssue/Issue.sublime-syntax")))
     view.run_command("insert_issue_snippet", {"snippet": snippet})
     view.sel().clear()
     start_point = view.text_point(0, 18)

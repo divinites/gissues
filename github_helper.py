@@ -1,7 +1,8 @@
 import sublime_plugin
 import sublime
 from . import log
-from . import parameter_container as pc
+from .github_issue import settings
+# from . import parameter_container as pc
 # from . import flag_container as fc
 # from . import repo_info_storage
 
@@ -28,7 +29,7 @@ class PostOrUpdateIssueCommand(sublime_plugin.WindowCommand):
         self.window = sublime.active_window()
         self.view = self.window.active_view()
         syntax_name = self.view.settings().get('syntax')
-        if syntax_name == pc.issue_syntax:
+        if syntax_name == settings.get("syntax", "Packages/GitHubIssue/Issue.sublime-syntax"):
             return True
         return False
 

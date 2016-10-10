@@ -1,22 +1,23 @@
 import sublime
 import re
-from .. import parameter_container as pc
-from .. import log
+# from .. import parameter_container as pc
+from .. import LINE_END
+from .. import log, settings
 
 
 def print_list_framework(view=None):
     snippet = ''
-    snippet += "-" * 50 + pc.line_ends
-    snippet += 'Issue No.' + '   ' + 'Locked    ' + 'Issue Title' + pc.line_ends
-    snippet += "-" * 24 + '**' + "-" * 24 + pc.line_ends
-    snippet += "-" * 23 +"*" * 4 + "-" * 23 + pc.line_ends * 3
-    snippet += "Page:  |_First_|     ...     |_Prev_|     ...     |_Next_|     ...     |_Last_|" + pc.line_ends
+    snippet += "-" * 50 + LINE_END
+    snippet += 'Issue No.' + '   ' + 'Locked    ' + 'Issue Title' + LINE_END
+    snippet += "-" * 24 + '**' + "-" * 24 + LINE_END
+    snippet += "-" * 23 +"*" * 4 + "-" * 23 + LINE_END * 3
+    snippet += "Page:  |_First_|     ...     |_Prev_|     ...     |_Next_|     ...     |_Last_|" + LINE_END
     if not view:
         view = sublime.active_window().new_file()
     view.run_command("erase_snippet")
     view.run_command("set_file_type",
                      {"syntax":
-                      pc.list_syntax})
+                      "Packages/GitHubIssue/list.sublime-syntax"})
     view.settings().set('color_scheme',
                         "Packages/GitHubIssue/list.tmTheme")
     view.run_command("insert_issue_snippet", {"snippet": snippet})
@@ -62,33 +63,34 @@ def format_issue(issue):
         for label_obj in issue["labels"]:
             labels.append(label_obj['name'])
     snippet = ''
-    snippet += "# Title         : " + issue["title"] + pc.line_ends
-    snippet += "## Number       : " + str(issue['number']) + pc.line_ends
-    snippet += "## State        : " + issue['state'] + pc.line_ends
-    snippet += "## Label        : " + " ".join(['@' + label for label in labels]) + pc.line_ends
-    snippet += "## Locked       : " + str(issue['locked']) + pc.line_ends
-    snippet += "## Assignee     : " + str(issue['assignee']) + pc.line_ends
-    snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + pc.line_ends
-    snippet += filter_line_ends(issue['body']) + pc.line_ends
+    snippet += "# Title         : " + issue["title"] + LINE_END
+    snippet += "## Number       : " + str(issue['number']) + LINE_END
+    snippet += "## State        : " + issue['state'] + LINE_END
+    snippet += "## Label        : " + " ".join(['@' + label for label in labels]) + LINE_END
+    snippet += "## Locked       : " + str(issue['locked']) + LINE_END
+    snippet += "## Assignee     : " + str(issue['assignee']) + LINE_END
+    snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + LINE_END
+    snippet += filter_line_ends(issue['body']) + LINE_END
     log("Issue title " + issue["title"] + " formated")
     return snippet
 
 
 def format_comment(comment):
     snippet = ''
-    snippet += "*" + '-' * 10 + "Start <Comment " + str(comment['id']) + '>' + '-' * 10 + "*" + pc.line_ends
+    snippet += "*" + '-' * 10 + "Start <Comment " + str(comment['id']) + '>' + '-' * 10 + "*" + LINE_END
     snippet += "*<commented by " + comment['user'][
         'login'] + "   UpdateTime: " + comment[
-            'updated_at'] + '>*' + pc.line_ends
-    snippet += filter_line_ends(comment['body']) + pc.line_ends
-    snippet += "*" + '-' * 10 + "End <Comment " + str(comment['id']) + '>' + '-' * 10 + "*" + pc.line_ends
+            'updated_at'] + '>*' + LINE_END
+    snippet += filter_line_ends(comment['body']) + LINE_END
+    snippet += "*" + '-' * 10 + "End <Comment " + str(comment['id']) + '>' + '-' * 10 + "*" + LINE_END
     log("comment id " + str(comment['id']) + "formated")
     return snippet
 
 
 def find_git():
-    if pc.git_path:
-        return pc.git_path
+    git_path = settings.get("git_path", '')
+    if settings.get("git_path", ''):
+        return git_path
     if sublime.platform() != 'windows':
         log('using git')
         return 'git'
@@ -98,7 +100,7 @@ def find_git():
 
 
 def filter_line_ends(issue):
-    # if pc.line_ends == '\n':
+    # if LINE_END == '\n':
     log("filtering line ends")
     return issue.replace('\r', '')
     # else:

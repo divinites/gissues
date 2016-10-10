@@ -1,11 +1,10 @@
 import sublime
 import sublime_plugin
-from . import parameter_container as pc
 from . import flag_container as fc
 from . import global_person_list, global_title_list, global_label_list, global_commit_list
 from . import repo_info_storage, issue_obj_storage
 from .libgit.utils import destock, show_stock
-from . import log
+from . import log, settings, COMPLETIONS_SCOPES
 
 
 def highlight(view, flags_dict):
@@ -23,13 +22,9 @@ def highlight(view, flags_dict):
                      sublime.DRAW_SQUIGGLY_UNDERLINE)
 
 
-COMPLETIONS_SCOPES = ['text.html.github.issue']
-COMPLETIONS_SCOPES.extend(pc.custom_scope)
-
-
 class IssueListListener(sublime_plugin.EventListener):
     def on_selection_modified(self, view):
-        if view.settings().get('syntax') == pc.issue_syntax:
+        if view.settings().get('syntax') == settings.get("syntax", "Packages/GitHubIssue/Issue.sublime-syntax"):
             header_split = "*----------Content----------*"
             all_lines = view.lines(sublime.Region(0, view.size()))
             if len(all_lines) > 7:
@@ -68,18 +63,18 @@ class IssueListListener(sublime_plugin.EventListener):
                     pass
 
     def on_selection_modified_async(self, view):
-        if view.settings().get('syntax') == pc.list_syntax:
+        if view.settings().get('syntax') == "Packages/GitHubIssue/list.sublime-syntax":
             view.add_regions('selected', [view.full_line(view.sel()[0])],
                              "text.issue.list", "dot",
                              sublime.DRAW_SQUIGGLY_UNDERLINE)
 
     def on_post_text_command(self, view, command, args):
         if view.settings().get(
-                'syntax') == pc.list_syntax and command == "change_issue_page":
+                'syntax') == "Packages/GitHubIssue/list.sublime-syntax" and command == "change_issue_page":
             highlight(view, fc.pagination_flags)
 
     def on_pre_close(self, view):
-        if view.settings().get('syntax') == pc.issue_syntax:
+        if view.settings().get('syntax') == settings.get("syntax", "Packages/GitHubIssue/Issue.sublime-syntax"):
             try:
                 view_id = view.id()
                 destock(issue_obj_storage, view_id)
@@ -94,9 +89,6 @@ class IssueListListener(sublime_plugin.EventListener):
             view.match_selector(locations[0], scope)
             for scope in COMPLETIONS_SCOPES)
         if in_scope:
-            log("flags are: label {} name {} title {} commit {}".format(
-                str(pc.label_completion), str(pc.name_completion), str(
-                    pc.title_completion), str(pc.commit_completion)))
             pt = locations[0] - len(prefix) - 1
             ch = view.substr(sublime.Region(pt, pt + 1))
             log("the trigger is {}".format(ch))
@@ -106,13 +98,13 @@ class IssueListListener(sublime_plugin.EventListener):
                 username, repo_name, _ = show_stock(repo_info_storage,
                                                     view.id())
                 repo_info = "{}/{}".format(username, repo_name)
-                if ch == "@" and pc.label_completion:
+                if ch == "@" and settings.get("label_completion", True):
                     log("wow, find labels!")
                     return [[label, label]
                             for label in global_label_list[repo_info]
                             if prefix in label]
             else:
-                if ch == "@" and pc.name_completion:
+                if ch == "@" and settings.get("user_completion", True):
                     username, repo_name, _ = show_stock(repo_info_storage,
                                                         view.id())
                     repo_info = "{}/{}".format(username, repo_name)
@@ -125,7 +117,7 @@ class IssueListListener(sublime_plugin.EventListener):
                         return (results, sublime.INHIBIT_WORD_COMPLETIONS)
                     else:
                         return results
-                elif ch == "#" and pc.title_completion:
+                elif ch == "#" and settings.get("issue_title_completion", True):
                     username, repo_name, _ = show_stock(repo_info_storage,
                                                         view.id())
                     repo_info = "{}/{}".format(username, repo_name)
@@ -139,13 +131,13 @@ class IssueListListener(sublime_plugin.EventListener):
                         return (result, sublime.INHIBIT_WORD_COMPLETIONS)
                     else:
                         return result
-                elif ch == pc.commit_completion_trigger and pc.commit_completion:
+                elif ch == settings.get("commit_completion_trigger", ":") and settings.get("commit_completion", True):
                     username, repo_name, _ = show_stock(repo_info_storage,
                                                         view.id())
                     repo_info = "{}/{}".format(username, repo_name)
                     search = prefix.replace(":", "")
                     log("commit list is {}".format(repr(global_commit_list)))
-                    result = [[message, sha]
+                    result = [[message, ' ' + sha]
                               for sha, message in global_commit_list[repo_info]
                               if search in message]
                     log("filtered commit result is {}".format(repr(result)))

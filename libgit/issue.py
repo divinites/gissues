@@ -1,6 +1,6 @@
 from .github import GitHubAccount
-from .. import parameter_container as pc
-from .. import log
+# from .. import parameter_container as pc
+from .. import log, LINE_END, settings
 from .. import global_person_list, global_title_list, global_label_list, global_commit_list
 from .. import repo_info_storage
 from .utils import get_issue_post, compare_issues, restock, show_stock
@@ -238,7 +238,7 @@ class PrintListInView(threading.Thread):
             for issue in json_list:
                 snippet += "{:<12}{:<10}{}".format(
                     str(issue['number']), issue['locked'],
-                    issue['title']) + pc.line_ends
+                    issue['title']) + LINE_END
             start_point, end_point = find_list_region(self.view)
             if self.view.is_read_only():
                 self.view.set_read_only(False)
@@ -293,8 +293,8 @@ class PrintIssueInView(threading.Thread):
                 user_set.add(comment['user']['login'])
                 comment_dict[comment['id']] = comment
                 snippet += format_comment(comment)
-            snippet += "## Add New Comment:" + pc.line_ends
-            snippet += pc.line_ends
+            snippet += "## Add New Comment:" + LINE_END
+            snippet += LINE_END
             snippet += "*" + "-" * 10 + "END" + '-' * 10 + "*"
             if not self.view:
                 self.view = sublime.active_window().new_file()
@@ -310,7 +310,7 @@ class PrintIssueInView(threading.Thread):
             self.view.run_command("erase_snippet",
                                   {"start_point": 0,
                                    "end_point": self.view.size()})
-            self.view.run_command("set_file_type", {"syntax": pc.issue_syntax})
+            self.view.run_command("set_file_type", {"syntax": settings.get("syntax", "Packages/GitHubIssue/Issue.sublime-syntax")})
             self.view.run_command("insert_issue_snippet", {"snippet": snippet})
             view_converter = ViewConverter(self.view)
             _, a, b, _ = view_converter.find_region_line(
@@ -435,8 +435,8 @@ class UpdateIssue(IssueManipulate):
                 original_issue["comments"][new_comment.json()[
                     'id']] = new_comment.json()
                 snippet = format_comment(new_comment.json())
-                snippet += "## Add New Comment:" + pc.line_ends
-                snippet += pc.line_ends
+                snippet += "## Add New Comment:" + LINE_END
+                snippet += LINE_END
                 snippet += "*" + "-" * 10 + "END" + '-' * 10 + "*"
                 a, b = find_comment_region(self.view)
                 log("insert the snippet")
