@@ -15,6 +15,8 @@ class ParameterContainer:
         self.name_completion = True
         self.custom_scope = []
         self.label_completion = True
+        self.commit_completion = True
+        self.commit_completion_trigger = ":"
         if settings:
             self.read_settings(settings)
 
@@ -25,7 +27,9 @@ class ParameterContainer:
         self.title_completion = settings.get('issue_title_completion', True)
         self.name_completion = settings.get('user_completion', True)
         self.label_completion = settings.get("label_completion", True)
+        self.commit_completion = settings.get("commit_completion", True)
         self.custom_scope = settings.get('custom_completion_scope', [])
+        self.commit_completion_trigger = settings.get('commit_completion_trigger', ":")
 
     def get_debug_flag(self, settings):
         return settings.get('debug', 0)
@@ -55,6 +59,7 @@ repo_info_storage = Queue()
 global_title_list = {}
 global_person_list = {}
 global_label_list = {}
+global_commit_list = {}
 # global_title_list_storage.put({})
 # global_person_list_storage.put({})
 issue_obj_storage.put({})

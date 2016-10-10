@@ -1,7 +1,7 @@
 from .github import GitHubAccount
 from .. import parameter_container as pc
 from .. import log
-from .. import global_person_list, global_title_list, global_label_list
+from .. import global_person_list, global_title_list, global_label_list, global_commit_list
 from .. import repo_info_storage
 from .utils import get_issue_post, compare_issues, restock, show_stock
 from .utils import format_issue, format_comment, find_comment_region, find_list_region
@@ -35,12 +35,22 @@ class AcquireRepoInfo(threading.Thread):
                 break
             else:
                 self.issue_obj.get(links['next']['url'])
+
+        commit_set = self.issue_obj.get_commits()
+        while True:
+            links = self.issue_obj.get_links()
+            if (not links) or 'next' not in links:
+                break
+            else:
+                commit_set.update(self.issue_obj.get_commits(links["next"]["url"]))
         repo_info = "{}/{}".format(self.issue_obj.username,
                                    self.issue_obj.repo_name)
         # if repo_info not in global_title_list:
+        log("finish acquiring label, commit and issue title")
         global_title_list[repo_info] = sorted(
             title_list, key=lambda x: (x[2], x[1] * -1))
         global_label_list[repo_info] = label_list
+        global_commit_list[repo_info] = commit_set
 
 
 class IssueObj:
@@ -122,6 +132,20 @@ class IssueObj:
         return (
             self.github_account.session.get(issue_url, **params),
             self.github_account.session.get(issue_url + '/comments', **params))
+
+    def get_commits(self, issue_url=None, **params):
+        if not issue_url:
+            issue_url = self.github_account.join_issue_url(
+                username=self.username, repo_name=self.repo_name)
+            issue_url = issue_url[:-7]
+            issue_url += "/commits"
+        commit_set = set([])
+        commit_resp = self.get(issue_url)
+        if commit_resp.status_code != 200:
+            raise Exception("cannot get commits")
+        for commit in commit_resp.json():
+            commit_set.add((commit['sha'], commit['commit']['message']))
+        return commit_set
 
     def replace_labels(self, issue_number, labels):
         issue_url = self.github_account.join_issue_url(

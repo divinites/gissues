@@ -18,7 +18,24 @@ def plugin_loaded():
     global active_issue_obj
     settings = sublime.load_settings("github_issue.sublime-settings")
     pc.read_settings(settings)
-    # pc.line_ends = find_line_ends()
+    system_setting = sublime.load_settings("Preferences.sublime-settings")
+    custom_trigger = [{
+        "characters": "@",
+        "selector": "text.html.github.issue"
+    }, {
+        "characters": "#",
+        "selector": "text.html.github.issue"
+    }, {
+        "characters": pc.commit_completion_trigger,
+        "selector": "text.html.github.issue"
+    }]
+    auto_complete_trigger = system_setting.get("auto_complete_triggers")
+    if auto_complete_trigger:
+        auto_complete_trigger.extend(custom_trigger)
+    else:
+        auto_complete_trigger = custom_trigger
+    system_setting.set("auto_complete_triggers", auto_complete_trigger)
+
     pc.line_ends = "\n"
     log("debug level is {}".format(str(pc.debug_flag)))
     active_issue_obj = issue.IssueObj(settings)
@@ -42,7 +59,8 @@ class ChangeIssuePageCommand(sublime_plugin.TextCommand):
             if flag == view_text:
                 log("flag matches, set {} to True".format(flag))
                 fc.pagination_flags[flag] = True
-        print_next_page_issues = issue.PrintListInView(self.view, active_issue_obj, repo_info_storage, command, False)
+        print_next_page_issues = issue.PrintListInView(
+            self.view, active_issue_obj, repo_info_storage, command, False)
         print_next_page_issues.start()
 
 
@@ -70,9 +88,11 @@ class ShowGithubIssueCommand(sublime_plugin.WindowCommand):
         issue_number = int(match_id.group(0))
         try:
             active_issue_obj.find_repo(view, repo_info_storage)
-            repo_info = (active_issue_obj.username, active_issue_obj.repo_name, None)
+            repo_info = (active_issue_obj.username, active_issue_obj.repo_name,
+                         None)
             print_in_view = issue.PrintIssueInView(
-                active_issue_obj, issue_number, issue_obj_storage, repo_info, repo_info_storage)
+                active_issue_obj, issue_number, issue_obj_storage, repo_info,
+                repo_info_storage)
             print_in_view.start()
         except:
             # repo_info_storage.put(repo_info_dictionary)
@@ -138,22 +158,23 @@ class LoadRepoList:
 
     def show_panel_then_create_issue(self):
         _param_on_repo_selection = partial(
-            self.on_repo_selection,
-            subsequent_action=self.create_issue)
+            self.on_repo_selection, subsequent_action=self.create_issue)
 
         self.window.show_quick_panel(self.entries, _param_on_repo_selection)
 
     def on_enter_repo_info(self, content, subsequent_action, **args):
         if '/' in content:
-            self.username, self.repo_name = [x.strip() for x in content.split('/')]
+            self.username, self.repo_name = [x.strip()
+                                             for x in content.split('/')]
             log("username is " + str(self.username))
             log("repo name is " + str(self.repo_name))
-            acquire_repo_info = issue.AcquireRepoInfo(self.username, self.repo_name)
+            acquire_repo_info = issue.AcquireRepoInfo(self.username,
+                                                      self.repo_name)
             acquire_repo_info.start()
             subsequent_action(**args)
         else:
             raise Exception(
-          "Please enter repo in the format username/repo_name")
+                "Please enter repo in the format username/repo_name")
 
     def on_repo_selection(self, selection, subsequent_action, **args):
         if selection >= 0:
@@ -164,7 +185,8 @@ class LoadRepoList:
                     subsequent_action=subsequent_action,
                     **args)
                 content = sublime.get_clipboard(256)
-                if content.count("/") == 1:  # Add a condition to try not to jerperdize irrelevant clipboard content
+                if content.count(
+                        "/") == 1:  # Add a condition to try not to jerperdize irrelevant clipboard content
                     sublime.set_clipboard(content.strip())
                 self.window.show_input_panel(
                     'Enter repo in the format username/repo_name:', '',
@@ -172,6 +194,9 @@ class LoadRepoList:
             else:
                 self.username, self.repo_name = self.entries[selection].split(
                     '/')
+                acquire_repo_info = issue.AcquireRepoInfo(self.username,
+                                                          self.repo_name)
+                acquire_repo_info.start()
                 subsequent_action(**args)
 
     def print_issue_list(self, **args):
@@ -187,7 +212,8 @@ class LoadRepoList:
     def create_issue(self):
         create_new_issue_view()
         view_id = sublime.active_window().active_view().id()
-        utils.restock(repo_info_storage, view_id, (self.username, self.repo_name, None))
+        utils.restock(repo_info_storage, view_id,
+                      (self.username, self.repo_name, None))
 
 
 def create_new_issue_view():
@@ -200,9 +226,7 @@ def create_new_issue_view():
     snippet += "*" + '-' * 10 + "END" + '-' * 10 + "*" + pc.line_ends
     view = sublime.active_window().new_file()
     log("Create new view to write the issue")
-    view.run_command("set_file_type",
-                      {"syntax":
-                       pc.issue_syntax})
+    view.run_command("set_file_type", {"syntax": pc.issue_syntax})
     log("new issue will have a syntax {}".format(pc.issue_syntax))
     view.run_command("insert_issue_snippet", {"snippet": snippet})
     view.sel().clear()
@@ -215,7 +239,8 @@ def create_new_issue_view():
 
 
 def find_line_ends():
-    system_setting = sublime.load_settings("Preferences.sublime-settings").get('default_line_ending')
+    system_setting = sublime.load_settings("Preferences.sublime-settings").get(
+        'default_line_ending')
     if system_setting != 'system':
         if system_setting == 'windows':
             return '\r\n'
