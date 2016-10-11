@@ -35,15 +35,13 @@ Set-ups:
     "username": "",
     "password": "",
     "debug": 0,
-    "syntax": "Packages/GitHubIssue/Issue.sublime-syntax",
+    "syntax": "Packages/Markdown/Markdown.sublime-syntax",
     "git_path": "",
     "issue_title_completion": true,
     "user_completion": true,
     "label_completion": true,
     "commit_completion": true,
-    "commit_completion_trigger": ":",
-    "custom_completion_scope": []
-
+    "commit_completion_trigger": "&"
 }
 ```
 
@@ -84,7 +82,6 @@ __"issue\_title\_completion"__, __"user\_completion"__ and __"label\_completion"
 
 - __"label\_completion"__ autocompletes labels (only available in the "##Label     :" line).
 
-__"custom\_completion\_scope"__: By default, autocompletion only takes place in the scope "text.html.github.issue", if you have customized syntax, you probably want to add correponding scopes here to make autocompletion work under your syntax.
 
 After installing this plug-in, it would be better to restart sublime text to make the plug-in work.
 
