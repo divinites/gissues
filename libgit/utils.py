@@ -93,7 +93,7 @@ def format_issue(issue):
     snippet += "## Label        : " + \
         " ".join(['@' + label for label in labels]) + LINE_END
     snippet += "## Locked       : " + str(issue['locked']) + LINE_END
-    snippet += "## Assignee     : " + str(issue['assignee']['login']) + LINE_END
+    snippet += "## Assignee     : " + str(issue['assignee']['login'] if issue['assignee'] else str(None)) + LINE_END
     snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + LINE_END
     snippet += filter_line_ends(issue['body']) + LINE_END
     log("Issue title " + issue["title"] + " formated")
