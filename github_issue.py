@@ -22,20 +22,6 @@ def plugin_loaded():
     global active_issue_obj, settings
     settings.refresh()
     settings.settings.add_on_change("github_issue_reload", settings.refresh)
-    # system_setting = sublime.load_settings("Preferences.sublime-settings")
-    # commit_completion_trigger = settings.get("commit_completion_trigger", "&")[0]
-    # for comletion_scope in COMPLETIONS_SCOPES:
-    #     for char in ("@", "#", commit_completion_trigger):
-    #         custom_trigger.append({"characters": char, "selector": comletion_scope})
-
-    # auto_complete_trigger = system_setting.get("auto_complete_triggers")
-    # if auto_complete_trigger:
-    #     for trigger in custom_trigger:
-    #         if trigger not in auto_complete_trigger:
-    #             auto_complete_trigger.append(trigger)
-    # else:
-    #     auto_complete_trigger = custom_trigger
-    # system_setting.set("auto_complete_triggers", auto_complete_trigger)
     log_level = logging.ERROR if settings.get(
         'debug', 0) == 0 else logging.DEBUG
     github_logger.setLevel(log_level)
@@ -212,8 +198,6 @@ class LoadRepoList:
         global active_issue_obj
         active_issue_obj.get_repo(self.username, self.repo_name)
         issue_view = utils.print_list_framework()
-        # acquire_list = issue.AcquireIssueTitle(active_issue_obj)
-        # acquire_list.start()
         print_in_view = issue.PrintListInView(issue_view, active_issue_obj,
                                               repo_info_storage, **args)
         print_in_view.start()
@@ -236,9 +220,9 @@ def create_new_issue_view():
     view = sublime.active_window().new_file()
     log("Create new view to write the issue")
     view.run_command("set_file_type", {"syntax": settings.get(
-        "syntax", "Packages/GitHubIssue/Issue.sublime-syntax")})
+        "syntax", "Packages/Markdown/Markdown.sublime-syntax")})
     log("new issue will have a syntax {}".format(settings.get(
-        "syntax", "Packages/GitHubIssue/Issue.sublime-syntax")))
+        "syntax", "Packages/Markdown/Markdown.sublime-syntax")))
     view.run_command("insert_issue_snippet", {"snippet": snippet})
     view.sel().clear()
     start_point = view.text_point(0, 18)

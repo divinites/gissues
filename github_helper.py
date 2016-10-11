@@ -30,8 +30,7 @@ class PostOrUpdateIssueCommand(sublime_plugin.WindowCommand):
     def is_enabled(self):
         self.window = sublime.active_window()
         self.view = self.window.active_view()
-        syntax_name = self.view.settings().get('syntax')
-        if syntax_name == settings.get("syntax", "Packages/GitHubIssue/Issue.sublime-syntax"):
+        if self.view.settings().get("issue_flag"):
             return True
         return False
 

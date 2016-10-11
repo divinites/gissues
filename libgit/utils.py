@@ -6,7 +6,7 @@ from .. import log, settings
 
 
 def configure_view_trigger(view):
-    if view.settings().get('syntax') == settings.get("syntax", "Packages/GitHubIssue/Issue.sublime-syntax"):
+    if view.settings().get('syntax') == settings.get("syntax", "Packages/Markdown/Markdown.sublime-syntax"):
         system_setting = view.settings()
         custom_trigger = []
         commit_completion_trigger = settings.get("commit_completion_trigger", "&")[0]

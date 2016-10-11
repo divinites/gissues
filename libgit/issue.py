@@ -315,7 +315,7 @@ class PrintIssueInView(threading.Thread):
                                   {"start_point": 0,
                                    "end_point": self.view.size()})
             self.view.run_command("set_file_type", {"syntax": settings.get(
-                "syntax", "Packages/GitHubIssue/Issue.sublime-syntax")})
+                "syntax", "Packages/Markdown/Markdown.sublime-syntax")})
             self.view.run_command("insert_issue_snippet", {"snippet": snippet})
             view_converter = ViewConverter(self.view)
             _, a, b, _ = view_converter.find_region_line(
