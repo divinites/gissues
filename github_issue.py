@@ -5,7 +5,7 @@ from .libgit import utils
 from .libgit import github
 # from . import parameter_container as pc
 from . import flag_container as fc
-from . import log, LINE_END, settings, github_logger
+from . import log, LINE_END, settings, github_logger, COMPLETIONS_SCOPES
 from . import repo_info_storage, issue_obj_storage
 import re
 import logging
@@ -14,27 +14,26 @@ from functools import partial
 
 
 global active_issue_obj
+
 active_issue_obj = None
+custom_trigger = []
 
 
 def plugin_loaded():
-    global active_issue_obj, settings
+    global active_issue_obj, settings, custom_trigger
     settings.refresh()
     settings.settings.add_on_change("github_issue_reload", settings.refresh)
     system_setting = sublime.load_settings("Preferences.sublime-settings")
-    custom_trigger = [{
-        "characters": "@",
-        "selector": "text.html.github.issue"
-    }, {
-        "characters": "#",
-        "selector": "text.html.github.issue"
-    }, {
-        "characters": settings.get("commit_completion_trigger", ":"),
-        "selector": "text.html.github.issue"
-    }]
+    commit_completion_trigger = settings.get("commit_completion_trigger", "&")[0]
+    for comletion_scope in COMPLETIONS_SCOPES:
+        for char in ("@", "#", commit_completion_trigger):
+            custom_trigger.append({"characters": char, "selector": comletion_scope})
+
     auto_complete_trigger = system_setting.get("auto_complete_triggers")
     if auto_complete_trigger:
-        auto_complete_trigger.extend(custom_trigger)
+        for trigger in custom_trigger:
+            if trigger not in auto_complete_trigger:
+                auto_complete_trigger.append(trigger)
     else:
         auto_complete_trigger = custom_trigger
     system_setting.set("auto_complete_triggers", auto_complete_trigger)
@@ -43,6 +42,8 @@ def plugin_loaded():
     github_logger.setLevel(log_level)
     log("debug level is {}".format(str(log_level)))
     active_issue_obj = issue.IssueObj(settings)
+
+
 
 
 class ChangeIssuePageCommand(sublime_plugin.TextCommand):

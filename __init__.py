@@ -3,12 +3,28 @@ from queue import Queue
 import sublime
 
 
+##
+# @brief      Class for issue setting.
+##
 class IssueSetting:
 
+    ##
+    # @brief      Constructs the object.
+    ##
+    # @param      self      The object
+    # @param      settings  Sublime Setting Object
+    ##
     def __init__(self, settings=None):
         self.settings = settings
         self.setting_dictionary = {}
 
+    ##
+    # @brief      refresh the setting_dictionary
+    ##
+    # @param      self  The object
+    ##
+    # @return     { None }
+    ##
     def refresh(self):
         global COMPLETIONS_SCOPES
         self.settings = sublime.load_settings('github_issue.sublime-settings')
@@ -18,6 +34,15 @@ class IssueSetting:
             self.setting_dictionary[flag] = self.settings.get(flag)
         COMPLETIONS_SCOPES.extend(self.get("custom_completion_scope", []))
 
+    ##
+    # @brief      get corresponding parameters from Setting Object
+    ##
+    # @param      self     The object
+    # @param      flag     configuration parameters
+    # @param      default  The default value of flag
+    ##
+    # @return     return setting_dictionary[flag] if it is valid otherwise return the default value.
+    ##
     def get(self, flag, default=None):
         result = self.setting_dictionary[flag]
         if not result:
