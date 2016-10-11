@@ -128,11 +128,11 @@ class IssueListListener(sublime_plugin.EventListener):
                         return (result, sublime.INHIBIT_WORD_COMPLETIONS)
                     else:
                         return result
-                elif ch == settings.get("commit_completion_trigger", ":") and settings.get("commit_completion", True):
+                elif ch == settings.get("commit_completion_trigger", "&") and settings.get("commit_completion", True):
                     username, repo_name, _ = show_stock(repo_info_storage,
                                                         view.id())
                     repo_info = "{}/{}".format(username, repo_name)
-                    search = prefix.replace(":", "")
+                    search = prefix.replace("&", "")
                     log("commit list is {}".format(repr(global_commit_list)))
                     result = [[message, ' ' + sha]
                               for sha, message in global_commit_list[repo_info]
