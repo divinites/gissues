@@ -1,7 +1,7 @@
 import sublime
 import re
 # from .. import parameter_container as pc
-from .. import LINE_END, COMPLETIONS_SCOPES
+from .. import LINE_END
 from .. import log, settings
 
 
@@ -10,10 +10,11 @@ def configure_view_trigger(view):
         system_setting = view.settings()
         custom_trigger = []
         commit_completion_trigger = settings.get("commit_completion_trigger", "&")[0]
-        for comletion_scope in COMPLETIONS_SCOPES:
-            for char in ("@", "#", commit_completion_trigger):
-                custom_trigger.append({"characters": char, "selector": comletion_scope})
-
+        # for comletion_scope in COMPLETIONS_SCOPES:
+        #     for char in ("@", "#", commit_completion_trigger):
+        #         custom_trigger.append({"characters": char, "selector": comletion_scope})
+        for char in ("@", "#", commit_completion_trigger):
+            custom_trigger.append({"characters": char, "selector": "text"})
         auto_complete_trigger = system_setting.get("auto_complete_triggers")
         if auto_complete_trigger:
             for trigger in custom_trigger:

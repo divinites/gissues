@@ -56,7 +56,8 @@ class FlagContainer:
         self.pagination_flags = {"_First_": False,
                                  "_Last_": False,
                                  "_Prev_": False,
-                                 "_Next_": False}
+                                 "_Next_": False
+                                 }
 
 
 def log(info):
