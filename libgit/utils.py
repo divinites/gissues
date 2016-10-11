@@ -3,6 +3,7 @@ import re
 # from .. import parameter_container as pc
 from .. import LINE_END
 from .. import log, settings
+import os
 
 
 def configure_view_trigger(view):
@@ -113,16 +114,44 @@ def format_comment(comment):
     return snippet
 
 
+def test_paths_for_executable(paths, test_file):
+    for directory in paths:
+        file_path = os.path.join(directory, test_file)
+        if os.path.exists(file_path) and os.access(file_path, os.X_OK):
+            return file_path
+
+
+##
+## @brief      find git function, thanks [sublime-github](https://github.com/bgreenlee/sublime-github)
+##
+## @return     the path of git
+##
+
 def find_git():
-    git_path = settings.get("git_path", '')
-    if settings.get("git_path", ''):
+    git_path = settings.get("git_path", None)
+    if git_path:
         return git_path
-    if sublime.platform() != 'windows':
-        log('using git')
-        return 'git'
     else:
-        log('using git.exe')
-        return 'git.exe'
+        path = os.environ.get('PATH', '').split(os.pathsep)
+        if os.name == 'nt':
+            git_cmd = 'git.exe'
+        else:
+            git_cmd = 'git'
+
+        git_path = test_paths_for_executable(path, git_cmd)
+        if not git_path:
+            if os.name == 'nt':
+                extra_paths = (
+                    os.path.join(os.environ["ProgramFiles"], "Git", "bin"),
+                    os.path.join(os.environ["ProgramFiles(x86)"], "Git", "bin"),
+                )
+            else:
+                extra_paths = (
+                    '/usr/local/bin',
+                    '/usr/local/git/bin',
+                )
+            git_path = test_paths_for_executable(extra_paths, git_cmd)
+        return git_path
 
 
 def filter_line_ends(issue):
