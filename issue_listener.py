@@ -4,7 +4,7 @@ from . import flag_container as fc
 from . import global_person_list, global_title_list, global_label_list, global_commit_list
 from . import repo_info_storage, issue_obj_storage
 from .libgit.utils import destock, show_stock
-from . import log, settings, COMPLETIONS_SCOPES
+from . import log, settings
 
 
 def highlight(view, flags_dict):
@@ -25,7 +25,7 @@ def highlight(view, flags_dict):
 class IssueListListener(sublime_plugin.EventListener):
 
     def on_selection_modified(self, view):
-        if view.settings().get('syntax') == settings.get("syntax", "Packages/GitHubIssue/Issue.sublime-syntax"):
+        if view.settings().get('issue_flag'):
             header_split = "*----------Content----------*"
             all_lines = view.lines(sublime.Region(0, view.size()))
             if len(all_lines) > 7:
@@ -64,18 +64,17 @@ class IssueListListener(sublime_plugin.EventListener):
                     pass
 
     def on_selection_modified_async(self, view):
-        if view.settings().get('syntax') == "Packages/GitHubIssue/list.sublime-syntax":
+        if view.settings().get('list_flag'):
             view.add_regions('selected', [view.full_line(view.sel()[0])],
                              "text.issue.list", "dot",
                              sublime.DRAW_SQUIGGLY_UNDERLINE)
 
     def on_post_text_command(self, view, command, args):
-        if view.settings().get(
-                'syntax') == "Packages/GitHubIssue/list.sublime-syntax" and command == "change_issue_page":
+        if view.settings().get("list_flag"):
             highlight(view, fc.pagination_flags)
 
     def on_pre_close(self, view):
-        if view.settings().get('syntax') == settings.get("syntax", "Packages/GitHubIssue/Issue.sublime-syntax"):
+        if view.settings().get('issue_flag'):
             try:
                 view_id = view.id()
                 destock(issue_obj_storage, view_id)
@@ -86,10 +85,7 @@ class IssueListListener(sublime_plugin.EventListener):
                 pass
 
     def on_query_completions(self, view, prefix, locations):
-        in_scope = any(
-            view.match_selector(locations[0], scope)
-            for scope in COMPLETIONS_SCOPES)
-        if in_scope:
+        if view.settings().get('issue_flag'):
             pt = locations[0] - len(prefix) - 1
             ch = view.substr(sublime.Region(pt, pt + 1))
             log("the trigger is {}".format(ch))

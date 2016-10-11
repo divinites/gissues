@@ -5,7 +5,7 @@ from .libgit import utils
 from .libgit import github
 # from . import parameter_container as pc
 from . import flag_container as fc
-from . import log, LINE_END, settings, github_logger, COMPLETIONS_SCOPES
+from . import log, LINE_END, settings, github_logger
 from . import repo_info_storage, issue_obj_storage
 import re
 import logging

@@ -23,6 +23,7 @@ def configure_view_trigger(view):
         else:
             auto_complete_trigger = custom_trigger
         system_setting.set("auto_complete_triggers", auto_complete_trigger)
+        system_setting.set("issue_flag", True)
 
 
 def print_list_framework(view=None):
@@ -43,6 +44,7 @@ def print_list_framework(view=None):
     view.run_command("insert_issue_snippet", {"snippet": snippet})
     view.set_scratch(True)
     view.set_read_only(True)
+    view.settings().set("list_flag", True)
     return view
 
 

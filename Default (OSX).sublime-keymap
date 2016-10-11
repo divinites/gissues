@@ -2,53 +2,53 @@
         { "keys": [ "enter" ],
           "command": "show_github_issue",
           "context": [{
-            "key": "selector",
+            "key": "setting.list_flag",
             "operator": "equal",
-            "operand": "text.issue.list",
+            "operand": true,
           },]
         },
         { "keys": [ "right" ],
           "command": "change_issue_page",
           "args": {"command": "next"},
           "context": [{
-            "key": "selector",
+            "key": "setting.list_flag",
             "operator": "equal",
-            "operand": "text.issue.list",
+            "operand": true,
           },]
         },
         { "keys": [ "left" ],
           "command": "change_issue_page",
           "args": {"command": "prev"},
           "context": [{
-            "key": "selector",
+            "key": "setting.list_flag",
             "operator": "equal",
-            "operand": "text.issue.list",
+            "operand": true,
           },]
         },
         { "keys": [ "super+right" ],
           "command": "change_issue_page",
           "args": {"command": "last"},
           "context": [{
-            "key": "selector",
+            "key": "setting.list_flag",
             "operator": "equal",
-            "operand": "text.issue.list",
+            "operand": true,
           },]
         },
         { "keys": [ "super+left"],
           "command": "change_issue_page",
           "args": {"command": "first"},
           "context": [{
-            "key": "selector",
+            "key": "setting.list_flag",
             "operator": "equal",
-            "operand": "text.issue.list",
+            "operand": true,
           },]
         },
         { "keys": [ "super+s" ],
           "command": "post_or_update_issue",
           "context": [{
-            "key": "selector",
+            "key": "setting.issue_flag",
             "operator": "equal",
-            "operand": "text.html.github.issue",
+            "operand": true,
           },]
         },
 ]
