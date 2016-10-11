@@ -1,8 +1,27 @@
 import sublime
 import re
 # from .. import parameter_container as pc
-from .. import LINE_END
+from .. import LINE_END, COMPLETIONS_SCOPES
 from .. import log, settings
+
+
+def configure_view_trigger(view):
+    if view.settings().get('syntax') == settings.get("syntax", "Packages/GitHubIssue/Issue.sublime-syntax"):
+        system_setting = view.settings()
+        custom_trigger = []
+        commit_completion_trigger = settings.get("commit_completion_trigger", "&")[0]
+        for comletion_scope in COMPLETIONS_SCOPES:
+            for char in ("@", "#", commit_completion_trigger):
+                custom_trigger.append({"characters": char, "selector": comletion_scope})
+
+        auto_complete_trigger = system_setting.get("auto_complete_triggers")
+        if auto_complete_trigger:
+            for trigger in custom_trigger:
+                if trigger not in auto_complete_trigger:
+                    auto_complete_trigger.append(trigger)
+        else:
+            auto_complete_trigger = custom_trigger
+        system_setting.set("auto_complete_triggers", auto_complete_trigger)
 
 
 def print_list_framework(view=None):
@@ -72,7 +91,7 @@ def format_issue(issue):
     snippet += "## Locked       : " + str(issue['locked']) + LINE_END
     snippet += "## Assignee     : " + str(issue['assignee']) + LINE_END
     snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + LINE_END
-    snippet += filter_line_ends(issue['body']) + LINE_END
+    snippet += filter_line_ends(issue['body']) + LINE_END * 2
     log("Issue title " + issue["title"] + " formated")
     return snippet
 
@@ -86,7 +105,7 @@ def format_comment(comment):
             'updated_at'] + '>*' + LINE_END
     snippet += filter_line_ends(comment['body']) + LINE_END
     snippet += "*" + '-' * 10 + "End <Comment " + \
-        str(comment['id']) + '>' + '-' * 10 + "*" + LINE_END
+        str(comment['id']) + '>' + '-' * 10 + "*" + LINE_END * 2
     log("comment id " + str(comment['id']) + "formated")
     return snippet
 

@@ -4,7 +4,7 @@ from .. import global_person_list, global_title_list, global_label_list, global_
 from .. import repo_info_storage
 from .utils import get_issue_post, compare_issues, restock, show_stock
 from .utils import format_issue, format_comment, find_comment_region, find_list_region
-from .utils import ViewConverter
+from .utils import ViewConverter, configure_view_trigger
 import sublime
 import threading
 import json
@@ -326,6 +326,7 @@ class PrintIssueInView(threading.Thread):
             else:
                 self.view.sel().add(sublime.Region(a, a))
             self.view.set_scratch(True)
+            configure_view_trigger(self.view)
 
 
 class IssueManipulate(threading.Thread):
