@@ -91,7 +91,7 @@ def format_issue(issue):
     snippet += "## Locked       : " + str(issue['locked']) + LINE_END
     snippet += "## Assignee     : " + str(issue['assignee']) + LINE_END
     snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + LINE_END
-    snippet += filter_line_ends(issue['body']) + LINE_END * 2
+    snippet += filter_line_ends(issue['body']) + LINE_END
     log("Issue title " + issue["title"] + " formated")
     return snippet
 
@@ -105,7 +105,7 @@ def format_comment(comment):
             'updated_at'] + '>*' + LINE_END
     snippet += filter_line_ends(comment['body']) + LINE_END
     snippet += "*" + '-' * 10 + "End <Comment " + \
-        str(comment['id']) + '>' + '-' * 10 + "*" + LINE_END * 2
+        str(comment['id']) + '>' + '-' * 10 + "*" + LINE_END
     log("comment id " + str(comment['id']) + "formated")
     return snippet
 
