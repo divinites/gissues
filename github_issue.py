@@ -158,16 +158,17 @@ class LoadRepoList:
         self.entries = None
 
     def format_entries(self):
-        repo_list = []
-        folder_list = sublime.active_window().folders()
-        if folder_list:
-            for folder_path in folder_list:
-                repo_info = github.get_github_repo_info(folder_path)
-                if repo_info != (-1, -1):
-                    repo_list.append(repo_info)
         entries = ["manually enter repository..."]
-        entries.extend(
-            ["{}/{}".format(repo[0], repo[1]) for repo in repo_list])
+        if not settings.get("disable_local_repositories", False):
+            repo_list = []
+            folder_list = sublime.active_window().folders()
+            if folder_list:
+                for folder_path in folder_list:
+                    repo_info = github.get_github_repo_info(folder_path)
+                    if repo_info != (-1, -1):
+                        repo_list.append(repo_info)
+            entries.extend(
+                ["{}/{}".format(repo[0], repo[1]) for repo in repo_list])
         self.entries = entries
 
     def show_panel_then_print_list(self, **args):

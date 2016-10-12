@@ -49,7 +49,7 @@ def get_github_repo_info(folder_path):
     cmd = [git, '-C', folder_path, 'config', '--get', 'remote.origin.url']
     try:
         try:
-            repo_url = subprocess.check_output(cmd)
+            repo_url = subprocess.check_output(' '.join(cmd), shell=True)
         except:
             return (-1, -1)
         repo_url = repo_url.decode('utf-8')

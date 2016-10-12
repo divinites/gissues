@@ -29,7 +29,7 @@ class SettingContainer:
         self.settings = sublime.load_settings('github_issue.sublime-settings')
         for flag in ("token", "username", "password", "debug", "syntax", "git_path", "issue_title_completion",
                      "user_completion", "label_completion", "commit_completion",
-                     "commit_completion_trigger"):
+                     "commit_completion_trigger","disable_local_repositories"):
             self.setting_dictionary[flag] = self.settings.get(flag)
 
     ##
@@ -66,7 +66,7 @@ LINE_END = "\n"
 settings = SettingContainer()
 flag_container = FlagContainer()
 github_logger = logging.getLogger("GitHubIssue")
-github_logger.propagate = False
+github_logger.propagate = True
 issue_obj_storage = Queue()
 repo_info_storage = Queue()
 global_title_list = {}

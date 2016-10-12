@@ -5,6 +5,7 @@
     "debug": 0,
     "syntax": "Packages/Markdown/Markdown.sublime-syntax",
     "git_path": "",
+    "disable_local_repositories": false,
     "issue_title_completion": true,
     "user_completion": true,
     "label_completion": true,
