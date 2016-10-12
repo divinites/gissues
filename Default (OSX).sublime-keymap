@@ -51,4 +51,12 @@
             "operand": true,
           },]
         },
+        { "keys": [ "ctrl+shift+u" ],
+          "command": "update_and_close_or_reopen_issue",
+          "context": [{
+            "key": "setting.issue_flag",
+            "operator": "equal",
+            "operand": true,
+          },]
+        },
 ]

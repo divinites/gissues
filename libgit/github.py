@@ -47,7 +47,6 @@ def get_github_repo_info(folder_path):
     '''
     git = find_git()
     cmd = [git, '-C', folder_path, 'config', '--get', 'remote.origin.url']
-    print(cmd)
     try:
         try:
             repo_url = subprocess.check_output(cmd)
@@ -61,7 +60,7 @@ def get_github_repo_info(folder_path):
         elif repo_url.startswith('git'):
             repo_url = re.search(r'(?<=git@github.com:).*', repo_url).group(0)
         else:
-            raise Exception('repo URL error!')
+            raise Exception('repo URL error!， the url is {}'.format(repo_url))
         username, raw_repo_name = os.path.split(repo_url)
         raw_repo_name = raw_repo_name.replace("\n", "")
         repo_name = raw_repo_name.replace("\r", "")

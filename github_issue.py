@@ -53,6 +53,32 @@ class ChangeIssuePageCommand(sublime_plugin.TextCommand):
         print_next_page_issues.start()
 
 
+class UpdateAndCloseOrReopenIssueCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        self.view = self.window.active_view()
+        if self.view.settings().get("issue_flag"):
+            return True
+        return False
+
+    def run(self):
+        for line in self.view.lines(sublime.Region(0, self.view.size())):
+            line_content = self.view.substr(line)
+            if line_content.startswith("## State"):
+                if "open" in line_content:
+                    self.view.run_command("find_and_replace", {"start_point": line.a,
+                                                               "word": "open",
+                                                               "replacement": "close"})
+                    break
+                elif "close" in line_content:
+                    self.view.run_command("find_and_replace", {"start_point": line.a,
+                                                               "word": "close",
+                                                               "replacement": "open "})
+                    break
+                else:
+                    pass
+        self.view.window().run_command("post_or_update_issue")
+
+
 class ShowGithubIssueListCommand(sublime_plugin.WindowCommand):
 
     def run(self, **args):

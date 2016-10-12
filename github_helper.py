@@ -24,6 +24,15 @@ class ReplaceSnippetCommand(sublime_plugin.TextCommand):
                 start_point, end_point), snippet)
 
 
+class FindAndReplaceCommand(sublime_plugin.TextCommand):
+    def run(self, edit, start_point, word, replacement):
+        region = self.view.find(word, start_point, sublime.LITERAL)
+        if region:
+            self.view.run_command("replace_snippet", {"start_point": region.a,
+                                                      "end_point": region.b,
+                                                      "snippet": replacement})
+
+
 class PostOrUpdateIssueCommand(sublime_plugin.WindowCommand):
 
     def is_enabled(self):

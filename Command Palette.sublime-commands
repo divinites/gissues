@@ -24,4 +24,9 @@
         "args": {},
         "command": "post_or_update_issue"
     },
+    {
+        "caption": "GitHub Issue: close/reopen Issue",
+        "args": {},
+        "command": "update_and_close_or_reopen_issue"
+    },
 ]
