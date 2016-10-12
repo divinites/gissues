@@ -155,4 +155,6 @@ Some shortcut keys are pre-defined:
 
 - **2.3.0**: Add commit auto-completion
 
+- **2.5.0**: Refactoring
+
 

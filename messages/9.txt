@@ -1,0 +1,1 @@
+GitHub Issue Refactored, please restart sublime text to make it work. Enjoy!
