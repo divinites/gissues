@@ -6,7 +6,7 @@ import sublime
 ##
 # @brief      Class for issue setting.
 ##
-class IssueSetting:
+class SettingContainer:
 
     ##
     # @brief      Constructs the object.
@@ -63,7 +63,7 @@ def log(info):
 
 
 LINE_END = "\n"
-settings = IssueSetting()
+settings = SettingContainer()
 flag_container = FlagContainer()
 github_logger = logging.getLogger("GitHubIssue")
 github_logger.propagate = False

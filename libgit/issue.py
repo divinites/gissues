@@ -4,7 +4,7 @@ from .. import global_person_list, global_title_list, global_label_list, global_
 from .. import repo_info_storage
 from .utils import get_issue_post, compare_issues, restock, show_stock
 from .utils import format_issue, format_comment, find_comment_region, find_list_region
-from .utils import ViewConverter, configure_view_trigger
+from .utils import ViewConverter, configure_issue_view
 import sublime
 import threading
 import json
@@ -15,19 +15,19 @@ class AcquireRepoInfo(threading.Thread):
 
     def __init__(self, username, repo_name):
         super(AcquireRepoInfo, self).__init__(self)
-        self.issue_obj = IssueObj(
+        self.issue_obj = GitRepo(
             sublime.load_settings("github_issue.sublime-settings"), username,
             repo_name)
 
     def run(self):
         title_list = []
         self.issue_obj.get(params={"state": "all"})
-        if self.issue_obj.issue_response.status_code not in (200, 201):
+        if self.issue_obj.github_response.status_code not in (200, 201):
             raise Exception(
                 "Cannnot find relevant repo info, please check the input!")
         label_list = self.issue_obj.get_all_labels()
         while True:
-            for issue in self.issue_obj.issue_response.json():
+            for issue in self.issue_obj.github_response.json():
                 title_list.append((issue['title'], issue['number'], 0
                                    if issue['state'] == 'open' else 1))
             links = self.issue_obj.get_links()
@@ -54,117 +54,111 @@ class AcquireRepoInfo(threading.Thread):
         global_commit_list[repo_info] = commit_set
 
 
-class IssueObj:
+class GitRepo:
 
     def __init__(self, settings, username=None, repo_name=None):
         self.github_account = GitHubAccount(settings)
         self.settings = settings
         self.repo_name = repo_name
         self.username = username
-        self.issue_response = None
-        self.total_page_number = 1
-        self.current_page_number = 1
+        self.github_response = None
         self.links = None
 
-    def get_repo(self, username, repo_name):
+    def get_repo_info(self, username, repo_name):
         self.username = username
         self.repo_name = repo_name
 
-    def find_repo(self, view, repo_info_storage):
+    def find_repo_info(self, view, repo_info_storage):
         view_id = view.id()
         try:
             log("try to find the view in repo_dictionary...")
             log("repo_info_storage contains {}".format(
                 show_stock(repo_info_storage, view_id)))
-            self.username, self.repo_name, self.issue_response = show_stock(
+            self.username, self.repo_name, self.github_response = show_stock(
                 repo_info_storage, view_id)
         except:
             raise Exception("Which repository should I post?")
 
     def get(self, issue_url=None, **params):
         if not issue_url:
-            issue_url = self.github_account.join_issue_url(
-                username=self.username, repo_name=self.repo_name)
-        self.issue_response = self.github_account.session.get(issue_url,
-                                                              **params)
-        return self.issue_response
+            issue_url = self.github_account.join_url(username=self.username,
+                                                     repo_name=self.repo_name,
+                                                     sequence=['issues'])
+        self.github_response = self.github_account.session.get(issue_url,
+                                                               **params)
+        return self.github_response
 
     def get_links(self, **params):
-        if not self.issue_response:
+        if not self.github_response:
             self.get(**params)
-        return self.issue_response.links
+        return self.github_response.links
 
     def post_issue(self, **params):
-        issue_url = self.github_account.join_issue_url(
-            username=self.username, repo_name=self.repo_name)
+        issue_url = self.github_account.join_url(username=self.username, repo_name=self.repo_name, sequence=['issues'])
         return self.github_account.session.post(issue_url, **params)
 
     def update_issue(self, issue_number, **params):
-        issue_url = self.github_account.join_issue_url(
-            username=self.username,
-            repo_name=self.repo_name,
-            issue_number=str(issue_number))
+        issue_url = self.github_account.join_url(username=self.username,
+                                                 repo_name=self.repo_name,
+                                                 sequence=['issues', str(issue_number)])
         return self.github_account.session.patch(issue_url, **params)
 
     def post_comment(self, issue_number, **params):
-        issue_url = self.github_account.join_issue_url(
-            username=self.username,
-            repo_name=self.repo_name,
-            issue_number=str(issue_number))
-        return self.github_account.session.post(issue_url + '/comments',
-                                                **params)
+        issue_url = self.github_account.join_url(username=self.username,
+                                                 repo_name=self.repo_name,
+                                                 sequence=['issues', str(issue_number), 'comments'])
+        return self.github_account.session.post(issue_url, **params)
 
     def update_comment(self, comment_id, **params):
-        issue_url = self.github_account.join_issue_url(
-            username=self.username, repo_name=self.repo_name)
-        return self.github_account.session.patch(
-            issue_url + '/comments/' + str(comment_id), **params)
+        issue_url = self.github_account.join_url(username=self.username,
+                                                 repo_name=self.repo_name,
+                                                 sequence=['issues', 'comments', str(comment_id)])
+        return self.github_account.session.patch(issue_url, **params)
 
     def delete_comment(self, comment_id, **params):
-        issue_url = self.github_account.join_issue_url(
-            username=self.username, repo_name=self.repo_name)
-        return self.github_account.session.delete(
-            issue_url + '/comments/' + str(comment_id), **params)
+        issue_url = self.github_account.join_url(username=self.username,
+                                                 repo_name=self.repo_name,
+                                                 sequence=['issues', 'comments', str(comment_id)])
+        return self.github_account.session.delete(issue_url, **params)
 
-    def get_issue(self, issue_number, **params):
-        issue_url = self.github_account.join_issue_url(
-            username=self.username,
-            repo_name=self.repo_name,
-            issue_number=str(issue_number))
+    def get_issue_comment(self, issue_number, **params):
+        issue_url = self.github_account.join_url(username=self.username,
+                                                 repo_name=self.repo_name,
+                                                 sequence=['issues', str(issue_number)])
+        comment_url = self.github_account.join_url(username=self.username,
+                                                   repo_name=self.repo_name,
+                                                   sequence=['issues', str(issue_number), 'comments'])
         return (
             self.github_account.session.get(issue_url, **params),
-            self.github_account.session.get(issue_url + '/comments', **params))
+            self.github_account.session.get(comment_url, **params))
 
-    def get_commits(self, issue_url=None, **params):
+    def get_commits(self, issue_url=None):
         if not issue_url:
-            issue_url = self.github_account.join_issue_url(
-                username=self.username, repo_name=self.repo_name)
-            issue_url = issue_url[:-7]
-            issue_url += "/commits"
+            issue_url = self.github_account.join_url(username=self.username,
+                                                     repo_name=self.repo_name,
+                                                     sequence=['commits'])
         commit_set = set([])
         commit_resp = self.get(issue_url)
-        if commit_resp.status_code != 200:
-            raise Exception("cannot get commits")
-        for commit in commit_resp.json():
-            commit_set.add((commit['sha'], commit['commit']['message']))
-        return commit_set
+        if commit_resp.status_code == 200:
+            for commit in commit_resp.json():
+                commit_set.add((commit['sha'], commit['commit']['message']))
+            return commit_set
+        elif commit_resp.status_code == 409:
+            pass
+        else:
+            raise Exception("cannot get commits!, error code {}".format(commit_resp.status_code))
 
     def replace_labels(self, issue_number, labels):
-        issue_url = self.github_account.join_issue_url(
-            username=self.username,
-            repo_name=self.repo_name,
-            issue_number=str(issue_number))
-        issue_url += "/labels"
+        issue_url = self.github_account.join_url(username=self.username,
+                                                 repo_name=self.repo_name,
+                                                 sequence=['issues', str(issue_number), 'labels'])
         log("replace label url is {}".format(issue_url))
         if len(labels) == 1 and '' in labels:
             return self.github_account.session.delete(issue_url)
         return self.github_account.session.put(issue_url, json=list(labels))
 
     def get_all_labels(self):
-        issue_url = self.github_account.join_issue_url(
-            username=self.username, repo_name=self.repo_name)
-        issue_url = issue_url[:-7]
-        issue_url += "/labels"
+        issue_url = self.github_account.join_url(username=self.username, repo_name=self.repo_name, sequence=['labels'])
         labels = set([])
         label_resp = self.github_account.session.get(issue_url)
         if label_resp.status_code != 200:
@@ -174,11 +168,6 @@ class IssueObj:
         return labels
 
     def attach_labels(self, issue_number, labels):
-        issue_url = self.github_account.join_issue_url(
-            username=self.username,
-            repo_name=self.repo_name,
-            issue_number=str(issue_number))
-        issue_url += "/labels"
         all_labels = self.get_all_labels()
         new_labels = set(labels).difference(all_labels)
         if len(new_labels) > 0:
@@ -186,10 +175,9 @@ class IssueObj:
         self.replace_labels(issue_number, labels)
 
     def generate_labels(self, labels):
-        issue_url = self.github_account.join_issue_url(
-            username=self.username, repo_name=self.repo_name)
-        issue_url = issue_url[:-7]
-        issue_url += "/labels"
+        issue_url = self.github_account.join_url(username=self.username,
+                                                 repo_name=self.repo_name,
+                                                 sequence=["labels"])
         for label in labels:
             color = "%06x" % random.randint(0, 0xFFFFFF)
             label_resp = self.github_account.session.post(
@@ -220,10 +208,10 @@ class PrintListInView(threading.Thread):
 
     def run(self):
         if not self.new_flag:
-            if not self.issue_list.issue_response:
+            if not self.issue_list.github_response:
                 self.issue_list.get(params=self.args)
             else:
-                _, _, self.issue_list.issue_response = show_stock(
+                _, _, self.issue_list.github_response = show_stock(
                     self.repo_info_storage, self.view.id())
                 if self.command:
                     links = self.issue_list.get_links()
@@ -234,9 +222,9 @@ class PrintListInView(threading.Thread):
                         pass
         else:
             self.issue_list.get(params=self.args)
-        issue_response = self.issue_list.issue_response
-        if issue_response.status_code in (200, 201):
-            json_list = issue_response.json()
+        github_response = self.issue_list.github_response
+        if github_response.status_code in (200, 201):
+            json_list = github_response.json()
             snippet = '\n'
             for issue in json_list:
                 snippet += "{:<12}{:<10}{}".format(
@@ -256,10 +244,10 @@ class PrintListInView(threading.Thread):
             self.view.set_read_only(True)
             restock(self.repo_info_storage, self.view.id(),
                     (self.issue_list.username, self.issue_list.repo_name,
-                     issue_response))
+                     github_response))
         else:
             sublime.status_message("Cannot obtain issue list, error code {}".
-                                   format(str(issue_response.status_code)))
+                                   format(str(github_response.status_code)))
 
 
 class PrintIssueInView(threading.Thread):
@@ -280,10 +268,10 @@ class PrintIssueInView(threading.Thread):
         self.view = view
 
     def run(self):
-        issue_response, comments_response = self.issue_list.get_issue(
+        github_response, comments_response = self.issue_list.get_issue_comment(
             self.issue_number)
-        if issue_response.status_code in (200, 201):
-            issue = issue_response.json()
+        if github_response.status_code in (200, 201):
+            issue = github_response.json()
             comments = comments_response.json()
             user_set = set([])
             label_set = set([])
@@ -310,12 +298,10 @@ class PrintIssueInView(threading.Thread):
                                                          "comments":
                                                          comment_dict})
             restock(self.repo_info_storage, self.view.id(),
-                    (self.repo_info[0], self.repo_info[1], issue_response))
+                    (self.repo_info[0], self.repo_info[1], github_response))
             self.view.run_command("erase_snippet",
                                   {"start_point": 0,
                                    "end_point": self.view.size()})
-            self.view.run_command("set_file_type", {"syntax": settings.get(
-                "syntax", "Packages/Markdown/Markdown.sublime-syntax")})
             self.view.run_command("insert_issue_snippet", {"snippet": snippet})
             view_converter = ViewConverter(self.view)
             _, a, b, _ = view_converter.find_region_line(
@@ -325,8 +311,7 @@ class PrintIssueInView(threading.Thread):
                 self.view.sel().add(sublime.Region(a + 1, a + 1))
             else:
                 self.view.sel().add(sublime.Region(a, a))
-            self.view.set_scratch(True)
-            configure_view_trigger(self.view)
+            configure_issue_view(self.view)
 
 
 class IssueManipulate(threading.Thread):

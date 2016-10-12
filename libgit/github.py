@@ -25,17 +25,14 @@ class GitHubAccount:
             raise Exception("Please check the authentication settings!")
         self.session.headers['content-type'] = 'application/json'
 
-    def join_issue_url(self, username=None, repo_name=None, issue_number=None):
+    def join_url(self, username=None, repo_name=None, sequence=None):
         API_URL = 'https://api.github.com/repos'
         if not username:
             username = self.username
         if repo_name:
-            if not issue_number:
-                joint_url = '/'.join([API_URL, username, repo_name, 'issues'])
-
-            else:
-                joint_url = '/'.join([API_URL, username,
-                                      repo_name, 'issues', issue_number])
+            url = [API_URL, username, repo_name]
+            url.extend(sequence)
+            joint_url = '/'.join(url)
             log("the joint url is " + joint_url)
             return joint_url
         else:
@@ -50,9 +47,10 @@ def get_github_repo_info(folder_path):
     '''
     git = find_git()
     cmd = [git, '-C', folder_path, 'config', '--get', 'remote.origin.url']
+    print(cmd)
     try:
         try:
-            repo_url = subprocess.check_output(' '.join(cmd), shell=True)
+            repo_url = subprocess.check_output(cmd)
         except:
             return (-1, -1)
         repo_url = repo_url.decode('utf-8')

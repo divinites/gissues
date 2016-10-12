@@ -26,7 +26,7 @@ def plugin_loaded():
         'debug', 0) == 0 else logging.DEBUG
     github_logger.setLevel(log_level)
     log("debug level is {}".format(str(log_level)))
-    active_issue_obj = issue.IssueObj(settings)
+    active_issue_obj = issue.GitRepo(settings)
 
 
 class ChangeIssuePageCommand(sublime_plugin.TextCommand):
@@ -78,7 +78,7 @@ class ShowGithubIssueCommand(sublime_plugin.WindowCommand):
         match_id = re.search(r'^\d+(?=\s)', target_line)
         issue_number = int(match_id.group(0))
         try:
-            active_issue_obj.find_repo(view, repo_info_storage)
+            active_issue_obj.find_repo_info(view, repo_info_storage)
             repo_info = (active_issue_obj.username, active_issue_obj.repo_name,
                          None)
             print_in_view = issue.PrintIssueInView(
@@ -103,7 +103,7 @@ class PostGithubIssueCommand(sublime_plugin.WindowCommand):
     def run(self):
         global active_issue_obj
         self.view = sublime.active_window().active_view()
-        active_issue_obj.find_repo(self.view, repo_info_storage)
+        active_issue_obj.find_repo_info(self.view, repo_info_storage)
         post_issue = issue.PostNewIssue(
             issue_list=active_issue_obj, issue_storage=issue_obj_storage)
         post_issue.start()
@@ -115,7 +115,7 @@ class UpdateGithubIssueCommand(sublime_plugin.WindowCommand):
         global active_issue_obj
         self.view = sublime.active_window().active_view()
         if not repo_info_storage.empty():
-            active_issue_obj.find_repo(self.view, repo_info_storage)
+            active_issue_obj.find_repo_info(self.view, repo_info_storage)
         else:
             raise Exception("Error in obtaining Repo Info!")
         update_issue = issue.UpdateIssue(
@@ -196,7 +196,7 @@ class LoadRepoList:
 
     def print_issue_list(self, **args):
         global active_issue_obj
-        active_issue_obj.get_repo(self.username, self.repo_name)
+        active_issue_obj.get_repo_info(self.username, self.repo_name)
         issue_view = utils.print_list_framework()
         print_in_view = issue.PrintListInView(issue_view, active_issue_obj,
                                               repo_info_storage, **args)
@@ -219,10 +219,6 @@ def create_new_issue_view():
     snippet += "*" + '-' * 10 + "END" + '-' * 10 + "*" + LINE_END
     view = sublime.active_window().new_file()
     log("Create new view to write the issue")
-    view.run_command("set_file_type", {"syntax": settings.get(
-        "syntax", "Packages/Markdown/Markdown.sublime-syntax")})
-    log("new issue will have a syntax {}".format(settings.get(
-        "syntax", "Packages/Markdown/Markdown.sublime-syntax")))
     view.run_command("insert_issue_snippet", {"snippet": snippet})
     view.sel().clear()
     start_point = view.text_point(0, 18)
@@ -230,8 +226,7 @@ def create_new_issue_view():
     view.show(start_point)
     view.set_encoding('UTF-8')
     log("insert a blank issue")
-    view.set_scratch(True)
-    utils.configure_view_trigger(view)
+    utils.configure_issue_view(view)
 
 
 def find_line_ends():

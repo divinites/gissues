@@ -6,25 +6,23 @@ from .. import log, settings
 import os
 
 
-def configure_view_trigger(view):
-    if view.settings().get('syntax') == settings.get("syntax", "Packages/Markdown/Markdown.sublime-syntax"):
-        system_setting = view.settings()
-        custom_trigger = []
-        commit_completion_trigger = settings.get("commit_completion_trigger", "&")[0]
-        # for comletion_scope in COMPLETIONS_SCOPES:
-        #     for char in ("@", "#", commit_completion_trigger):
-        #         custom_trigger.append({"characters": char, "selector": comletion_scope})
-        for char in ("@", "#", commit_completion_trigger):
-            custom_trigger.append({"characters": char, "selector": "text"})
-        auto_complete_trigger = system_setting.get("auto_complete_triggers")
-        if auto_complete_trigger:
-            for trigger in custom_trigger:
-                if trigger not in auto_complete_trigger:
-                    auto_complete_trigger.append(trigger)
-        else:
-            auto_complete_trigger = custom_trigger
-        system_setting.set("auto_complete_triggers", auto_complete_trigger)
-        system_setting.set("issue_flag", True)
+def configure_issue_view(view):
+    view.run_command("set_file_type", {"syntax": settings.get("syntax", "Packages/Markdown/Markdown.sublime-syntax")})
+    system_setting = view.settings()
+    custom_trigger = []
+    commit_completion_trigger = settings.get("commit_completion_trigger", "&")[0]
+    for char in ("@", "#", commit_completion_trigger):
+        custom_trigger.append({"characters": char, "selector": "text.html"})
+    auto_complete_trigger = system_setting.get("auto_complete_triggers")
+    if auto_complete_trigger:
+        for trigger in custom_trigger:
+            if trigger not in auto_complete_trigger:
+                auto_complete_trigger.append(trigger)
+    else:
+        auto_complete_trigger = custom_trigger
+    system_setting.set("auto_complete_triggers", auto_complete_trigger)
+    system_setting.set("issue_flag", True)
+    view.set_scratch(True)
 
 
 def print_list_framework(view=None):

@@ -17,7 +17,6 @@ def highlight(view, flags_dict):
                 raise Exception("Cannot find the targe word!")
             end = begin + len(word)
             target_regions.append(sublime.Region(begin, end))
-            # view.sel().add(target_region)
     view.add_regions("indicator", target_regions, "text", "dot",
                      sublime.DRAW_SQUIGGLY_UNDERLINE)
 
@@ -104,12 +103,15 @@ class IssueListListener(sublime_plugin.EventListener):
                 if ch == "@" and settings.get("user_completion", True):
                     username, repo_name, _ = show_stock(repo_info_storage,
                                                         view.id())
-                    repo_info = "{}/{}".format(username, repo_name)
                     search = prefix.replace("@", "")
                     log("location is {}".format(str(locations[0])))
-                    results = [[key, key]
-                               for key in global_person_list[view.id()]
-                               if search in key]
+                    results = []
+                    try:
+                        results = [[key, key]
+                                   for key in global_person_list[view.id()]
+                                   if search in key]
+                    except KeyError:
+                        pass
                     if len(results) > 0:
                         return (results, sublime.INHIBIT_WORD_COMPLETIONS)
                     else:
@@ -134,13 +136,14 @@ class IssueListListener(sublime_plugin.EventListener):
                     repo_info = "{}/{}".format(username, repo_name)
                     search = prefix.replace("&", "")
                     log("commit list is {}".format(repr(global_commit_list)))
-                    result = [[message, ' ' + sha]
-                              for sha, message in global_commit_list[repo_info]
-                              if search in message]
-                    log("filtered commit result is {}".format(repr(result)))
-                    if len(result) > 0:
-                        return (result, sublime.INHIBIT_WORD_COMPLETIONS)
-                    else:
-                        return result
+                    if global_commit_list[repo_info]:
+                        result = [[message, ' ' + sha]
+                                  for sha, message in global_commit_list[repo_info]
+                                  if search in message]
+                        log("filtered commit result is {}".format(repr(result)))
+                        if len(result) > 0:
+                            return (result, sublime.INHIBIT_WORD_COMPLETIONS)
+                        else:
+                            return result
                 else:
                     pass

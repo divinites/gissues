@@ -1,7 +1,6 @@
 import sublime_plugin
 import sublime
 from . import log
-from .github_issue import settings
 
 
 class InsertIssueSnippetCommand(sublime_plugin.TextCommand):
