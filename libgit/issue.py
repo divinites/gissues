@@ -5,10 +5,11 @@ from .. import repo_info_storage
 from .utils import get_issue_post, compare_issues, restock, show_stock
 from .utils import format_issue, format_comment, find_comment_region, find_list_region
 from .utils import ViewConverter, configure_issue_view
-import sublime
+from .. import COMMENT_START, COMMENT_END, ISSUE_START, ISSUE_END, HEADER_END, CONTENT_END, ADD_COMMENT
 import threading
 import json
 import random
+import sublime
 
 
 class AcquireRepoInfo(threading.Thread):
@@ -285,9 +286,9 @@ class PrintIssueInView(threading.Thread):
                 user_set.add(comment['user']['login'])
                 comment_dict[comment['id']] = comment
                 snippet += format_comment(comment)
-            snippet += "## Add New Comment:" + LINE_END
+            snippet += ADD_COMMENT + LINE_END
             snippet += LINE_END
-            snippet += "*" + "-" * 10 + "END" + '-' * 10 + "*"
+            snippet += CONTENT_END
             if not self.view:
                 self.view = sublime.active_window().new_file()
             global_person_list[self.view.id()] = user_set
@@ -304,8 +305,7 @@ class PrintIssueInView(threading.Thread):
                                    "end_point": self.view.size()})
             self.view.run_command("insert_issue_snippet", {"snippet": snippet})
             view_converter = ViewConverter(self.view)
-            _, a, b, _ = view_converter.find_region_line(
-                "## Add New Comment:", "*" + "-" * 10 + "END")
+            _, a, b, _ = view_converter.find_region_line(ADD_COMMENT, CONTENT_END)
             self.view.sel().clear()
             if b > a:
                 self.view.sel().add(sublime.Region(a + 1, a + 1))
@@ -341,6 +341,7 @@ class PostNewIssue(IssueManipulate):
                                               issue_post['label'])
             repo_info = (self.issue_list.username, self.issue_list.repo_name,
                          None)
+            self.view.settings().set("new_issue", False)
             print_issue_in_view = PrintIssueInView(
                 self.issue_list, issue['number'], self.issue_storage,
                 repo_info, repo_info_storage, self.view)
@@ -429,9 +430,9 @@ class UpdateIssue(IssueManipulate):
                 original_issue["comments"][new_comment.json()[
                     'id']] = new_comment.json()
                 snippet = format_comment(new_comment.json())
-                snippet += "## Add New Comment:" + LINE_END
+                snippet += ADD_COMMENT + LINE_END
                 snippet += LINE_END
-                snippet += "*" + "-" * 10 + "END" + '-' * 10 + "*"
+                snippet += CONTENT_END
                 a, b = find_comment_region(self.view)
                 log("insert the snippet")
                 self.view.run_command("replace_snippet", {"start_point": a,

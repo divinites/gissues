@@ -11,6 +11,7 @@ import re
 import logging
 from queue import Queue
 from functools import partial
+from . import COMMENT_START, COMMENT_END, ISSUE_START, ISSUE_END, HEADER_END, CONTENT_END, ADD_COMMENT
 
 
 global active_issue_obj
@@ -81,11 +82,14 @@ class UpdateAndCloseOrReopenIssueCommand(sublime_plugin.WindowCommand):
 
 class ShowGithubIssueListCommand(sublime_plugin.WindowCommand):
 
-    def run(self, **args):
+    def run(self, refresh=False, **args):
         repo_loader = LoadRepoList()
         repo_loader.format_entries()
         log("I am showing the issue list!")
-        repo_loader.show_panel_then_print_list(**args)
+        if refresh:
+            repo_loader.refresh_issue_list(**args)
+        else:
+            repo_loader.show_panel_then_print_list(**args)
 
 
 class ShowGithubIssueCommand(sublime_plugin.WindowCommand):
@@ -156,6 +160,7 @@ class LoadRepoList:
         self.repo_name = None
         self.window = sublime.active_window()
         self.entries = None
+        self.view = self.window.active_view()
 
     def format_entries(self):
         entries = ["manually enter repository..."]
@@ -229,6 +234,12 @@ class LoadRepoList:
                                               repo_info_storage, **args)
         print_in_view.start()
 
+    def refresh_issue_list(self, **args):
+        global active_issue_obj
+        print_in_view = issue.PrintListInView(self.view, active_issue_obj,
+                                              repo_info_storage, **args)
+        print_in_view.start()
+
     def create_issue(self):
         create_new_issue_view()
         view_id = sublime.active_window().active_view().id()
@@ -241,9 +252,11 @@ def create_new_issue_view():
     snippet += "# Title         : " + LINE_END
     snippet += "## Label        : " + LINE_END
     snippet += "## Assignee     : " + LINE_END
-    snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + LINE_END
+    snippet += HEADER_END + LINE_END
+    snippet += ISSUE_START + LINE_END
     snippet += LINE_END
-    snippet += "*" + '-' * 10 + "END" + '-' * 10 + "*" + LINE_END
+    snippet += ISSUE_END + LINE_END
+    snippet += CONTENT_END + LINE_END
     view = sublime.active_window().new_file()
     log("Create new view to write the issue")
     view.run_command("insert_issue_snippet", {"snippet": snippet})
@@ -251,6 +264,7 @@ def create_new_issue_view():
     start_point = view.text_point(0, 18)
     view.sel().add(sublime.Region(start_point))
     view.show(start_point)
+    view.settings().set("new_issue", True)
     view.set_encoding('UTF-8')
     log("insert a blank issue")
     utils.configure_issue_view(view)

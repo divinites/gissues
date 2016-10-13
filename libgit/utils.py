@@ -1,16 +1,18 @@
 import sublime
 import re
-# from .. import parameter_container as pc
 from .. import LINE_END
 from .. import log, settings
+from .. import COMMENT_START, COMMENT_END, ISSUE_START, ISSUE_END, HEADER_END, CONTENT_END, ADD_COMMENT, COMMENT_INFO
 import os
 
 
 def configure_issue_view(view):
-    view.run_command("set_file_type", {"syntax": settings.get("syntax", "Packages/Markdown/Markdown.sublime-syntax")})
+    view.run_command("set_file_type", {"syntax": settings.get(
+        "syntax", "Packages/Markdown/Markdown.sublime-syntax")})
     system_setting = view.settings()
     custom_trigger = []
-    commit_completion_trigger = settings.get("commit_completion_trigger", "&")[0]
+    commit_completion_trigger = settings.get("commit_completion_trigger",
+                                             "&")[0]
     for char in ("@", "#", commit_completion_trigger):
         custom_trigger.append({"characters": char, "selector": "text.html"})
     auto_complete_trigger = system_setting.get("auto_complete_triggers")
@@ -91,23 +93,22 @@ def format_issue(issue):
     snippet += "## Label        : " + \
         " ".join(['@' + label for label in labels]) + LINE_END
     snippet += "## Locked       : " + str(issue['locked']) + LINE_END
-    snippet += "## Assignee     : " + str(issue['assignee']['login'] if issue['assignee'] else str(None)) + LINE_END
-    snippet += "*" + '-' * 10 + "Content" + '-' * 10 + "*" + LINE_END
+    snippet += "## Assignee     : " + str(issue['assignee']['login'] if issue[
+        'assignee'] else str(None)) + LINE_END
+    snippet += HEADER_END + LINE_END
+    snippet += ISSUE_START + LINE_END
     snippet += filter_line_ends(issue['body']) + LINE_END
+    snippet += ISSUE_END+ LINE_END
     log("Issue title " + issue["title"] + " formated")
     return snippet
 
 
 def format_comment(comment):
     snippet = ''
-    snippet += "*" + '-' * 10 + "Start <Comment " + \
-        str(comment['id']) + '>' + '-' * 10 + "*" + LINE_END
-    snippet += "*<commented by " + comment['user'][
-        'login'] + "   UpdateTime: " + comment[
-            'updated_at'] + '>*' + LINE_END
+    snippet += COMMENT_START(comment['id']) + LINE_END
+    snippet += COMMENT_INFO(comment['user']['login'], comment['updated_at']) + LINE_END
     snippet += filter_line_ends(comment['body']) + LINE_END
-    snippet += "*" + '-' * 10 + "End <Comment " + \
-        str(comment['id']) + '>' + '-' * 10 + "*" + LINE_END
+    snippet += COMMENT_END(comment['id']) + LINE_END
     log("comment id " + str(comment['id']) + "formated")
     return snippet
 
@@ -118,12 +119,12 @@ def test_paths_for_executable(paths, test_file):
         if os.path.exists(file_path) and os.access(file_path, os.X_OK):
             return file_path
 
+##
+# @brief      find git function, thanks [sublime-github](https://github.com/bgreenlee/sublime-github)
+##
+# @return     the path of git
+##
 
-##
-## @brief      find git function, thanks [sublime-github](https://github.com/bgreenlee/sublime-github)
-##
-## @return     the path of git
-##
 
 def find_git():
     git_path = settings.get("git_path", None)
@@ -141,13 +142,11 @@ def find_git():
             if os.name == 'nt':
                 extra_paths = (
                     os.path.join(os.environ["ProgramFiles"], "Git", "bin"),
-                    os.path.join(os.environ["ProgramFiles(x86)"], "Git", "bin"),
-                )
+                    os.path.join(os.environ["ProgramFiles(x86)"], "Git",
+                                 "bin"), )
             else:
-                extra_paths = (
-                    '/usr/local/bin',
-                    '/usr/local/git/bin',
-                )
+                extra_paths = ('/usr/local/bin',
+                               '/usr/local/git/bin', )
             git_path = test_paths_for_executable(extra_paths, git_cmd)
         return git_path
 
@@ -162,7 +161,6 @@ def filter_line_ends(issue):
 
 
 class ViewConverter:
-
     def __init__(self, view):
         self.view = view
 
@@ -199,7 +197,8 @@ class ViewConverter:
 
     def find_region_line(self, region_start_string, region_end_string):
         a, b, c, d = 0, 0, 0, 0
-        for line, line_region in zip(self.readlines(), self.get_line_regions()):
+        for line, line_region in zip(self.readlines(),
+                                     self.get_line_regions()):
             if line.strip().startswith(region_start_string):
                 a = line_region.a
                 c = line_region.b
@@ -221,63 +220,107 @@ class ViewConverter:
     @staticmethod
     def split_issue(lines):
         crucial_line = {}
-        crucial_line['header_end'] = 0
-        crucial_line['comment_start'] = []
-        crucial_line['comment_end'] = []
-        crucial_line['add_comment'] = 0
-        crucial_line['end'] = 0
+        line_order = []
         for idx, line in enumerate(lines):
-            if line.strip().startswith("*" + "-" * 10 + "Content"):
-                crucial_line["header_end"] = idx
-            elif line.strip().startswith("*" + '-' * 10 + "Start <Comment"):
-                crucial_line["comment_start"].append(idx)
-            elif line.strip().startswith("*" + '-' * 10 + "End <Comment"):
-                crucial_line["comment_end"].append(idx)
-            elif line.strip().startswith("## Add New Comment:"):
-                crucial_line["add_comment"] = idx
-            elif line.strip().startswith("*" + "-" * 10 + "END"):
-                crucial_line["end"] = idx
+            if line.strip().startswith(HEADER_END):
+                line_order.append(CrucialLine("header_end", idx))
+            elif line.strip().startswith(ISSUE_START):
+                line_order.append(CrucialLine("issue_start", idx))
+            elif line.strip().startswith(ISSUE_END):
+                line_order.append(CrucialLine("issue_end", idx))
+            elif line.strip().startswith(COMMENT_START(" ")[:25]):
+                line_order.append(
+                    CrucialLine("comment_start", idx, int(
+                        re.match(r"(\D+)(\d+)(.+)", line.strip()).group(2))))
+            elif line.strip().startswith(COMMENT_END(" ")[:25]):
+                line_order.append(
+                    CrucialLine("comment_end", idx, int(
+                        re.match(r"(\D+)(\d+)(.+)", line.strip()).group(2))))
+            elif line.strip().startswith(ADD_COMMENT):
+                line_order.append(CrucialLine("add_comment", idx))
+            elif line.strip().startswith(CONTENT_END):
+                line_order.append(CrucialLine("content_end", idx))
             else:
                 pass
-        log("curcial line is " + str(crucial_line))
+        line_order.sort(key=lambda x: x.idx)
+        view_lines_structure = LineLinkList()
+        for line in line_order:
+            view_lines_structure.add_node(line)
+        while True:
+            pointer = view_lines_structure.head
+            before_purify = view_lines_structure.number
+            while pointer:
+                if not view_lines_structure.validate(pointer):
+                    view_lines_structure.remove_node(pointer)
+                pointer = pointer.next
+            after_purify = view_lines_structure.number
+            if before_purify == after_purify:
+                break
+        for crucial in ('issue_start', 'header_end', 'issue_end',
+                        'comment_start', 'comment_end', 'add_comment',
+                        'content_end'):
+            crucial_line[crucial] = view_lines_structure.forward_search(
+                view_lines_structure.head, crucial)
+            print("the crucial_line[{}] is {}".format(crucial, repr(
+                crucial_line[crucial])))
+        duplicated = []
+        for item in ('issue_start', 'header_end', 'issue_end', 'add_comment',
+                     'content_end'):
+            if len(crucial_line[item]) > 1:
+                duplicated.append(item)
+        if len(duplicated) > 0:
+            raise Exception("mutilple possible crucial lines!")
+        if len(crucial_line['comment_start']) != len(crucial_line[
+                "comment_end"]):
+            raise Exception("comment lines are not paired.")
         return crucial_line
+
+    def select_true_crucials(self):
+        pass
 
     @staticmethod
     def generate_issue_header(header):
         info_dict = {}
         for line in header:
-            matched_item = re.search(r'(?<=#\s)(\w+)(\s+:\s*)(.*)', line)
-            key = matched_item.group(1)
-            value = matched_item.group(3)
-            info_dict[key] = value
+            try:
+                matched_item = re.search(r'(?<=#\s)(\w+)(\s+:\s*)(.*)', line)
+                key = matched_item.group(1)
+                value = matched_item.group(3)
+                info_dict[key] = value
+            except:
+                pass
         log("issue_header is " + str(info_dict))
         return info_dict
 
     @staticmethod
     def get_issue_body(lines, crucial_lines):
-        if crucial_lines['comment_start']:
-            return '\n'.join(lines[crucial_lines['header_end'] + 1:
-                                   crucial_lines['comment_start'][0]])
-        else:
-            if crucial_lines['add_comment']:
-                return '\n'.join(lines[crucial_lines['header_end'] + 1:
-                                       crucial_lines['add_comment']])
-            else:
-                return '\n'.join(lines[crucial_lines['header_end'] + 1:crucial_lines['end']])
+        return '\n'.join(lines[crucial_lines['issue_start'][0].idx + 1:
+                               crucial_lines['issue_end'][0].idx])
+        # else:
+        #     if len(crucial_lines['add_comment']) > 0:
+        #         return '\n'.join(lines[crucial_lines['issue_start'][0].idx + 1:
+        #                                crucial_lines['add_comment'][0].idx])
+        #     else:
+        #         return '\n'.join(lines[crucial_lines['issue_start'][0].idx + 1:
+        #                                crucial_lines['issue_end'][0].idx])
 
     @staticmethod
     def get_comment_list(lines, crucial_lines):
         comment_dict = {}
-        if crucial_lines['comment_start']:
+        if len(crucial_lines['comment_start']) > 0:
             number_of_comments = len(crucial_lines['comment_start'])
             comment_pointer = 0
             while comment_pointer < number_of_comments:
+                if crucial_lines['comment_start'][
+                        comment_pointer].id != crucial_lines['comment_end'][
+                            comment_pointer].id:
+                    raise Exception(
+                        "comment start and end numbers do not match")
                 comment_headline_number = crucial_lines['comment_start'][
-                    comment_pointer]
-                comment_endline_number = crucial_lines[
-                    'comment_end'][comment_pointer]
-                comment_id = int(re.search(r'(?<=\<Comment\s).*(?=>)', lines[
-                    comment_headline_number]).group(0).strip())
+                    comment_pointer].idx
+                comment_endline_number = crucial_lines['comment_end'][
+                    comment_pointer].idx
+                comment_id = crucial_lines['comment_start'][comment_pointer].id
                 comment_body = '\n'.join(lines[comment_headline_number + 2:
                                                comment_endline_number])
                 comment_dict[comment_id] = comment_body
@@ -286,14 +329,17 @@ class ViewConverter:
 
     @staticmethod
     def get_new_comment(lines, crucial_lines):
-        return '\n'.join(lines[crucial_lines['add_comment'] + 1: crucial_lines['end']]).strip()
+        if len(crucial_lines['add_comment']) > 0:
+            return '\n'.join(lines[crucial_lines['add_comment'][0].idx + 1:
+                                   crucial_lines['content_end'][0].idx]).strip()
+        return ""
 
 
 def get_issue_post(view):
     view_converter = ViewConverter(view)
     view_lines = view_converter.readlines()
     crucial_lines = ViewConverter.split_issue(view_lines)
-    header = view_lines[:crucial_lines["header_end"]]
+    header = view_lines[:crucial_lines["header_end"][0].idx]
     issue_post = ViewConverter.generate_issue_header(header)
     issue_post = ViewConverter.prepare_post(issue_post)
     issue_post['body'] = ViewConverter.get_issue_body(view_lines,
@@ -308,8 +354,7 @@ def get_issue_post(view):
 
 def find_comment_region(view):
     view_converter = ViewConverter(view)
-    a, _, _, b = view_converter.find_region_line(
-        "## Add New Comment:", "*" + "-" * 10 + "END")
+    a, _, _, b = view_converter.find_region_line(ADD_COMMENT, CONTENT_END)
     return (a, b)
 
 
@@ -318,10 +363,11 @@ def compare_issues(original_issue, issue_in_view):
     original_keys = set(original_issue['issue'].keys())
     intersection_keys = modified_keys.intersection(original_keys)
     log("intersection_keys are" + str(intersection_keys))
-    modified_part = {key: issue_in_view['issue'][key]
-                     for key in intersection_keys
-                     if original_issue['issue'][key] != issue_in_view[
-                         'issue'][key]}
+    modified_part = {
+        key: issue_in_view['issue'][key]
+        for key in intersection_keys
+        if original_issue['issue'][key] != issue_in_view['issue'][key]
+    }
     additional_keys = modified_keys.difference(original_keys)
     if additional_keys:
         additional_part = {key: issue_in_view['issue'][key]
@@ -337,9 +383,119 @@ def compare_issues(original_issue, issue_in_view):
     original_comment_ids = set(original_issue['comments'].keys())
     deleted_comments = original_comment_ids.difference(comment_ids_in_view)
     for comment_id in issue_in_view['comments'].keys():
-        if issue_in_view['comments'][comment_id] != original_issue['comments'][comment_id]['body']:
-            modified_comments[comment_id] = issue_in_view[
-                'comments'][comment_id]
+        if issue_in_view['comments'][comment_id] != original_issue['comments'][
+                comment_id]['body']:
+            modified_comments[comment_id] = issue_in_view['comments'][
+                comment_id]
     log("original_comments are " + str(original_issue["comments"]))
     log("modified_comments are " + str(modified_comments))
     return (modified_part, new_label, modified_comments, deleted_comments)
+
+
+class CrucialLine:
+    def __init__(self, line_type, idx, id=None):
+        self.line_type = line_type
+        self.idx = idx
+        self.prev = None
+        self.next = None
+        self.id = id
+        if not self.id:
+            self.id = 0
+
+    def __eq__(self, other):
+        return self.idx == other.idx and self.line_type == other.line_type
+
+    def __repr__(self):
+        return "{} locates at {}".format(self.line_type, str(self.idx))
+
+
+class LineLinkList:
+    def __init__(self):
+        self.head = None
+        self.tail = None
+        self.number = 0
+
+    def __repr__(self):
+        pointer = self.head
+        snip = 'head is {}'.format(repr(pointer))
+        while pointer:
+            snip += repr(pointer) + ', '
+            pointer = pointer.next
+        return snip
+
+    def add_node(self, node):
+        if self.number == 0:
+            self.head = node
+        if self.number == 1:
+            self.tail = node
+            self.head.next = self.tail
+            self.tail.prev = self.head
+        if self.number > 1:
+            self.tail.next = node
+            node.prev = self.tail
+            self.tail = node
+        self.number += 1
+
+    def remove_node(self, node):
+        if self.head == node:
+            self.head = self.head.next
+            self.head.prev = None
+        elif self.tail == node:
+            self.tail = self.tail.prev
+            self.tail.next = None
+        else:
+            left = node.prev
+            right = node.next
+            left.next = right
+            right.prev = left
+        self.number -= 1
+
+    def validate(self, node):
+        if node.line_type == 'header_end':
+            if node.prev is None:
+                return True
+            else:
+                return False
+        if node.line_type == 'content_end':
+            if node.next is None:
+                return True
+            else:
+                return False
+        if node.line_type == "issue_start":
+            if node.prev.line_type != "header_end":
+                return False
+            return True
+        if node.line_type == "issue_end":
+            if node.next.line_type != "comment_start" and node.next.line_type != "add_comment" and node.next.line_type != "content_end":
+                return False
+            return True
+        if node.line_type == "comment_start":
+            if node.prev.line_type != "issue_end" and node.prev.line_type != "comment_end":
+                return False
+            return True
+        if node.line_type == "comment_end":
+            if node.next.line_type != "comment_start" and node.next.line_type != "add_comment":
+                return False
+            return True
+        if node.line_type == "add_comment":
+            if node.prev.line_type != "comment_end" and node.prev.line_type != "issue_end":
+                return False
+            return True
+
+    def forward_search(self, start_point, node_type):
+        pointer = start_point
+        search_result = []
+        while pointer:
+            if pointer.line_type == node_type:
+                search_result.append(pointer)
+            pointer = pointer.next
+        return search_result
+
+    def backward_search(self, start_point, node_type):
+        pointer = start_point
+        search_result = []
+        while pointer:
+            if pointer.line_type == node_type:
+                search_result.append(pointer)
+            pointer = pointer.prev
+        return search_result

@@ -5,6 +5,7 @@ from . import global_person_list, global_title_list, global_label_list, global_c
 from . import repo_info_storage, issue_obj_storage
 from .libgit.utils import destock, show_stock
 from . import log, settings
+from . import HEADER_END
 
 
 def highlight(view, flags_dict):
@@ -25,7 +26,7 @@ class IssueListListener(sublime_plugin.EventListener):
 
     def on_selection_modified(self, view):
         if view.settings().get('issue_flag'):
-            header_split = "*----------Content----------*"
+            header_split = HEADER_END
             all_lines = view.lines(sublime.Region(0, view.size()))
             if len(all_lines) > 7:
                 possible_header = view.lines(sublime.Region(0, view.size()))[:
