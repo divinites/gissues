@@ -75,11 +75,11 @@ global_label_list = {}
 global_commit_list = {}
 issue_obj_storage.put({})
 repo_info_storage.put({})
-COMMENT_START = lambda x: "*" + "<" * 10 + "START <Comment {}>".format(str(x)) + ">" * 10 + "*"
-COMMENT_END = lambda x: "*" + ">" * 10 + "END   <Comment {}>".format(str(x)) + "<" * 10 + "*"
-COMMENT_INFO = lambda x, y: "*<commented by " + x + "   UpdateTime: " + y + '>*'
-ISSUE_START = "*" + "<" * 17 + "ISSUE START" + ">" * 17 + "*"
-ISSUE_END = "*" + ">" * 17 + "ISSUE   END" + "<" * 17 + "*"
-HEADER_END = "##" + "-" * 17 + "**CONTENT**" + "-" * 18 + "*"
-CONTENT_END = "##" + "-" * 19 + "**END**" + "-" * 20 + "*"
-ADD_COMMENT = "## ADD NEW COMMENT" + "-" * 28 + "*"
+COMMENT_START = lambda x: "*" + "<" * 26 + "START <Comment {}>".format(str(x)) + ">" * 26 + "*"
+COMMENT_END = lambda x: "*" + ">" * 26 + "END   <Comment {}>".format(str(x)) + "<" * 26 + "*"
+COMMENT_INFO = lambda x, y: "*" + "~" * 9 + "<commented by " + x + "   UpdateTime: " + y + '>' + "~" * 9 + '*'
+ISSUE_START = "*" + "<" * 33 + "ISSUE START" + ">" * 33 + "*"
+ISSUE_END = "*" + ">" * 33 + "ISSUE   END" + "<" * 33 + "*"
+HEADER_END = "*" + "=" * 33 + "**CONTENT**" + "=" * 33 + "*"
+CONTENT_END = "*" + "=" * 35 + "**END**" + "=" * 35 + "*"
+ADD_COMMENT = "*" + "-" * 31 + "ADD NEW COMMENT" + "-" * 31 + "*"

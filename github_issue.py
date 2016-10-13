@@ -7,6 +7,7 @@ from . import flag_container as fc
 from . import log, LINE_END, settings, github_logger
 from . import repo_info_storage, issue_obj_storage
 import re
+import os
 import logging
 from queue import Queue
 from functools import partial
@@ -168,9 +169,10 @@ class LoadRepoList:
             folder_list = sublime.active_window().folders()
             if folder_list:
                 for folder_path in folder_list:
-                    repo_info = github.get_github_repo_info(folder_path)
-                    if repo_info != (-1, -1):
-                        repo_list.append(repo_info)
+                    if os.path.isdir(os.path.join(folder_path, ".git")):
+                        repo_info = github.get_github_repo_info(folder_path)
+                        if repo_info != (-1, -1):
+                            repo_list.append(repo_info)
             entries.extend(
                 ["{}/{}".format(repo[0], repo[1]) for repo in repo_list])
         self.entries = entries
