@@ -1,0 +1,9 @@
+- Add a linklist structure to issue view to solve occasional duplicated header line erros.
+
+- Add refresh list option, ctrl+r for refresh open issue list; ctrl+shift+r for refresh all issue list.
+
+- Reformat issue and comment header lines.
+
+- Add two custom options: "wrap_width" and "draw_centered".
+
+- Add "disable_local_repositories" flag for those who do not want this plug-in to search sidebar repos.

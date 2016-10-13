@@ -3,7 +3,6 @@ import sublime_plugin
 from .libgit import issue
 from .libgit import utils
 from .libgit import github
-# from . import parameter_container as pc
 from . import flag_container as fc
 from . import log, LINE_END, settings, github_logger
 from . import repo_info_storage, issue_obj_storage
@@ -11,7 +10,7 @@ import re
 import logging
 from queue import Queue
 from functools import partial
-from . import COMMENT_START, COMMENT_END, ISSUE_START, ISSUE_END, HEADER_END, CONTENT_END, ADD_COMMENT
+from . import ISSUE_START, ISSUE_END, HEADER_END, CONTENT_END
 
 
 global active_issue_obj

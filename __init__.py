@@ -29,7 +29,7 @@ class SettingContainer:
         self.settings = sublime.load_settings('github_issue.sublime-settings')
         for flag in ("token", "username", "password", "debug", "syntax", "git_path", "issue_title_completion",
                      "user_completion", "label_completion", "commit_completion",
-                     "commit_completion_trigger","disable_local_repositories"):
+                     "commit_completion_trigger", "disable_local_repositories", "wrap_width", "draw_centered"):
             self.setting_dictionary[flag] = self.settings.get(flag)
 
     ##
@@ -83,5 +83,3 @@ ISSUE_END = "*" + ">" * 17 + "ISSUE   END" + "<" * 17 + "*"
 HEADER_END = "##" + "-" * 17 + "**CONTENT**" + "-" * 18 + "*"
 CONTENT_END = "##" + "-" * 19 + "**END**" + "-" * 20 + "*"
 ADD_COMMENT = "## ADD NEW COMMENT" + "-" * 28 + "*"
-
-

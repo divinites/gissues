@@ -5,7 +5,7 @@ from .. import repo_info_storage
 from .utils import get_issue_post, compare_issues, restock, show_stock
 from .utils import format_issue, format_comment, find_comment_region, find_list_region
 from .utils import ViewConverter, configure_issue_view
-from .. import COMMENT_START, COMMENT_END, ISSUE_START, ISSUE_END, HEADER_END, CONTENT_END, ADD_COMMENT
+from .. import CONTENT_END, ADD_COMMENT
 import threading
 import json
 import random
@@ -57,9 +57,9 @@ class AcquireRepoInfo(threading.Thread):
 
 class GitRepo:
 
-    def __init__(self, settings, username=None, repo_name=None):
-        self.github_account = GitHubAccount(settings)
-        self.settings = settings
+    def __init__(self, repo_settings, username=None, repo_name=None):
+        self.settings = repo_settings
+        self.github_account = GitHubAccount(self.settings)
         self.repo_name = repo_name
         self.username = username
         self.github_response = None

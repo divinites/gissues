@@ -4,6 +4,8 @@
     "password": "",
     "debug": 0,
     "syntax": "Packages/Markdown/Markdown.sublime-syntax",
+    "wrap_width": 80,
+    "draw_centered": true,
     "git_path": "",
     "disable_local_repositories": false,
     "issue_title_completion": true,

@@ -10,6 +10,8 @@ def configure_issue_view(view):
     view.run_command("set_file_type", {"syntax": settings.get(
         "syntax", "Packages/Markdown/Markdown.sublime-syntax")})
     system_setting = view.settings()
+    system_setting.set("wrap_width", settings.get("wrap_width", 0))
+    system_setting.set("draw_centered", settings.get("draw_centered", False))
     custom_trigger = []
     commit_completion_trigger = settings.get("commit_completion_trigger",
                                              "&")[0]
@@ -97,17 +99,35 @@ def format_issue(issue):
         'assignee'] else str(None)) + LINE_END
     snippet += HEADER_END + LINE_END
     snippet += ISSUE_START + LINE_END
-    snippet += filter_line_ends(issue['body']) + LINE_END
-    snippet += ISSUE_END+ LINE_END
+    snippet += filter_fake_crucial_lines(filter_line_ends(issue['body'])) + LINE_END
+    snippet += ISSUE_END + LINE_END
     log("Issue title " + issue["title"] + " formated")
     return snippet
+
+
+def filter_fake_crucial_lines(content):
+    robust_content = []
+    for line in content.split(LINE_END):
+        temp_line = line
+        if line.startswith("*") or line.startswith("#"):
+            for candidate in (COMMENT_START('')[:25],
+                              COMMENT_END('')[:25],
+                              ISSUE_START,
+                              ISSUE_END,
+                              HEADER_END,
+                              CONTENT_END,
+                              ADD_COMMENT):
+                if line.startswith(candidate):
+                    temp_line = " " + line
+        robust_content.append(temp_line)
+    return LINE_END.join(robust_content)
 
 
 def format_comment(comment):
     snippet = ''
     snippet += COMMENT_START(comment['id']) + LINE_END
     snippet += COMMENT_INFO(comment['user']['login'], comment['updated_at']) + LINE_END
-    snippet += filter_line_ends(comment['body']) + LINE_END
+    snippet += filter_fake_crucial_lines(filter_line_ends(comment['body'])) + LINE_END
     snippet += COMMENT_END(comment['id']) + LINE_END
     log("comment id " + str(comment['id']) + "formated")
     return snippet
@@ -261,7 +281,7 @@ class ViewConverter:
                         'content_end'):
             crucial_line[crucial] = view_lines_structure.forward_search(
                 view_lines_structure.head, crucial)
-            print("the crucial_line[{}] is {}".format(crucial, repr(
+            log("the crucial_line[{}] is {}".format(crucial, repr(
                 crucial_line[crucial])))
         duplicated = []
         for item in ('issue_start', 'header_end', 'issue_end', 'add_comment',

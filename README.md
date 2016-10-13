@@ -37,6 +37,8 @@ Set-ups:
     "debug": 0,
     "syntax": "Packages/Markdown/Markdown.sublime-syntax",
     "git_path": "",
+    "wrap_width": 80,
+    "draw_centered": true,
     "issue_title_completion": true,
     "user_completion": true,
     "label_completion": true,
@@ -44,7 +46,7 @@ Set-ups:
     "commit_completion_trigger": "&"
 }
 ```
-
+### Authentication:
 Token means the github access token, you can get one from [this link](https://github.com/settings/tokens)
 
 **Attention! To have a usable token, it would be safe to choose the following scopes when generating the token:**
@@ -69,12 +71,19 @@ Alternatively, you can use password (not recommended, since username and passwor
 
 To sum up, the username is always required, passowrd and token are optional but at least one of them should be provided.
 
-**"debug"** is a flag, if it is set to 1, the plug-in will print every single step and output in sublime console. Normally it should be set to 0.
+### Customisation
 
-**"syntax"** is your preferred markdown syntax for issue view.
+- **"syntax"** is your preferred markdown syntax for issue view.
 
-__"git\_path"__ is where your git executable lies, if git is in your system path, you normally do not need to set it.
-__"issue\_title\_completion"__, __"user\_completion"__ and __"label\_completion"__ are autocompletion flags:
+- **"wrap_width"** is the same as "wrap_width" in preference.sublime-settings, but limited to issue views, default value 80.
+
+- **"draw_centered"** is the same as "draw_centered" in preferences.sublime-settings, also limited to issue view, default value: **False**.
+
+### Auto-Completion
+
+GitHubIssue offers a range of auto-completion options:
+
+- __"issue\_title\_completion"__, __"user\_completion"__ and __"label\_completion"__ are autocompletion flags:
 
 - __"issue\_title\_completion"__ autocompletes other issue titles, so that users can easily refer them;
 
@@ -82,22 +91,76 @@ __"issue\_title\_completion"__, __"user\_completion"__ and __"label\_completion"
 
 - __"label\_completion"__ autocompletes labels (only available in the "##Label     :" line).
 
+- __"commit\_completion"__: you type commitment messages, auto-completes commit SHA. default "true".
+
+- __"commit\_completion\_trigger"__: the trigger for commit auto-completion, default value "&".
+
+
+### Miscellaneous
+
+- **"debug"** is a flag, if it is set to 1, the plug-in will print every single step and output in sublime console. Normally it should be set to 0.
+
+- __"git\_path"__ is where your git executable lies, if git is in your system path, you normally do not need to set it.
+
+-__"disable\_local\_repositories"__: normally, GitHub Issue will use git command to automatically discover github repos on the side-bar. If you do not want GitHub Issue to do so, please sent this flag to **true**. Default value is **false**.
+
 
 After installing this plug-in, it would be better to restart sublime text to make the plug-in work.
 
-## Usage
+## Commands and Shortcuts
+
+### Commands
 
 All commands are runnable through Command Palette, please have a look at *Command Palette.sublime-commands* and type _GithubIssue_ to get more ideas about the commands available.
 
-Some shortcut keys are pre-defined:
+```json
+[
+    {
+        "caption": "GitHub Issue: Show Open Issues",
+        "args": {"per_page": 30},
+        "command": "show_github_issue_list"
+    },
+    {
+        "caption": "GitHub Issue: Show All Issues",
+        "args": {"state": "all", "per_page": 30},
+        "command": "show_github_issue_list"
+    },
+    {
+        "caption": "GitHub Issue: Show Issue",
+        "args": {},
+        "command": "show_github_issue"
+    },
+    {
+        "caption": "GitHub Issue: Create Issue",
+        "args": {},
+        "command": "new_github_issue"
+    },
+    {
+        "caption": "GitHub Issue: post/update Issue",
+        "args": {},
+        "command": "post_or_update_issue"
+    },
+    {
+        "caption": "GitHub Issue: close/reopen Issue",
+        "args": {},
+        "command": "update_and_close_or_reopen_issue"
+    },
+]
+```
 
-- In an issue List view, Press **Enter** to open a particular issue, Press **Right/Left Arrow** turn to issue page down/up.
+### Shortcuts
 
-- In an issue List view, Press **Ctrl + Right/Left Arrow** to goto last/first page of issues.
+You can define your own shortcut, but some shortcut keys are pre-defined for your convenience.
 
-- In an issue view, Press **Super+S**(**Ctrl+S** in Windows)to sync current issue or comments with Github
+- In an issue List view, Press <kbd>Enter</kbd> to open a particular issue, Press <kbd>Right/Left Arrow</kbd> turn to issue page down/up.
 
-- in an issue view, you can **open**, **close**, __lock__ or __unlock__ an issue simply by changing corresponding line.
+- In an issue List view, Press <kbd>Ctrl + Right/Left Arrow</kbd> to goto last/first page of issues.
+
+- In an issue List view, Press <kbd>Ctrl + r</kbd> to refresh open issue list, <kbd>Ctrl + Shift + r</kbd> to refresh all issue list.
+
+- In an issue view, Press <kbd>Super+S</kbd>(<kbd>Ctrl+S</kbd> in Windows)to sync current issue or comments with Github
+
+- in an issue view, you can press <kbd>Ctrl + shift + u</kbd> to toggle open/close an issue.
 
 
 ## Illustration
@@ -156,5 +219,7 @@ Some shortcut keys are pre-defined:
 - **2.3.0**: Add commit auto-completion
 
 - **2.5.0**: Refactoring
+
+- **2.6.0**: Add a linklist structure to issue view, add refresh list option, reformat issue and comment header lines.
 
 

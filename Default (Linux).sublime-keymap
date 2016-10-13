@@ -16,6 +16,15 @@
             "operand": true,
           },]
         },
+        { "keys": [ "ctrl+shift+r" ],
+          "command": "show_github_issue_list",
+          "args": {"refresh": true, "state": "all"},
+          "context": [{
+            "key": "setting.list_flag",
+            "operator": "equal",
+            "operand": true,
+          },]
+        },
         { "keys": [ "right" ],
           "command": "change_issue_page",
           "args": {"command": "next"},
