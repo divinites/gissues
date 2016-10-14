@@ -169,7 +169,6 @@ class LoadRepoList:
             folder_list = sublime.active_window().folders()
             if folder_list:
                 for folder_path in folder_list:
-                    if os.path.isdir(os.path.join(folder_path, ".git")):
                         repo_info = github.get_github_repo_info(folder_path)
                         if repo_info != (-1, -1):
                             repo_list.append(repo_info)
@@ -284,3 +283,4 @@ def find_line_ends():
             return '\r\n'
         else:
             return '\n'
+

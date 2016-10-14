@@ -1,9 +1,6 @@
 import requests
 import os
-import subprocess
-from .utils import find_git
 from .. import log
-import re
 
 
 class GitHubAccount:
@@ -45,28 +42,37 @@ def get_github_repo_info(folder_path):
     - First it try the open folder's name
     - If the first attempt fails, it tries to run "git config --get remote.origin.url" in current directory
     '''
-    git = find_git()
-    cmd = [git, '-C', folder_path, 'config', '--get', 'remote.origin.url']
-    try:
-        try:
-            repo_url = subprocess.check_output(' '.join(cmd), shell=True)
-        except:
-            return (-1, -1)
-        repo_url = repo_url.decode('utf-8')
-        log("repo address is " + repo_url)
-        if repo_url.startswith('https'):
-            repo_url = re.search(
-                r'(?<=https://github.com/).*', repo_url).group(0)
-        elif repo_url.startswith('git'):
-            repo_url = re.search(r'(?<=git@github.com:).*', repo_url).group(0)
-        else:
-            raise Exception('repo URL error!， the url is {}'.format(repo_url))
-        username, raw_repo_name = os.path.split(repo_url)
+    # cmd = [git, '-C', folder_path, 'config', '--get', 'remote.origin.url']
+    # try:
+    #     try:
+    #         repo_url = subprocess.check_output(' '.join(cmd), shell=True)
+    #     except:
+    if not is_git_dir(folder_path):
+        return (-1, -1)
+    else:
+        username = ''
+        raw_repo_name = ''
+        with open(os.path.join(folder_path, ".git", "config")) as git_config_file:
+            for line in git_config_file.readlines():
+                if line.strip().startswith("url"):
+                    residuals, raw_repo_name = os.path.split(line)
+                    _, username = os.path.split(residuals)
+                    break
+            else:
+                raise Exception('repo URL error!')
         raw_repo_name = raw_repo_name.replace("\n", "")
         repo_name = raw_repo_name.replace("\r", "")
-    except:
-        raise Exception("Error in find repo URL!")
+
     if repo_name.endswith(".git"):
         repo_name = repo_name[:-4]
     log("find username {} and repo_name {}".format(username, repo_name))
     return (username, repo_name)
+
+
+def is_git_dir(folder):
+    for dir_path, dir_names, file_names in os.walk(folder):
+        if dir_path == folder and ".git" in dir_names:
+            return True
+    return False
+
+

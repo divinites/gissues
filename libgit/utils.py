@@ -154,29 +154,29 @@ def test_paths_for_executable(paths, test_file):
 ##
 
 
-def find_git():
-    git_path = settings.get("git_path", None)
-    if git_path:
-        return git_path
-    else:
-        path = os.environ.get('PATH', '').split(os.pathsep)
-        if os.name == 'nt':
-            git_cmd = 'git.exe'
-        else:
-            git_cmd = 'git'
+# def find_git():
+#     git_path = settings.get("git_path", None)
+#     if git_path:
+#         return git_path
+#     else:
+#         path = os.environ.get('PATH', '').split(os.pathsep)
+#         if os.name == 'nt':
+#             git_cmd = 'git.exe'
+#         else:
+#             git_cmd = 'git'
 
-        git_path = test_paths_for_executable(path, git_cmd)
-        if not git_path:
-            if os.name == 'nt':
-                extra_paths = (
-                    os.path.join(os.environ["ProgramFiles"], "Git", "bin"),
-                    os.path.join(os.environ["ProgramFiles(x86)"], "Git",
-                                 "bin"), )
-            else:
-                extra_paths = ('/usr/local/bin',
-                               '/usr/local/git/bin', )
-            git_path = test_paths_for_executable(extra_paths, git_cmd)
-        return git_path
+#         git_path = test_paths_for_executable(path, git_cmd)
+#         if not git_path:
+#             if os.name == 'nt':
+#                 extra_paths = (
+#                     os.path.join(os.environ["ProgramFiles"], "Git", "bin"),
+#                     os.path.join(os.environ["ProgramFiles(x86)"], "Git",
+#                                  "bin"), )
+#             else:
+#                 extra_paths = ('/usr/local/bin',
+#                                '/usr/local/git/bin', )
+#             git_path = test_paths_for_executable(extra_paths, git_cmd)
+#         return git_path
 
 
 def filter_line_ends(issue):
