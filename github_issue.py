@@ -4,11 +4,9 @@ from .libgit import issue
 from .libgit import utils
 from .libgit import github
 from . import flag_container as fc
-from . import log, LINE_END, settings, github_logger
+from . import log, LINE_END, settings
 from . import repo_info_storage, issue_obj_storage
 import re
-import os
-import logging
 from queue import Queue
 from functools import partial
 from . import ISSUE_START, ISSUE_END, HEADER_END, CONTENT_END
@@ -23,10 +21,6 @@ def plugin_loaded():
     global active_issue_obj, settings
     settings.refresh()
     settings.settings.add_on_change("github_issue_reload", settings.refresh)
-    log_level = logging.ERROR if settings.get(
-        'debug', 0) == 0 else logging.DEBUG
-    github_logger.setLevel(log_level)
-    log("debug level is {}".format(str(log_level)))
     active_issue_obj = issue.GitRepo(settings)
 
 

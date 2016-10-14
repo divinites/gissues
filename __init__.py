@@ -1,4 +1,3 @@
-import logging
 from queue import Queue
 import sublime
 
@@ -59,14 +58,14 @@ class FlagContainer:
 
 
 def log(info):
-    github_logger.info(info)
+    debug_flag = sublime.load_settings("github_issue.sublime-settings").get('debug', 0)
+    if debug_flag != 0:
+        print("GitHub Issue >>> " + info)
 
 
 LINE_END = "\n"
 settings = SettingContainer()
 flag_container = FlagContainer()
-github_logger = logging.getLogger("GitHubIssue")
-github_logger.propagate = True
 issue_obj_storage = Queue()
 repo_info_storage = Queue()
 global_title_list = {}
