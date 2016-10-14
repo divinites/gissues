@@ -18,6 +18,10 @@ active_issue_obj = None
 
 
 def plugin_loaded():
+    import imp
+    imp.reload(issue)
+    imp.reload(utils)
+    imp.reload(github)
     global active_issue_obj, settings
     settings.refresh()
     settings.settings.add_on_change("github_issue_reload", settings.refresh)
