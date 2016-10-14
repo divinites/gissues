@@ -36,7 +36,6 @@ Set-ups:
     "password": "",
     "debug": 0,
     "syntax": "Packages/Markdown/Markdown.sublime-syntax",
-    "git_path": "",
     "wrap_width": 80,
     "draw_centered": true,
     "issue_title_completion": true,
@@ -99,8 +98,6 @@ GitHubIssue offers a range of auto-completion options:
 ### Miscellaneous
 
 - **"debug"** is a flag, if it is set to 1, the plug-in will print every single step and output in sublime console. Normally it should be set to 0.
-
-- __"git\_path"__ is where your git executable lies, if git is in your system path, you normally do not need to set it.
 
 -__"disable\_local\_repositories"__: normally, GitHub Issue will use git command to automatically discover github repos on the side-bar. If you do not want GitHub Issue to do so, please sent this flag to **true**. Default value is **false**.
 
