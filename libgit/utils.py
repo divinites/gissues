@@ -123,10 +123,18 @@ def filter_fake_crucial_lines(content):
     return LINE_END.join(robust_content)
 
 
+def shape_comment(comment_info):
+    wrap_width = settings.get("wrap_width", 0)
+    if len(comment_info) >= wrap_width and wrap_width > 0:
+        comment_info = comment_info[:78] + "*"
+    return comment_info
+
+
 def format_comment(comment):
     snippet = ''
     snippet += COMMENT_START(comment['id']) + LINE_END
-    snippet += COMMENT_INFO(comment['user']['login'], comment['updated_at']) + LINE_END
+    comment_info = COMMENT_INFO(comment['user']['login'], comment['updated_at'])
+    snippet += shape_comment(comment_info) + LINE_END
     snippet += filter_fake_crucial_lines(filter_line_ends(comment['body'])) + LINE_END
     snippet += COMMENT_END(comment['id']) + LINE_END
     log("comment id " + str(comment['id']) + "formated")
