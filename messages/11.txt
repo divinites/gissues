@@ -1,1 +1,3 @@
 - Completely remove git dependency
+
+- Enable debug system, remove logging dependency
