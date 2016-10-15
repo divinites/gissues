@@ -97,10 +97,10 @@ def format_issue(issue):
     snippet += "## Locked       : " + str(issue['locked']) + LINE_END
     snippet += "## Assignee     : " + str(issue['assignee']['login'] if issue[
         'assignee'] else str(None)) + LINE_END
-    snippet += HEADER_END + LINE_END
-    snippet += ISSUE_START + LINE_END
+    snippet += HEADER_END() + LINE_END
+    snippet += ISSUE_START() + LINE_END
     snippet += filter_fake_crucial_lines(filter_line_ends(issue['body'])) + LINE_END
-    snippet += ISSUE_END + LINE_END
+    snippet += ISSUE_END() + LINE_END
     log("Issue title " + issue["title"] + " formated")
     return snippet
 
@@ -112,11 +112,11 @@ def filter_fake_crucial_lines(content):
         if line.startswith("*") or line.startswith("#"):
             for candidate in (COMMENT_START('')[:25],
                               COMMENT_END('')[:25],
-                              ISSUE_START,
-                              ISSUE_END,
-                              HEADER_END,
-                              CONTENT_END,
-                              ADD_COMMENT):
+                              ISSUE_START(),
+                              ISSUE_END(),
+                              HEADER_END(),
+                              CONTENT_END(),
+                              ADD_COMMENT()):
                 if line.startswith(candidate):
                     temp_line = " " + line
         robust_content.append(temp_line)
@@ -250,23 +250,23 @@ class ViewConverter:
         crucial_line = {}
         line_order = []
         for idx, line in enumerate(lines):
-            if line.strip().startswith(HEADER_END):
+            if line.strip().startswith(HEADER_END()):
                 line_order.append(CrucialLine("header_end", idx))
-            elif line.strip().startswith(ISSUE_START):
+            elif line.strip().startswith(ISSUE_START()):
                 line_order.append(CrucialLine("issue_start", idx))
-            elif line.strip().startswith(ISSUE_END):
+            elif line.strip().startswith(ISSUE_END()):
                 line_order.append(CrucialLine("issue_end", idx))
-            elif line.strip().startswith(COMMENT_START(" ")[:25]):
+            elif re.match(r'^\*<+START\s+<Comment', line.strip()):
                 line_order.append(
                     CrucialLine("comment_start", idx, int(
                         re.match(r"(\D+)(\d+)(.+)", line.strip()).group(2))))
-            elif line.strip().startswith(COMMENT_END(" ")[:25]):
+            elif re.match(r'^\*>+END\s+<Comment', line.strip()):
                 line_order.append(
                     CrucialLine("comment_end", idx, int(
                         re.match(r"(\D+)(\d+)(.+)", line.strip()).group(2))))
-            elif line.strip().startswith(ADD_COMMENT):
+            elif line.strip().startswith(ADD_COMMENT()):
                 line_order.append(CrucialLine("add_comment", idx))
-            elif line.strip().startswith(CONTENT_END):
+            elif line.strip().startswith(CONTENT_END()):
                 line_order.append(CrucialLine("content_end", idx))
             else:
                 pass
@@ -325,12 +325,12 @@ class ViewConverter:
         return '\n'.join(lines[crucial_lines['issue_start'][0].idx + 1:
                                crucial_lines['issue_end'][0].idx])
         # else:
-        #     if len(crucial_lines['add_comment']) > 0:
-        #         return '\n'.join(lines[crucial_lines['issue_start'][0].idx + 1:
-        #                                crucial_lines['add_comment'][0].idx])
+        #     if len(crucial_lines['ADD_COMMENT()']) > 0:
+        #         return '\n'.join(lines[crucial_lines['ISSUE_START()'][0].idx + 1:
+        #                                crucial_lines['ADD_COMMENT()'][0].idx])
         #     else:
-        #         return '\n'.join(lines[crucial_lines['issue_start'][0].idx + 1:
-        #                                crucial_lines['issue_end'][0].idx])
+        #         return '\n'.join(lines[crucial_lines['ISSUE_START()'][0].idx + 1:
+        #                                crucial_lines['ISSUE_END()'][0].idx])
 
     @staticmethod
     def get_comment_list(lines, crucial_lines):
@@ -374,6 +374,7 @@ def get_issue_post(view):
                                                       crucial_lines)
     comment_dict = ViewConverter.get_comment_list(view_lines, crucial_lines)
     new_comment = ViewConverter.get_new_comment(view_lines, crucial_lines)
+    log("new comment is {}".format(new_comment))
     return {'issue': issue_post,
             'label': issue_post.pop("label"),
             'comments': comment_dict,
@@ -382,7 +383,7 @@ def get_issue_post(view):
 
 def find_comment_region(view):
     view_converter = ViewConverter(view)
-    a, _, _, b = view_converter.find_region_line(ADD_COMMENT, CONTENT_END)
+    a, _, _, b = view_converter.find_region_line(ADD_COMMENT(), CONTENT_END())
     return (a, b)
 
 

@@ -286,9 +286,9 @@ class PrintIssueInView(threading.Thread):
                 user_set.add(comment['user']['login'])
                 comment_dict[comment['id']] = comment
                 snippet += format_comment(comment)
-            snippet += ADD_COMMENT + LINE_END
+            snippet += ADD_COMMENT() + LINE_END
             snippet += LINE_END
-            snippet += CONTENT_END
+            snippet += CONTENT_END()
             if not self.view:
                 self.view = sublime.active_window().new_file()
             global_person_list[self.view.id()] = user_set
@@ -305,7 +305,7 @@ class PrintIssueInView(threading.Thread):
                                    "end_point": self.view.size()})
             self.view.run_command("insert_issue_snippet", {"snippet": snippet})
             view_converter = ViewConverter(self.view)
-            _, a, b, _ = view_converter.find_region_line(ADD_COMMENT, CONTENT_END)
+            _, a, b, _ = view_converter.find_region_line(ADD_COMMENT(), CONTENT_END())
             self.view.sel().clear()
             if b > a:
                 self.view.sel().add(sublime.Region(a + 1, a + 1))
@@ -430,9 +430,9 @@ class UpdateIssue(IssueManipulate):
                 original_issue["comments"][new_comment.json()[
                     'id']] = new_comment.json()
                 snippet = format_comment(new_comment.json())
-                snippet += ADD_COMMENT + LINE_END
+                snippet += ADD_COMMENT() + LINE_END
                 snippet += LINE_END
-                snippet += CONTENT_END
+                snippet += CONTENT_END()
                 a, b = find_comment_region(self.view)
                 log("insert the snippet")
                 self.view.run_command("replace_snippet", {"start_point": a,

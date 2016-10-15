@@ -26,7 +26,7 @@ class IssueListListener(sublime_plugin.EventListener):
 
     def on_selection_modified(self, view):
         if view.settings().get('issue_flag'):
-            header_split = HEADER_END
+            header_split = HEADER_END()
             all_lines = view.lines(sublime.Region(0, view.size()))
             if len(all_lines) > 7:
                 possible_header = view.lines(sublime.Region(0, view.size()))[:

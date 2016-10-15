@@ -27,7 +27,7 @@ class SettingContainer:
     def refresh(self):
         self.settings = sublime.load_settings('github_issue.sublime-settings')
         for flag in ("token", "username", "password", "debug", "syntax", "git_path", "issue_title_completion",
-                     "user_completion", "label_completion", "commit_completion",
+                     "user_completion", "label_completion", "commit_completion","split_line_width",
                      "commit_completion_trigger", "disable_local_repositories", "wrap_width", "draw_centered"):
             self.setting_dictionary[flag] = self.settings.get(flag)
 
@@ -74,11 +74,31 @@ global_label_list = {}
 global_commit_list = {}
 issue_obj_storage.put({})
 repo_info_storage.put({})
-COMMENT_START = lambda x: "*" + "<" * 26 + "START <Comment {}>".format(str(x)) + ">" * 26 + "*"
-COMMENT_END = lambda x: "*" + ">" * 26 + "END   <Comment {}>".format(str(x)) + "<" * 26 + "*"
-COMMENT_INFO = lambda x, y: "*" + "~" * 9 + "<commented by " + x + "   UpdateTime: " + y + '>' + "~" * 9 + '*'
-ISSUE_START = "*" + "<" * 33 + "ISSUE START" + ">" * 33 + "*"
-ISSUE_END = "*" + ">" * 33 + "ISSUE   END" + "<" * 33 + "*"
-HEADER_END = "*" + "=" * 33 + "**CONTENT**" + "=" * 33 + "*"
-CONTENT_END = "*" + "=" * 35 + "**END**" + "=" * 35 + "*"
-ADD_COMMENT = "*" + "-" * 31 + "ADD NEW COMMENT" + "-" * 31 + "*"
+COMMENT_START = lambda x: format_split("*" + "<" * 26 + "START <Comment {}>".format(str(x)) + ">" * 26 + "*")
+COMMENT_END = lambda x: format_split("*" + ">" * 26 + "END   <Comment {}>".format(str(x)) + "<" * 26 + "*")
+COMMENT_INFO = lambda x, y: format_split("*" + "-" * 9 + "<commented by " + x + "   UpdateTime: " + y + '>' + "-" * 9 + '*')
+ISSUE_START = lambda: format_split("*" + "<" * 33 + "ISSUE START" + ">" * 33 + "*")
+ISSUE_END = lambda: format_split("*" + ">" * 33 + "ISSUE   END" + "<" * 33 + "*")
+HEADER_END = lambda: format_split("*" + "=" * 33 + "**CONTENT**" + "=" * 33 + "*")
+CONTENT_END = lambda: format_split("*" + "=" * 35 + "**END**" + "=" * 35 + "*")
+ADD_COMMENT = lambda: format_split("*" + "-" * 31 + "ADD NEW COMMENT" + "-" * 31 + "*")
+
+
+def format_split(line):
+    split_line_width = settings.get("split_line_width", 0)
+    wrap_width = settings.get("wrap_width", 80)
+    if split_line_width > wrap_width or split_line_width == 0:
+        split_line_width = wrap_width
+        if wrap_width == 80 or wrap_width == 0:
+            return line
+    line = list(line)
+    while len(line) != split_line_width - 1:
+        if len(line) > split_line_width - 1:
+            line.pop(-2)
+        if len(line) > split_line_width - 1:
+            line.pop(1)
+        if len(line) < split_line_width - 1:
+            line.insert(1, line[1])
+        if len(line) < split_line_width - 1:
+            line.insert(-1, line[-2])
+    return "".join(line)

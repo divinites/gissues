@@ -38,6 +38,7 @@ Set-ups:
     "syntax": "Packages/Markdown/Markdown.sublime-syntax",
     "wrap_width": 80,
     "draw_centered": true,
+    "split_line_width": 0,
     "issue_title_completion": true,
     "user_completion": true,
     "label_completion": true,
@@ -77,6 +78,8 @@ To sum up, the username is always required, passowrd and token are optional but 
 - **"wrap_width"** is the same as "wrap_width" in preference.sublime-settings, but limited to issue views, default value 80.
 
 - **"draw_centered"** is the same as "draw_centered" in preferences.sublime-settings, also limited to issue view, default value: **False**.
+
+-**"split_line_width"** is the width of split lines. default value is  0, which means that it will be the same as wrap_width.
 
 ### Auto-Completion
 

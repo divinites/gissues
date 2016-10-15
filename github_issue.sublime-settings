@@ -6,6 +6,7 @@
     "syntax": "Packages/Markdown/Markdown.sublime-syntax",
     "wrap_width": 80,
     "draw_centered": true,
+    "split_line_width": 0,
     "disable_local_repositories": false,
     "issue_title_completion": true,
     "user_completion": true,

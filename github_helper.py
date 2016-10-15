@@ -50,4 +50,5 @@ class PostOrUpdateIssueCommand(sublime_plugin.WindowCommand):
             log("post")
             self.window.run_command("post_github_issue")
         else:
+            log("update")
             self.window.run_command("update_github_issue")
