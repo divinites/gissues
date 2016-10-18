@@ -26,15 +26,6 @@ def plugin_loaded():
     settings.refresh()
     settings.settings.add_on_change("github_issue_reload", settings.refresh)
     active_issue_obj = issue.GitRepo(settings)
-    # ISSUE_START() = format_split(ISSUE_START())
-    # ISSUE_END() = format_split(ISSUE_END())
-    # HEADER_END() = format_split(HEADER_END())
-    # CONTENT_END() = format_split(CONTENT_END())
-    # COMMENT_START = format_split(COMMENT_START)
-    # COMMENT_END = format_split(COMMENT_END)
-    # COMMENT_INFO = format_split(COMMENT_INFO)
-    # ADD_COMMENT = format_split(ADD_COMMENT)
-
 
 
 class ChangeIssuePageCommand(sublime_plugin.TextCommand):

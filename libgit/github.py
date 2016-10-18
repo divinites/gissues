@@ -47,32 +47,59 @@ def get_github_repo_info(folder_path):
     #     try:
     #         repo_url = subprocess.check_output(' '.join(cmd), shell=True)
     #     except:
-    if not is_git_dir(folder_path):
+    git_path = get_git_config(folder_path)
+    if not git_path:
+        log("folder path {} is not a git repo".format(folder_path))
         return (-1, -1)
     else:
-        username = ''
-        raw_repo_name = ''
-        with open(os.path.join(folder_path, ".git", "config")) as git_config_file:
-            for line in git_config_file.readlines():
-                if line.strip().startswith("url"):
-                    residuals, raw_repo_name = os.path.split(line)
-                    _, username = os.path.split(residuals)
-                    break
-            else:
-                raise Exception('repo URL error!')
-        raw_repo_name = raw_repo_name.replace("\n", "")
-        repo_name = raw_repo_name.replace("\r", "")
+        if not os.path.isabs(git_path):
+            log("folder path is {}".format(folder_path))
+            log(" git path is {}".format(git_path))
+            git_path = os.path.join(folder_path, git_path)
+            log("new git path is {}".format(git_path))
+        return dig_git_file(git_path)
 
+
+def get_git_config(folder_path):
+    for dir_path, dir_names, file_names in os.walk(folder_path):
+        # log("the dir_path is {}".format(dir_path))
+        # log("the dir_names are {}".format(dir_names))
+        # log("the file names are {}".format(file_names))
+        if dir_path == folder_path and ".git" in dir_names:
+            return os.path.join(folder_path, ".git", "config")
+        if dir_path == folder_path and ".git" in file_names:
+            log("seems to be a submodule")
+            try:
+                with open(os.path.join(dir_path, ".git"), "rb") as git_file:
+                    log("git file open")
+                    for line in git_file.readlines():
+                        if line.decode("utf-8").strip().startswith("gitdir:"):
+                            log("the line is {}".format(line.decode("utf-8")))
+                            log(" gitdir line found! {}".format(line.decode('utf-8').strip()[7:].strip()))
+                            return os.path.join(line.decode('utf-8').strip()[7:].strip(), "config")
+            except:
+                return
+
+    return
+
+
+def dig_git_file(file):
+    username = ''
+    raw_repo_name = ''
+    with open(file) as git_config_file:
+        for line in git_config_file.readlines():
+            if line.strip().startswith("url"):
+                log("the url in .git file is {}".format(line))
+                residuals, raw_repo_name = os.path.split(line)
+                _, username = os.path.split(residuals)
+                break
+        else:
+            raise Exception('repo URL error!')
+    raw_repo_name = raw_repo_name.replace("\n", "")
+    repo_name = raw_repo_name.replace("\r", "")
     if repo_name.endswith(".git"):
         repo_name = repo_name[:-4]
     log("find username {} and repo_name {}".format(username, repo_name))
     return (username, repo_name)
-
-
-def is_git_dir(folder):
-    for dir_path, dir_names, file_names in os.walk(folder):
-        if dir_path == folder and ".git" in dir_names:
-            return True
-    return False
 
 

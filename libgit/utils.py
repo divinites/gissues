@@ -31,10 +31,10 @@ def configure_issue_view(view):
 
 def print_list_framework(view=None):
     snippet = ''
-    snippet += "-" * 50 + LINE_END
+    snippet += "=" * 50 + LINE_END
     snippet += 'Issue No.' + '   ' + 'Locked    ' + 'Issue Title' + LINE_END
-    snippet += "-" * 24 + '**' + "-" * 24 + LINE_END
-    snippet += "-" * 23 + "*" * 4 + "-" * 23 + LINE_END * 3
+    snippet += "=" * 24 + '**' + "=" * 24 + LINE_END
+    snippet += "=" * 23 + "*" * 4 + "=" * 23 + LINE_END * 3
     snippet += "Page:  |_First_|     ...     |_Prev_|     ...     |_Next_|     ...     |_Last_|" + LINE_END
     if not view:
         view = sublime.active_window().new_file()
@@ -54,7 +54,7 @@ def print_list_framework(view=None):
 def find_list_region(view=None):
     view_converter = ViewConverter(view)
     _, start_point, end_point, _ = view_converter.find_region_line(
-        "-" * 24 + '**' + "-" * 24, "-" * 23 + "*" * 4 + "-" * 23)
+        "=" * 24 + '**' + "=" * 24, "=" * 23 + "*" * 4 + "=" * 23)
     return (start_point, end_point)
 
 

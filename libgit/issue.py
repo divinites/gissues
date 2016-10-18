@@ -389,6 +389,10 @@ class UpdateIssue(IssueManipulate):
             log("new labels are {}".format(repr(label_change)))
             self.issue_list.attach_labels(original_issue['issue']['number'],
                                           list(label_change))
+            self.view.run_command(
+                "insert_issue_snippet",
+                {"start_point": self.view.size(),
+                 "snippet": "\n*<The issue has new labels {}>*".format(repr(label_change))})
         if comment_change:
             for comment_id, content in comment_change.items():
                 updating_comment = self.issue_list.update_comment(
