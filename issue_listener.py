@@ -5,7 +5,7 @@ from . import global_person_list, global_title_list, global_label_list, global_c
 from . import repo_info_storage, issue_obj_storage
 from .libgit.utils import destock, show_stock
 from . import log, settings
-from . import HEADER_END
+from . import ISSUE_START, ISSUE_END, HEADER_END, CONTENT_END, ADD_COMMENT
 
 
 def highlight(view, flags_dict):
@@ -22,15 +22,31 @@ def highlight(view, flags_dict):
                      sublime.DRAW_SQUIGGLY_UNDERLINE)
 
 
+def push_cursor(view):
+    current_point = view.sel()[0].b
+    new_cursor_position = view.line(current_point).b
+    view.sel().clear()
+    view.sel().add(
+        sublime.Region(new_cursor_position,
+                       new_cursor_position))
+
+
 class IssueListListener(sublime_plugin.EventListener):
 
     def on_selection_modified(self, view):
         if view.settings().get('issue_flag'):
+            current_point = view.sel()[0].a
+            for header in (ISSUE_START(),
+                           ISSUE_END(),
+                           HEADER_END(),
+                           CONTENT_END(),
+                           ADD_COMMENT()):
+                if view.substr(view.line(current_point)).strip() == header:
+                    push_cursor(view)
             header_split = HEADER_END()
             all_lines = view.lines(sublime.Region(0, view.size()))
             if len(all_lines) > 7:
-                possible_header = view.lines(sublime.Region(0, view.size()))[:
-                                                                             7]
+                possible_header = view.lines(sublime.Region(0, view.size()))[:7]
             else:
                 possible_header = all_lines
             header_split_line = -1
@@ -39,7 +55,6 @@ class IssueListListener(sublime_plugin.EventListener):
                     header_split_line = idx
                     break
             if header_split_line > 0:
-                current_point = view.sel()[0].a
                 log("current cursor is located at {}".format(current_point))
                 row, col = view.rowcol(current_point)
                 log("find the row {} and the col {}".format(row, col))

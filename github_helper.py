@@ -1,6 +1,44 @@
 import sublime_plugin
 import sublime
 from . import log
+from . import COMMENT_START, COMMENT_END
+from .libgit.utils import ViewConverter
+
+
+class EraseCurrentCommentFromViewCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        current_point = self.view.sel()[0].a
+        row, col = self.view.rowcol(current_point)
+        view_converter = ViewConverter(self.view)
+        view_lines = view_converter.readlines()
+        crucial_lines = ViewConverter.split_issue(view_lines)
+        for idx, line in enumerate(crucial_lines['comment_start']):
+            if row > line.idx:
+                continue
+            elif row == line.idx:
+                comment_start = crucial_lines['comment_start'][idx]
+            else:
+                comment_start = crucial_lines['comment_start'][idx - 1]
+                break
+        else:
+            comment_start = crucial_lines['comment_start'][-1]
+        for idx, line in enumerate(crucial_lines['comment_end']):
+            if row > line.idx:
+                continue
+            else:
+                comment_end = crucial_lines['comment_end'][idx]
+                break
+        else:
+            raise Exception("Something wrong with comment splitting")
+        view_lines = self.view.lines(sublime.Region(0, self.view.size()))
+        self.view.erase(edit, sublime.Region(view_lines[comment_start.idx].a, view_lines[comment_end.idx].b + 1))
+
+
+class EraseCurrentCommentCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        view = self.window.active_view()
+        view.run_command("erase_current_comment_from_view")
+        self.window.run_command("update_github_issue")
 
 
 class InsertIssueSnippetCommand(sublime_plugin.TextCommand):

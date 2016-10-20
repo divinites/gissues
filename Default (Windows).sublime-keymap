@@ -16,6 +16,14 @@
             "operand": true,
           },]
         },
+        { "keys": [ "ctrl+e" ],
+          "command": "erase_current_comment",
+          "context": [{
+            "key": "setting.issue_flag",
+            "operator": "equal",
+            "operand": true,
+          },]
+        },
         { "keys": [ "ctrl+shift+r" ],
           "command": "show_github_issue_list",
           "args": {"refresh": true, "state": "all"},
