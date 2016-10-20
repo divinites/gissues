@@ -52,8 +52,16 @@
             "operand": true,
           },]
         },
-        { "keys": [ "super+e" ],
+        { "keys": [ "super+shift+e" ],
           "command": "erase_current_comment",
+          "context": [{
+            "key": "setting.issue_flag",
+            "operator": "equal",
+            "operand": true,
+          },]
+        },
+        { "keys": [ "super+e" ],
+          "command": "erase_current_comment_from_view",
           "context": [{
             "key": "setting.issue_flag",
             "operator": "equal",

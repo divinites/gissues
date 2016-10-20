@@ -1,0 +1,7 @@
+- add two new commands:
+
+  - "erase_current_comment_from_view", default shortcut super+e/ctrl+e
+    put the cursor in any part of the comment that you want to delete, run this command, and the comment is deleted from the view.
+
+  - "erase_current_comment", default shortcut super+shift+e/ctrl+shift+e.
+    a combination of "erase_current_comment_from_view" and "update_github_issue"
