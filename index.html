@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>GitHub Issue Writer by divinites</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">GitHub Issue Writer</h1>
+      <h2 class="project-tagline">A sublime text plug-in to manage GitHub repo issues :fire:</h2>
+      <a href="https://github.com/divinites/gissues" class="btn">View on GitHub</a>
+      <a href="https://github.com/divinites/gissues/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/divinites/gissues/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="github-issues" class="anchor" href="#github-issues" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>GitHub-Issues</h1>
+
+<h2>
+<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Introduction</h2>
+
+<p>This plugin aims at providing a convenient way to write and update issues inside sublime text. Instead of opening a external Internet browser, this plug-in open a new buffer and let users to write/modify issue content using Markdown natively within sublime Text.</p>
+
+<p>It was initially inspired by github-issues.vim.</p>
+
+<h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h2>
+
+<ul>
+<li><p>Create/post/update/open/close github issues inside Sublime Text.</p></li>
+<li><p>Browse/navigate the issue list of any public repos and users' private repos.</p></li>
+<li><p>Auto-complete issue titles, labels and issue participants.</p></li>
+<li><p>Using Markdown as the default syntax of issue, allowing users to choose other syntaxes as well.</p></li>
+</ul>
+
+<h2>
+<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Configuration</h2>
+
+<p>Set-ups:</p>
+
+<ul>
+<li><p>Open Preferences -&gt; Package Settings -&gt; Github Issue</p></li>
+<li><p>Open Settings - User</p></li>
+<li><p>There is a sample configuration in Settings - Default</p></li>
+<li><p>Ten options available:</p></li>
+</ul>
+
+<div class="highlight highlight-source-json"><pre>{
+    <span class="pl-s"><span class="pl-pds">"</span>token<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>,
+    <span class="pl-s"><span class="pl-pds">"</span>username<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>,
+    <span class="pl-s"><span class="pl-pds">"</span>password<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>,
+    <span class="pl-s"><span class="pl-pds">"</span>debug<span class="pl-pds">"</span></span>: <span class="pl-c1">0</span>,
+    <span class="pl-s"><span class="pl-pds">"</span>syntax<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Packages/Markdown/Markdown.sublime-syntax<span class="pl-pds">"</span></span>,
+    <span class="pl-s"><span class="pl-pds">"</span>wrap_width<span class="pl-pds">"</span></span>: <span class="pl-c1">80</span>,
+    <span class="pl-s"><span class="pl-pds">"</span>draw_centered<span class="pl-pds">"</span></span>: <span class="pl-c1">true</span>,
+    <span class="pl-s"><span class="pl-pds">"</span>split_line_width<span class="pl-pds">"</span></span>: <span class="pl-c1">0</span>,
+    <span class="pl-s"><span class="pl-pds">"</span>issue_title_completion<span class="pl-pds">"</span></span>: <span class="pl-c1">true</span>,
+    <span class="pl-s"><span class="pl-pds">"</span>user_completion<span class="pl-pds">"</span></span>: <span class="pl-c1">true</span>,
+    <span class="pl-s"><span class="pl-pds">"</span>label_completion<span class="pl-pds">"</span></span>: <span class="pl-c1">true</span>,
+    <span class="pl-s"><span class="pl-pds">"</span>commit_completion<span class="pl-pds">"</span></span>: <span class="pl-c1">true</span>,
+    <span class="pl-s"><span class="pl-pds">"</span>commit_completion_trigger<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>&amp;<span class="pl-pds">"</span></span>
+}</pre></div>
+
+<h3>
+<a id="authentication" class="anchor" href="#authentication" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authentication:</h3>
+
+<p>Token means the github access token, you can get one from <a href="https://github.com/settings/tokens">this link</a></p>
+
+<p><strong>Attention! To have a usable token, it would be safe to choose the following scopes when generating the token:</strong></p>
+
+<ul>
+<li><p><em>admin:org</em>,</p></li>
+<li><p><em>admin:org_hook</em>,</p></li>
+<li><p><em>admin:public_key</em>,</p></li>
+<li><p><em>admin:repo_hook</em>,</p></li>
+<li><p><em>gist</em>,</p></li>
+<li><p><em>notifications</em>,</p></li>
+<li><p><em>repo</em></p></li>
+</ul>
+
+<p>If you find without one or more scopes listed above, the plug-in also works properly, please submit an issue. After testing, I will modify the scope list.</p>
+
+<p>Alternatively, you can use password (not recommended, since username and password will be stored in the configuration file in plain text). The program will first look at whether token is set, if no token, it will then look at pasword option.</p>
+
+<p>To sum up, the username is always required, passowrd and token are optional but at least one of them should be provided.</p>
+
+<h3>
+<a id="customisation" class="anchor" href="#customisation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Customisation</h3>
+
+<ul>
+<li><p><strong>"syntax"</strong> is your preferred markdown syntax for issue view.</p></li>
+<li><p><strong>"wrap_width"</strong> is the same as "wrap_width" in preference.sublime-settings, but limited to issue views, default value 80.</p></li>
+<li><p><strong>"draw_centered"</strong> is the same as "draw_centered" in preferences.sublime-settings, also limited to issue view, default value: <strong>False</strong>.</p></li>
+</ul>
+
+<p>-<strong>"split_line_width"</strong> is the width of split lines. default value is  0, which means that it will be the same as wrap_width.</p>
+
+<h3>
+<a id="auto-completion" class="anchor" href="#auto-completion" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Auto-Completion</h3>
+
+<p>GitHubIssue offers a range of auto-completion options:</p>
+
+<ul>
+<li><p><strong>"issue_title_completion"</strong>, <strong>"user_completion"</strong> and <strong>"label_completion"</strong> are autocompletion flags:</p></li>
+<li><p><strong>"issue_title_completion"</strong> autocompletes other issue titles, so that users can easily refer them;</p></li>
+<li><p><strong>"user_completion"</strong> autocompletes issue participants, so that users can easily <strong>@</strong> them;</p></li>
+<li><p><strong>"label_completion"</strong> autocompletes labels (only available in the "##Label     :" line).</p></li>
+<li><p><strong>"commit_completion"</strong>: you type commitment messages, auto-completes commit SHA. default "true".</p></li>
+<li><p><strong>"commit_completion_trigger"</strong>: the trigger for commit auto-completion, default value "&amp;".</p></li>
+</ul>
+
+<h3>
+<a id="miscellaneous" class="anchor" href="#miscellaneous" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Miscellaneous</h3>
+
+<ul>
+<li>
+<strong>"debug"</strong> is a flag, if it is set to 1, the plug-in will print every single step and output in sublime console. Normally it should be set to 0.</li>
+</ul>
+
+<p>-<strong>"disable_local_repositories"</strong>: normally, GitHub Issue will use git command to automatically discover github repos on the side-bar. If you do not want GitHub Issue to do so, please sent this flag to <strong>true</strong>. Default value is <strong>false</strong>.</p>
+
+<p>After installing this plug-in, it would be better to restart sublime text to make the plug-in work.</p>
+
+<h2>
+<a id="commands-and-shortcuts" class="anchor" href="#commands-and-shortcuts" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Commands and Shortcuts</h2>
+
+<h3>
+<a id="commands" class="anchor" href="#commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Commands</h3>
+
+<p>All commands are runnable through Command Palette, please have a look at <em>Command Palette.sublime-commands</em> and type <em>GithubIssue</em> to get more ideas about the commands available.</p>
+
+<div class="highlight highlight-source-json"><pre>[
+    {
+        <span class="pl-s"><span class="pl-pds">"</span>caption<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>GitHub Issue: Show Open Issues<span class="pl-pds">"</span></span>,
+        <span class="pl-s"><span class="pl-pds">"</span>args<span class="pl-pds">"</span></span>: {<span class="pl-s"><span class="pl-pds">"</span>per_page<span class="pl-pds">"</span></span>: <span class="pl-c1">30</span>},
+        <span class="pl-s"><span class="pl-pds">"</span>command<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>show_github_issue_list<span class="pl-pds">"</span></span>
+    },
+    {
+        <span class="pl-s"><span class="pl-pds">"</span>caption<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>GitHub Issue: Show All Issues<span class="pl-pds">"</span></span>,
+        <span class="pl-s"><span class="pl-pds">"</span>args<span class="pl-pds">"</span></span>: {<span class="pl-s"><span class="pl-pds">"</span>state<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>all<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>per_page<span class="pl-pds">"</span></span>: <span class="pl-c1">30</span>},
+        <span class="pl-s"><span class="pl-pds">"</span>command<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>show_github_issue_list<span class="pl-pds">"</span></span>
+    },
+    {
+        <span class="pl-s"><span class="pl-pds">"</span>caption<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>GitHub Issue: Show Issue<span class="pl-pds">"</span></span>,
+        <span class="pl-s"><span class="pl-pds">"</span>args<span class="pl-pds">"</span></span>: {},
+        <span class="pl-s"><span class="pl-pds">"</span>command<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>show_github_issue<span class="pl-pds">"</span></span>
+    },
+    {
+        <span class="pl-s"><span class="pl-pds">"</span>caption<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>GitHub Issue: Create Issue<span class="pl-pds">"</span></span>,
+        <span class="pl-s"><span class="pl-pds">"</span>args<span class="pl-pds">"</span></span>: {},
+        <span class="pl-s"><span class="pl-pds">"</span>command<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>new_github_issue<span class="pl-pds">"</span></span>
+    },
+    {
+        <span class="pl-s"><span class="pl-pds">"</span>caption<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>GitHub Issue: post/update Issue<span class="pl-pds">"</span></span>,
+        <span class="pl-s"><span class="pl-pds">"</span>args<span class="pl-pds">"</span></span>: {},
+        <span class="pl-s"><span class="pl-pds">"</span>command<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>post_or_update_issue<span class="pl-pds">"</span></span>
+    },
+    {
+        <span class="pl-s"><span class="pl-pds">"</span>caption<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>GitHub Issue: close/reopen Issue<span class="pl-pds">"</span></span>,
+        <span class="pl-s"><span class="pl-pds">"</span>args<span class="pl-pds">"</span></span>: {},
+        <span class="pl-s"><span class="pl-pds">"</span>command<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>update_and_close_or_reopen_issue<span class="pl-pds">"</span></span>
+    },
+]</pre></div>
+
+<h3>
+<a id="shortcuts" class="anchor" href="#shortcuts" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Shortcuts</h3>
+
+<p>You can define your own shortcut, but some shortcut keys are pre-defined for your convenience.</p>
+
+<ul>
+<li><p>In an issue List view, Press <kbd>Enter</kbd> to open a particular issue, Press <kbd>Right/Left Arrow</kbd> turn to issue page down/up.</p></li>
+<li><p>In an issue List view, Press <kbd>Ctrl + Right/Left Arrow</kbd> to goto last/first page of issues.</p></li>
+<li><p>In an issue List view, Press <kbd>Ctrl + r</kbd> to refresh open issue list, <kbd>Ctrl + Shift + r</kbd> to refresh all issue list.</p></li>
+<li><p>In an issue view, Press <kbd>Super+S</kbd>(<kbd>Ctrl+S</kbd> in Windows)to sync current issue or comments with Github</p></li>
+<li><p>in an issue view, you can press <kbd>Ctrl + shift + u</kbd> to toggle open/close an issue.</p></li>
+</ul>
+
+<h2>
+<a id="illustration" class="anchor" href="#illustration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Illustration</h2>
+
+<ul>
+<li><p>Show issue list:
+<img src="https://www.scislab.com/static/media/uploads/PrivateGraphs/showlist.gif" alt="show issue list"></p></li>
+<li><p>Create an Issue:
+<img src="https://www.scislab.com/static/media/uploads/blog/create_issue.gif" alt="create an issue"></p></li>
+<li><p>Update an Issue:
+<img src="https://www.scislab.com/static/media/uploads/blog/update_issue.gif" alt="update an issue"></p></li>
+<li><p>Add a comment:
+<img src="https://www.scislab.com/static/media/uploads/blog/add_comment.gif" alt="add a comment"></p></li>
+<li><p>Delete a comment:
+<img src="https://www.scislab.com/static/media/uploads/blog/delete_comment.gif" alt="delete a comment"></p></li>
+<li><p>Modify a comment:
+<img src="https://www.scislab.com/static/media/uploads/blog/modi_comment.gif" alt="modify a comment"></p></li>
+<li><p>Auto-completion of labels, if a label does not exist, it will be automatically created.
+<img src="https://www.scislab.com/static/media/uploads/PrivateGraphs/label.gif" alt="label completion"></p></li>
+<li><p>Auto-Completion of commits, issue references and other participants.
+<img src="https://www.scislab.com/static/media/uploads/PrivateGraphs/completion.gif" alt="auto-completion"></p></li>
+</ul>
+
+<h2>
+<a id="change-log" class="anchor" href="#change-log" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Change Log</h2>
+
+<ul>
+<li><p><strong>0.0.1</strong>: First public version, only show list works.</p></li>
+<li><p><strong>0.1.0</strong>: All basic function works.</p></li>
+<li><p><strong>1.0.0</strong>: Add messages, dependencies and ready for Package Control Channel.</p></li>
+<li><p><strong>1.1.0</strong>: Add the feature that users can directly enter repo information and write issues/comments.</p></li>
+<li><p><strong>1.2.0</strong>: Add logging system and solve CRLF problems.</p></li>
+<li><p><strong>1.3.0</strong>: Add issue syntax customization and adjust cursor position.</p></li>
+<li><p><strong>1.5.0</strong>: Add issue list pagination and page view control</p></li>
+<li><p><strong>1.6.0</strong>: Add basic label support</p></li>
+<li><p><strong>2.0.0</strong>: Add auto-completion support</p></li>
+<li><p><strong>2.1.0</strong>: Add protection to the issue header and add a command "post_or_update_issue"</p></li>
+<li><p><strong>2.2.0</strong>: various minor improvements</p></li>
+<li><p><strong>2.3.0</strong>: Add commit auto-completion</p></li>
+<li><p><strong>2.5.0</strong>: Refactoring</p></li>
+<li><p><strong>2.6.0</strong>: Add a linklist structure to issue view, add refresh list option, reformat issue and comment header lines.</p></li>
+</ul>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/divinites/gissues">GitHub Issue Writer</a> is maintained by <a href="https://github.com/divinites">divinites</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
