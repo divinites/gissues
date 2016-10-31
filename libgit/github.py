@@ -1,6 +1,9 @@
 import requests
 import os
 from .. import log
+import re
+
+git_url = r"^\s*url\s*=\s*(?P<host>(git@|https://)([\w\.@]+)(/|:))(?P<owner>[\w,\-,\_]+)/(?P<repo>[\w,\-,\_]+)(.git){0,1}((/){0,1})"
 
 
 class GitHubAccount:
@@ -85,20 +88,20 @@ def get_git_config(folder_path):
 
 def dig_git_file(file):
     username = ''
-    raw_repo_name = ''
+    # raw_repo_name = ''
     with open(file) as git_config_file:
         for line in git_config_file.readlines():
-            if line.strip().startswith("url"):
-                log("the url in .git file is {}".format(line))
-                residuals, raw_repo_name = os.path.split(line)
-                _, username = os.path.split(residuals)
+            line_match = re.match(git_url, line)
+            if line_match:
+                username = line_match.group('owner')
+                repo_name = line_match.group('repo')
                 break
         else:
             raise Exception('repo URL error!')
-    raw_repo_name = raw_repo_name.replace("\n", "")
-    repo_name = raw_repo_name.replace("\r", "")
-    if repo_name.endswith(".git"):
-        repo_name = repo_name[:-4]
+    # raw_repo_name = raw_repo_name.replace("\n", "")
+    # repo_name = raw_repo_name.replace("\r", "")
+    # if repo_name.endswith(".git"):
+    #     repo_name = repo_name[:-4]
     log("find username {} and repo_name {}".format(username, repo_name))
     return (username, repo_name)
 
