@@ -16,6 +16,10 @@ It was initially inspired by github-issues.vim.
 
 - Using Markdown as the default syntax of issue, allowing users to choose other syntaxes as well.
 
+## Installation
+
+Search **GitHubIssue** in Package Control Channel. After installation, you will need to restart Sublime Text.
+
 
 ## Configuration
 
