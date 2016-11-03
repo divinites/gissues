@@ -95,7 +95,7 @@ GitHubIssue offers a range of auto-completion options:
 
 - __"user\_completion"__ autocompletes issue participants, so that users can easily __@__ them;
 
-- __"label\_completion"__ autocompletes labels (only available in the "##Label     :" line).
+- __"label\_completion"__ autocompletes labels (only available in the "##Label     :" line, triggered by __@__).
 
 - __"commit\_completion"__: you type commitment messages, auto-completes commit SHA. default "true".
 
