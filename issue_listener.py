@@ -22,19 +22,19 @@ def highlight(view, flags_dict):
                      sublime.DRAW_SQUIGGLY_UNDERLINE)
 
 
-def push_cursor(view):
-    current_point = view.sel()[0].b
-    new_cursor_position = view.line(current_point).b
-    view.sel().clear()
-    view.sel().add(
-        sublime.Region(new_cursor_position,
-                       new_cursor_position))
+# def push_cursor(view, point):
+#     new_cursor_position = point.a + 1
+#     view.sel().clear()
+#     view.sel().add(
+#         sublime.Region(new_cursor_position,
+#                        new_cursor_position))
 
 
 class IssueListListener(sublime_plugin.EventListener):
 
     def on_selection_modified(self, view):
         if view.settings().get('issue_flag'):
+            header_flag = False
             current_point = view.sel()[0].a
             for header in (ISSUE_START(),
                            ISSUE_END(),
@@ -42,7 +42,7 @@ class IssueListListener(sublime_plugin.EventListener):
                            CONTENT_END(),
                            ADD_COMMENT()):
                 if view.substr(view.line(current_point)).strip() == header:
-                    push_cursor(view)
+                    header_flag = True
             header_split = HEADER_END()
             all_lines = view.lines(sublime.Region(0, view.size()))
             if len(all_lines) > 7:
@@ -58,25 +58,16 @@ class IssueListListener(sublime_plugin.EventListener):
                 log("current cursor is located at {}".format(current_point))
                 row, col = view.rowcol(current_point)
                 log("find the row {} and the col {}".format(row, col))
-                if row < header_split_line and col < 19:
-                    log("starting pushing back the cursor")
-                    new_cursor_position = view.line(current_point).a + 18
-                    log("push back the cursor to {}".format(
-                        new_cursor_position))
-                    view.sel().clear()
-                    view.sel().add(
-                        sublime.Region(new_cursor_position,
-                                       new_cursor_position))
-                elif row == header_split_line and col < 29:
-                    new_cursor_position = view.line(current_point).a + 29
-                    log("push back the cursor to {}".format(
-                        new_cursor_position))
-                    view.sel().clear()
-                    view.sel().add(
-                        sublime.Region(new_cursor_position,
-                                       new_cursor_position))
+                if (row < header_split_line and col < 17) or header_flag:
+                    if not view.is_read_only():
+                        log("set the view read-only")
+                        view.set_read_only(True)
+                elif row < header_split_line and col == 17:
+                    view.run_command("insert_issue_snippet", {"snippet": " ", "start_point": current_point})
                 else:
-                    pass
+                    if view.is_read_only():
+                        log("set the view writable")
+                        view.set_read_only(False)
 
     def on_selection_modified_async(self, view):
         if view.settings().get('list_flag'):
