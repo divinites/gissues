@@ -48,6 +48,7 @@ def print_list_framework(view=None):
     view.set_scratch(True)
     view.set_read_only(True)
     view.settings().set("list_flag", True)
+    view.settings.set('__vi_external_disable', settings.get('disable_vintageous') is True)
     return view
 
 

@@ -12,5 +12,6 @@
     "user_completion": true,
     "label_completion": true,
     "commit_completion": true,
-    "commit_completion_trigger": "&"
+    "commit_completion_trigger": "&",
+    "disable_vintageous": true
 }
