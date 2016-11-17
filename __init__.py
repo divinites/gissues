@@ -28,7 +28,7 @@ class SettingContainer:
         self.settings = sublime.load_settings('github_issue.sublime-settings')
         for flag in ("token", "username", "password", "debug", "syntax", "git_path", "issue_title_completion",
                      "user_completion", "label_completion", "commit_completion","split_line_width",
-                     "commit_completion_trigger", "disable_local_repositories", "wrap_width", "draw_centered"):
+                     "commit_completion_trigger", "disable_local_repositories", "wrap_width", "draw_centered", "disable_vintageous"):
             self.setting_dictionary[flag] = self.settings.get(flag)
 
     ##
