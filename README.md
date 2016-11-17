@@ -48,6 +48,7 @@ Set-ups:
     "label_completion": true,
     "commit_completion": true,
     "commit_completion_trigger": "&"
+    "disable_vintageous": true
 }
 ```
 ### Authentication:
@@ -107,6 +108,8 @@ GitHubIssue offers a range of auto-completion options:
 - **"debug"** is a flag, if it is set to 1, the plug-in will print every single step and output in sublime console. Normally it should be set to 0.
 
 -__"disable\_local\_repositories"__: normally, GitHub Issue will use git command to automatically discover github repos on the side-bar. If you do not want GitHub Issue to do so, please sent this flag to **true**. Default value is **false**.
+
+- **"disable_vintageous"**: if this is set true, issue list will also be shown in normal mode.
 
 
 After installing this plug-in, it would be better to restart sublime text to make the plug-in work.
