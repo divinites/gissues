@@ -56,8 +56,6 @@ Token means the github access token, you can get one from [this link](https://gi
 
 **Attention! To have a usable token, it would be safe to choose the following scopes when generating the token:**
 
-- _admin:org_,
-
 - _admin:org\_hook_,
 
 - _admin:public\_key_,
@@ -84,7 +82,7 @@ To sum up, the username is always required, passowrd and token are optional but 
 
 - **"draw_centered"** is the same as "draw_centered" in preferences.sublime-settings, also limited to issue view, default value: **False**.
 
--**"split_line_width"** is the width of split lines. default value is  0, which means that it will be the same as wrap_width.
+- **"split_line_width"** is the width of split lines. default value is  0, which means that it will be the same as wrap_width.
 
 ### Auto-Completion
 
@@ -107,7 +105,7 @@ GitHubIssue offers a range of auto-completion options:
 
 - **"debug"** is a flag, if it is set to 1, the plug-in will print every single step and output in sublime console. Normally it should be set to 0.
 
--__"disable\_local\_repositories"__: normally, GitHub Issue will use git command to automatically discover github repos on the side-bar. If you do not want GitHub Issue to do so, please sent this flag to **true**. Default value is **false**.
+- __"disable\_local\_repositories"__: normally, GitHub Issue will use git command to automatically discover github repos on the side-bar. If you do not want GitHub Issue to do so, please sent this flag to **true**. Default value is **false**.
 
 - **"disable_vintageous"**: if this is set true, issue list will also be shown in normal mode.
 
