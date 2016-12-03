@@ -47,7 +47,7 @@ Set-ups:
     "user_completion": true,
     "label_completion": true,
     "commit_completion": true,
-    "commit_completion_trigger": "&"
+    "commit_completion_trigger": "&",
     "disable_vintageous": true
 }
 ```
@@ -174,27 +174,27 @@ You can define your own shortcut, but some shortcut keys are pre-defined for you
 ![show issue list](https://www.scislab.com/static/media/uploads/PrivateGraphs/showlist.gif)
 
 - Create an Issue:
-![create an issue](https://www.scislab.com/static/media/uploads/blog/create_issue.gif)
+![create an issue](https://www.scislab.com/static/media/uploads/PrivateGraphs/create.gif)
 
 
 - Update an Issue:
-![update an issue](https://www.scislab.com/static/media/uploads/blog/update_issue.gif)
+![update an issue](https://www.scislab.com/static/media/uploads/PrivateGraphs/update.gif)
 
 
 - Add a comment:
-![add a comment](https://www.scislab.com/static/media/uploads/blog/add_comment.gif)
+![add a comment](https://www.scislab.com/static/media/uploads/PrivateGraphs/add.gif)
 
 - Delete a comment:
-![delete a comment](https://www.scislab.com/static/media/uploads/blog/delete_comment.gif)
+![delete a comment](https://www.scislab.com/static/media/uploads/PrivateGraphs/delete.gif)
 
 - Modify a comment:
-![modify a comment](https://www.scislab.com/static/media/uploads/blog/modi_comment.gif)
+![modify a comment](https://www.scislab.com/static/media/uploads/PrivateGraphs/modify.gif)
 
 - Auto-completion of labels, if a label does not exist, it will be automatically created.
-![label completion](https://www.scislab.com/static/media/uploads/PrivateGraphs/label.gif)
+![label completion](https://www.scislab.com/static/media/uploads/PrivateGraphs/labels.gif)
 
 - Auto-Completion of commits, issue references and other participants.
-![auto-completion](https://www.scislab.com/static/media/uploads/PrivateGraphs/completion.gif)
+![auto-completion](https://www.scislab.com/static/media/uploads/PrivateGraphs/complete.gif)
 
 
 ## Change Log
