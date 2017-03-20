@@ -3,7 +3,7 @@ import os
 from .. import log
 import re
 
-git_url = r"^\s*url\s*=\s*(?P<host>(git@|https://)([\w\.@]+)(/|:))(?P<owner>[\w,\-,\_]+)/(?P<repo>[\w,\-,\_]+)(.git){0,1}((/){0,1})"
+git_url = r"^\s*url\s*=\s*(?P<host>(git@|https://)([\w\.@]+)(/|:))(?P<owner>[\w,\-,\_]+)/(?P<repo>[\w,\-,\_,\.]+)((/){0,1})"
 
 
 class GitHubAccount:
@@ -100,8 +100,8 @@ def dig_git_file(file):
             raise Exception('repo URL error!')
     # raw_repo_name = raw_repo_name.replace("\n", "")
     # repo_name = raw_repo_name.replace("\r", "")
-    # if repo_name.endswith(".git"):
-    #     repo_name = repo_name[:-4]
+    if repo_name.endswith(".git"):
+        repo_name = repo_name[:-4]
     log("find username {} and repo_name {}".format(username, repo_name))
     return (username, repo_name)
 
