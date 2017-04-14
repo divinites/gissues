@@ -65,6 +65,13 @@ class GitRepo:
         self.github_response = None
         self.links = None
 
+    def format_url(self, custom_sequence=None):
+        if not custom_sequence:
+            custom_sequence = ['issues']
+        return self.github_account.join_url(username=self.username,
+                                            repo_name=self.repo_name,
+                                            sequence=custom_sequence)
+
     def get_repo_info(self, username, repo_name):
         self.username = username
         self.repo_name = repo_name
@@ -82,9 +89,7 @@ class GitRepo:
 
     def get(self, issue_url=None, **params):
         if not issue_url:
-            issue_url = self.github_account.join_url(username=self.username,
-                                                     repo_name=self.repo_name,
-                                                     sequence=['issues'])
+            issue_url = self.format_url()
         self.github_response = self.github_account.session.get(issue_url,
                                                                **params)
         return self.github_response
@@ -95,49 +100,34 @@ class GitRepo:
         return self.github_response.links
 
     def post_issue(self, **params):
-        issue_url = self.github_account.join_url(username=self.username, repo_name=self.repo_name, sequence=['issues'])
-        return self.github_account.session.post(issue_url, **params)
+        return self.github_account.session.post(self.format_url(), **params)
 
     def update_issue(self, issue_number, **params):
-        issue_url = self.github_account.join_url(username=self.username,
-                                                 repo_name=self.repo_name,
-                                                 sequence=['issues', str(issue_number)])
+        issue_url = self.format_url(['issues', str(issue_number)])
         return self.github_account.session.patch(issue_url, **params)
 
     def post_comment(self, issue_number, **params):
-        issue_url = self.github_account.join_url(username=self.username,
-                                                 repo_name=self.repo_name,
-                                                 sequence=['issues', str(issue_number), 'comments'])
+        issue_url = self.format_url(['issues', str(issue_number), 'comments'])
         return self.github_account.session.post(issue_url, **params)
 
     def update_comment(self, comment_id, **params):
-        issue_url = self.github_account.join_url(username=self.username,
-                                                 repo_name=self.repo_name,
-                                                 sequence=['issues', 'comments', str(comment_id)])
+        issue_url = self.format_url(['issues', 'comments', str(comment_id)])
         return self.github_account.session.patch(issue_url, **params)
 
     def delete_comment(self, comment_id, **params):
-        issue_url = self.github_account.join_url(username=self.username,
-                                                 repo_name=self.repo_name,
-                                                 sequence=['issues', 'comments', str(comment_id)])
+        issue_url = self.format_url(['issues', 'comments', str(comment_id)])
         return self.github_account.session.delete(issue_url, **params)
 
     def get_issue_comment(self, issue_number, **params):
-        issue_url = self.github_account.join_url(username=self.username,
-                                                 repo_name=self.repo_name,
-                                                 sequence=['issues', str(issue_number)])
-        comment_url = self.github_account.join_url(username=self.username,
-                                                   repo_name=self.repo_name,
-                                                   sequence=['issues', str(issue_number), 'comments'])
+        issue_url = self.format_url(['issues', str(issue_number)])
+        comment_url = self.format_url(['issues', str(issue_number), 'comments'])
         return (
             self.github_account.session.get(issue_url, **params),
             self.github_account.session.get(comment_url, **params))
 
     def get_commits(self, issue_url=None):
         if not issue_url:
-            issue_url = self.github_account.join_url(username=self.username,
-                                                     repo_name=self.repo_name,
-                                                     sequence=['commits'])
+            issue_url = self.format_url(['commits'])
         commit_set = set([])
         commit_resp = self.get(issue_url)
         if commit_resp.status_code == 200:
@@ -150,16 +140,14 @@ class GitRepo:
             raise Exception("cannot get commits!, error code {}".format(commit_resp.status_code))
 
     def replace_labels(self, issue_number, labels):
-        issue_url = self.github_account.join_url(username=self.username,
-                                                 repo_name=self.repo_name,
-                                                 sequence=['issues', str(issue_number), 'labels'])
+        issue_url = self.format_url(['issues', str(issue_number), 'labels'])
         log("replace label url is {}".format(issue_url))
         if len(labels) == 1 and '' in labels:
             return self.github_account.session.delete(issue_url)
         return self.github_account.session.put(issue_url, json=list(labels))
 
     def get_all_labels(self):
-        issue_url = self.github_account.join_url(username=self.username, repo_name=self.repo_name, sequence=['labels'])
+        issue_url = self.format_url(['labels'])
         labels = set([])
         label_resp = self.github_account.session.get(issue_url)
         if label_resp.status_code != 200:
@@ -176,9 +164,7 @@ class GitRepo:
         self.replace_labels(issue_number, labels)
 
     def generate_labels(self, labels):
-        issue_url = self.github_account.join_url(username=self.username,
-                                                 repo_name=self.repo_name,
-                                                 sequence=["labels"])
+        issue_url = self.format_url(["labels"])
         for label in labels:
             color = "%06x" % random.randint(0, 0xFFFFFF)
             label_resp = self.github_account.session.post(

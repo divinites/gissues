@@ -1,0 +1,1 @@
+Add a new command: GithubIssue: Open Issue in Browser

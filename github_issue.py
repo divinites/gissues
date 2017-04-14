@@ -1,5 +1,6 @@
 import sublime
 import sublime_plugin
+import webbrowser
 from .libgit import issue
 from .libgit import utils
 from .libgit import github
@@ -149,6 +150,17 @@ class UpdateGithubIssueCommand(sublime_plugin.WindowCommand):
         update_issue = issue.UpdateIssue(
             issue_list=active_issue_obj, issue_storage=issue_obj_storage)
         update_issue.start()
+
+
+class OpenIssueUrlCommand(sublime_plugin.WindowCommand):
+
+    def run(self):
+        view_id = sublime.active_window().active_view().id()
+        if not issue_obj_storage.empty():
+            issue_obj = utils.show_stock(issue_obj_storage, view_id)
+            url = issue_obj["issue"]["html_url"]
+            if url:
+                webbrowser.open_new(url)
 
 
 class LoadRepoList:

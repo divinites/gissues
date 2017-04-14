@@ -15,6 +15,11 @@
         "command": "show_github_issue"
     },
     {
+        "caption": "GitHub Issue: Open Issue in Browser",
+        "args": {},
+        "command": "open_issue_url"
+    },
+    {
         "caption": "GitHub Issue: Create Issue",
         "args": {},
         "command": "new_github_issue"
